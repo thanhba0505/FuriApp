@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
@@ -13,6 +13,7 @@ import ModeSelect from "~/components/ModeSelect";
 import Avatar from "~/components/Avatar";
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
+import { getImage } from "~/api/imageApi";
 
 function AccountMenu() {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -25,13 +26,22 @@ function AccountMenu() {
     setAnchorEl(null);
   };
 
-  const accoutn = useSelector((state) => state.auth.login?.currentAccount);
-  const accessToken = accoutn?.accessToken;
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
   const dispatch = useDispatch();
 
   const handleLogOut = () => {
     logOut(dispatch, accessToken);
   };
+
+  useEffect(() => {
+    if (account) {
+      getImage(dispatch, account?.user.avatar);
+    }
+  }, [dispatch, account]);
+
+  const avatar = useSelector((state) => state.image.getImage?.url);
+  console.log(avatar);
 
   return (
     <React.Fragment>
@@ -44,7 +54,8 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          <Avatar />
+          {/* Thêm ảnh vào đây */}
+          <Avatar src={avatar || null} />
         </IconButton>
       </Box>
       <Menu

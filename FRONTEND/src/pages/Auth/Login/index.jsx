@@ -14,8 +14,8 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
 function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("furiapp123");
+  const [password, setPassword] = useState("123123123");
   const [checked, setChecked] = useState(true);
 
   const [disabled, setDisabled] = useState(true);

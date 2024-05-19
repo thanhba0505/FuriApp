@@ -5,6 +5,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const route = require("./routes");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
 const port = 5174;
@@ -15,7 +17,7 @@ const database = require("./config/database");
 database.connect();
 
 // public
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+app.use("/public", express.static(path.join(__dirname, "/public")));
 
 //
 app.use(bodyParser.json({ limit: "50mb" }));
