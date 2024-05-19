@@ -2,8 +2,6 @@ const Account = require("../models/Account");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-// const dotenv = require("dotenv");
-// dotenv.config();
 
 let refreshTokens = [];
 
