@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
@@ -14,6 +14,7 @@ import Avatar from "~/components/Avatar";
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
 import { getImage } from "~/api/imageApi";
+import { useRef } from "react";
 
 function AccountMenu() {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -34,14 +35,23 @@ function AccountMenu() {
     logOut(dispatch, accessToken);
   };
 
+  const [avatar, setAvatar] = useState();
+  const hasFetchedImage = useRef(false);
+
   useEffect(() => {
-    if (account) {
-      getImage(dispatch, account?.user.avatar);
+    if (account && !hasFetchedImage.current) {
+      hasFetchedImage.current = true;
+      const fetchImage = async () => {
+        try {
+          const image = await getImage(dispatch, account.user?.avatar);
+          setAvatar(image);
+        } catch (error) {
+          console.error("Error fetching image:", error);
+        }
+      };
+      fetchImage();
     }
   }, [dispatch, account]);
-
-  const avatar = useSelector((state) => state.image.getImage?.url);
-  console.log(avatar);
 
   return (
     <React.Fragment>
@@ -55,7 +65,7 @@ function AccountMenu() {
           aria-expanded={open ? "true" : undefined}
         >
           {/* Thêm ảnh vào đây */}
-          <Avatar src={avatar || null} />
+          <Avatar src={avatar || undefined} />
         </IconButton>
       </Box>
       <Menu

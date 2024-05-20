@@ -17,21 +17,48 @@ import Sidebar from "../components/SidebarLeft";
 import Paper from "~/components/Paper";
 import Avatar from "~/components/Avatar";
 import { NavLink } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import { useEffect } from "react";
+import { getImage } from "~/api/imageApi";
+import { useRef } from "react";
 
 // PaperFrist
 function PaperFrist() {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const dispatch = useDispatch();
+
+  const [avatar, setAvatar] = useState();
+
+  const hasFetchedImage = useRef(false);
+
+  useEffect(() => {
+    if (account && !hasFetchedImage.current) {
+      hasFetchedImage.current = true;
+      const fetchImage = async () => {
+        try {
+          const image = await getImage(dispatch, account.user?.avatar);
+          setAvatar(image);
+        } catch (error) {
+          console.error("Error fetching image:", error);
+        }
+      };
+      fetchImage();
+    }
+  }, [dispatch, account]);
+
   return (
     <Paper>
       <Grid container rowSpacing={1}>
         <Grid item xs={3}>
-          <Avatar br={2} size="48px" />
+          <Avatar src={avatar || undefined} br={2} size="48px" />
         </Grid>
 
         <Grid item xs={9}>
           <Typography variant="body1" fontWeight={700}>
-            Furina Amasawa
+            {account?.user?.fullName}
           </Typography>
-          <Typography variant="body2">@furinaamasawa</Typography>
+          <Typography variant="body2">@{account?.username}</Typography>
         </Grid>
       </Grid>
     </Paper>

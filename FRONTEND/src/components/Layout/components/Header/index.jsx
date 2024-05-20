@@ -14,7 +14,6 @@ function Header() {
   const logo = useSelector((state) => state.other?.app?.logo);
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const user = account?.user;
-  console.log(logo);
 
   return (
     <Box
@@ -51,7 +50,7 @@ function Header() {
             fontWeight={700}
             sx={{ flexGrow: 1 }}
           >
-            {user?.fullName}
+            Furi
           </Typography>
 
           <SearchField />

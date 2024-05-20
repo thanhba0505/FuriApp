@@ -4,7 +4,6 @@ const imageSlice = createSlice({
   name: "image",
   initialState: {
     getImage: {
-      url: null,
       isFetching: false,
       error: false,
     },
@@ -14,10 +13,9 @@ const imageSlice = createSlice({
       state.getImage.isFetching = true;
       state.getImage.error = false;
     },
-    getImageSuccess: (state, action) => {
+    getImageSuccess: (state) => {
       state.getImage.isFetching = false;
       state.getImage.error = false;
-      state.getImage.url = action.payload;
     },
     getImageFailed: (state) => {
       state.getImage.isFetching = false;
