@@ -37,8 +37,9 @@ function PaperFrist() {
       hasFetchedImage.current = true;
       const fetchImage = async () => {
         try {
-          const image = await getImage(dispatch, account.user?.avatar);
-          setAvatar(image);
+          await getImage(dispatch, account.user?.avatar, (url) => {
+            setAvatar(url);
+          });
         } catch (error) {
           console.error("Error fetching image:", error);
         }
