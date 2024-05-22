@@ -10,14 +10,6 @@ const schema = new mongoose.Schema(
       minlength: 8,
     },
 
-    // email: {
-    //   type: String,
-    //   unique: true,
-    //   required: true,
-    //   maxlength: 50,
-    //   minlength: 10,
-    // },
-
     password: {
       type: String,
       required: true,

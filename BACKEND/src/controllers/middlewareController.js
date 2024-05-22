@@ -23,6 +23,20 @@ const middlewareController = {
 
   verifyTokenAdmin: (req, res, next) => {
     middlewareController.verifyToken(req, res, () => {
+      // const token = req.headers.token;
+      // const accessToken = token.split(" ")[1];
+
+      // jwt.verify(
+      //   accessToken,
+      //   process.env.FURI_JWT_ACCESS_KEY,
+      //   (err, account) => {
+      //     if (account.id == ) {
+            
+      //     }
+      //     return res.status(403).json(account.id);
+      //     next();
+      //   }
+      // );
       if (req.user.id == req.params.id || req.user.admin) {
         next();
       } else {

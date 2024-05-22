@@ -1,16 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const ImageController = require('../controllers/ImageController');
-const multer = require('multer');
-const path = require('path');
+const ImageController = require("../controllers/ImageController");
+const multer = require("multer");
+const path = require("path");
+// const { up } = require('../config/uploads/multer');
+
 
 // Cấu hình lưu trữ Multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../public/uploads/'));
+    cb(null, path.join(__dirname, "../public/uploads/"));
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
@@ -27,12 +29,12 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('File type not supported'));
+      cb(new Error("File type not supported"));
     }
   },
 });
 
-router.post('/upload', upload.single('image'), ImageController.uploadImage);
-router.get('/:filename', ImageController.getImage);
+router.post("/upload", upload.single("image"), ImageController.uploadImage);
+router.get("/:filename", ImageController.getImage);
 
 module.exports = router;

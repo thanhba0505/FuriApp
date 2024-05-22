@@ -80,7 +80,7 @@ const AccountController = {
         id: account.id,
         admin: account.admin,
       },
-      process.env.FURI_JWT_ACCESS_KEY,
+      process.env.FURI_JWT_REFRESH_KEY,
       { expiresIn: "365d" }
     );
   },
