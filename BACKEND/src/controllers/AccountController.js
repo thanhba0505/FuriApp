@@ -2,8 +2,8 @@ const Account = require("../models/Account");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-
-let refreshTokens = [];
+const RefreshToken = require("../models/RefreshToken");
+const BlackListToken = require("../models/BlackListToken");
 
 const AccountController = {
   registerAccount: async (req, res) => {
@@ -108,7 +108,7 @@ const AccountController = {
         const accessToken = AccountController.generateAccessToken(account);
         const refreshToken = AccountController.generateRefreshToken(account);
 
-        refreshTokens.push(refreshToken);
+        await RefreshToken.create({ token: refreshToken });
 
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
@@ -132,43 +132,73 @@ const AccountController = {
       return res.status(401).json("You're not authenticated");
     }
 
-    if (!refreshTokens.includes(refreshToken)) {
-      return res.status(403).json("Refresh token is not valid");
-    }
+    try {
+      const tokenExists = await RefreshToken.exists({ token: refreshToken });
 
-    jwt.verify(
-      refreshToken,
-      process.env.FURI_JWT_ACCESS_KEY,
-      (err, account) => {
-        if (err) {
-          return res.status(403).json("Refresh token is not valid");
-        }
-
-        refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-
-        const newAccessToken = AccountController.generateAccessToken(account);
-        const newRefreshToken = AccountController.generateRefreshToken(account);
-
-        refreshTokens.push(newRefreshToken);
-
-        res.cookie("refreshToken", newRefreshToken, {
-          httpOnly: true,
-          secure: false, // Deloy -> true
-          path: "/",
-          sameSite: "strict",
-        });
-
-        return res.status(200).json({ accessToken: newAccessToken });
+      if (!tokenExists) {
+        return res.status(403).json("Refresh token is not valid");
       }
-    );
+
+      jwt.verify(
+        refreshToken,
+        process.env.FURI_JWT_ACCESS_KEY,
+        async (err, account) => {
+          if (err) {
+            return res.status(403).json("Refresh token is not valid");
+          }
+
+          await RefreshToken.deleteOne({ token: refreshToken });
+
+          const newAccessToken = AccountController.generateAccessToken(account);
+          const newRefreshToken =
+            AccountController.generateRefreshToken(account);
+
+          await RefreshToken.create({ token: newRefreshToken });
+
+          res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: false, // Deloy -> true
+            path: "/",
+            sameSite: "strict",
+          });
+
+          return res.status(200).json({ accessToken: newAccessToken });
+        }
+      );
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   },
 
   logoutAccount: async (req, res) => {
-    res.clearCookie("refreshToken");
-    refreshTokens = refreshTokens.filter(
-      (token) => token !== req.cookies.refreshToken
-    );
-    res.status(200).json("Logged out");
+    try {
+      const refreshToken = req.cookies?.refreshToken;
+      const accessToken = req.headers.token?.split(" ")[1];
+
+      if (!refreshToken || !accessToken) {
+        return res.status(401).json({ message: "You're not authenticated" });
+      }
+
+      await RefreshToken.deleteOne({ token: refreshToken });
+
+      const decoded = jwt.decode(accessToken);
+      const expiresAt = new Date(decoded.exp * 1000);
+
+      const blackListToken = new BlackListToken({
+        token: accessToken,
+        expiresAt: expiresAt,
+      });
+
+      await blackListToken.save();
+
+
+      res.clearCookie("refreshToken");
+
+      res.status(200).json({ message: "Logged out successfully" });
+
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error" });
+    }
   },
 };
 
