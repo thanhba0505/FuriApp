@@ -14,7 +14,7 @@ const ImageController = {
   getImage: (req, res) => {
     const filename = req.params.filename;
     const filepath = path.join(__dirname, "../public/uploads", filename);
-    const returnType = req.query.type; // Sử dụng query parameter để xác định kiểu trả về
+    const returnType = req.query.type; 
 
     fs.access(filepath, fs.constants.F_OK, (err) => {
       if (err) {
@@ -22,7 +22,6 @@ const ImageController = {
       }
 
       if (returnType === "info") {
-        // Trả về thông tin file
         fs.stat(filepath, (err, stats) => {
           if (err) {
             return res
@@ -43,7 +42,6 @@ const ImageController = {
           return res.status(200).json(fileInfo);
         });
       } else {
-        // Trả về trực tiếp ảnh
         res.sendFile(filepath, (err) => {
           if (err) {
             res.status(500).json({ message: "Error sending file" });

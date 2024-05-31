@@ -121,7 +121,7 @@ function FormPost({ children, date }) {
       
       {children}
 
-      <Grid container columnSpacing={"16px"}>
+      {/* <Grid container columnSpacing={"16px"}>
         <Grid item xs={"auto"}>
           <Avatar v={"rounded"} />
         </Grid>
@@ -134,7 +134,7 @@ function FormPost({ children, date }) {
           </Box>
         </Grid>
         <Grid item xs={"auto"}></Grid>
-      </Grid>
+      </Grid> */}
 
       {/* <Grid mt={2} container columnSpacing={"16px"}>
         <Grid item>{children}</Grid>

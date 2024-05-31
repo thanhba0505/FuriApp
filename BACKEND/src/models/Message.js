@@ -4,13 +4,13 @@ const messageSchema = new mongoose.Schema(
   {
     sender: {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: "Account",
       required: true,
     },
 
     receiver: {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: "Account",
       required: true,
     },
 

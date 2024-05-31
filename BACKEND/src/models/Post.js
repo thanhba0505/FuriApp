@@ -7,9 +7,9 @@ const interactSchema = new mongoose.Schema(
       enum: ["like", "angry", "laugh"],
       required: true,
     },
-    user: {
+    account: {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: "Account",
       required: true,
     },
   },
@@ -22,9 +22,9 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    user: {
+    account: {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: "Account",
       required: true,
     }
   },
@@ -33,9 +33,9 @@ const commentSchema = new mongoose.Schema(
 
 const schema = new mongoose.Schema(
   {
-    user: {
+    account: {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: "Account",
       required: true,
     },
 

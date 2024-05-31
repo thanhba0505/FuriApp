@@ -12,7 +12,7 @@ const PostController = {
       }
 
       const content = req.body.content;
-      const userId = req.account.id;
+      const accountID = req.account.id;
       const images = req.files?.map((file) => file.filename);
 
       if (!content && (!images || images.length === 0)) {
@@ -23,7 +23,7 @@ const PostController = {
 
       try {
         const newPost = new Post({
-          user: userId,
+          account: accountID,
           content: content,
           images: images || [],
         });
@@ -36,15 +36,42 @@ const PostController = {
     });
   },
 
-  addInteraction: async (req, res) => {
-    const postId = req.params.postId;
-    const userId = req.account.id;
-    const { type } = req.body;
+  getPosts: async (req, res) => {
+    const limit = parseInt(req.query._limit) || 10;
 
-    if (!["like", "angry", "laugh"].includes(type)) {
-      return res.status(400).json({ message: "Invalid interaction type" });
-    }
     try {
+      const posts = await Post.find().limit(limit).populate("account");
+      return res.status(200).json(posts);
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  getPostById: async (req, res) => {
+    const postId = req.params.postId;
+
+    try {
+      const post = await Post.findById(postId).populate("account");
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      return res.status(200).json(post);
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  addInteraction: async (req, res) => {
+    try {
+      const postId = req.params.postId;
+      const accountID = req.account.id;
+      const type = req.body.type;
+
+      if (!["like", "angry", "laugh"].includes(type)) {
+        return res.status(400).json({ message: "Invalid interaction type" });
+      }
+
       const post = await Post.findById(postId);
 
       if (!post) {
@@ -52,7 +79,7 @@ const PostController = {
       }
 
       const existingInteractionIndex = post.interact.findIndex(
-        (interaction) => interaction.user.toString() === userId
+        (interaction) => interaction.account.toString() === accountID
       );
 
       if (existingInteractionIndex !== -1) {
@@ -62,19 +89,20 @@ const PostController = {
           post.interact[existingInteractionIndex].type = type;
         }
       } else {
-        post.interact.push({ type, user: userId });
+        post.interact.push({ type, account: accountID });
       }
 
       await post.save();
+
       return res
         .status(200)
         .json({ message: "Interaction added successfully" });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
+
+  addComment: async (req, res) => {},
 };
 
 module.exports = PostController;
