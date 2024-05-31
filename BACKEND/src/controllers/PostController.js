@@ -40,7 +40,16 @@ const PostController = {
     const limit = parseInt(req.query._limit) || 10;
 
     try {
-      const posts = await Post.find().limit(limit).populate("account");
+      const posts = await Post.find()
+        .limit(limit)
+        .populate({
+          path: "account",
+          select: "username user",
+          populate: {
+            select: "avatar fullName",
+            path: "user",
+          },
+        });
       return res.status(200).json(posts);
     } catch (error) {
       return res.status(500).json({ message: "Internal Server Error" });

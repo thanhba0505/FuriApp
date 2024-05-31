@@ -11,7 +11,7 @@ const storagePost = multer.diskStorage({
   },
 });
 
-// config userPost
+// config storageUser
 const storageUser = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, "../../public/uploads/userImage"));
@@ -21,7 +21,7 @@ const storageUser = multer.diskStorage({
   },
 });
 
-// config userPost
+// config storageStory
 const storageStory = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, "../../public/uploads/storyImage"));
@@ -30,16 +30,6 @@ const storageStory = multer.diskStorage({
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
-
-// // config userPost
-// const storageVideo = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, path.join(__dirname, "../public/uploads/video"));
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + "-" + file.originalname);
-//   },
-// });
 
 const limits = { fileSize: 10 * 1024 * 1024 }; // 10MB
 

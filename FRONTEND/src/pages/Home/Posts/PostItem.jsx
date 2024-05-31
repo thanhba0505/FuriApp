@@ -7,23 +7,23 @@ import Grid from "@mui/material/Grid";
 import Paper from "~/components/Paper";
 import Stack from "@mui/material/Stack";
 import Img from "~/components/Img";
+import { Typography } from "@mui/material";
 
-function CustomImg({ src, alt }) {
-  return <Img src={src} alt={alt} br={8} maxh={"70vh"} />;
-}
-
-function PostItem({ ...post }) {
+function PostItem({ post }) {
   return (
-    <FormPost>
-      <Box my={2} maxHeight={"70vh"} height={""}>
-        <Grid container justifyContent={"center"} columnSpacing={"20px"}>
-          <Grid item xs={12}>
-            <CustomImg
-              src={"https://images.unsplash.com/photo-1549388604-817d15aa0110"}
-              alt={"Bed"}
-            />
-          </Grid>
-        </Grid>
+    <FormPost fullName={post.account.user?.fullName} date={post?.updatedAt}>
+      <Typography variant="body1">{post?.content}</Typography>
+      <Box height={""}>
+        {post.images.map((image, index) => (
+          <img
+            key={index}
+            src={
+              import.meta.env.VITE_FURI_API_BASE_URL +
+              "/api/image/imagepost/" +
+              image
+            }
+          />
+        ))}
       </Box>
     </FormPost>
   );

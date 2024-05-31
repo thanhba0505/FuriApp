@@ -15,8 +15,9 @@ export const getImage = async (dispatch, image, callback) => {
     const url = URL.createObjectURL(res.data);
     callback(url);
     dispatch(getImageSuccess());
-    return url;
   } catch (error) {
     dispatch(getImageFailed());
   }
 };
+
+

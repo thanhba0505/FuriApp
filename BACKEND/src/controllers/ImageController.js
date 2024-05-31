@@ -2,19 +2,10 @@ const fs = require("fs");
 const path = require("path");
 
 const ImageController = {
-  uploadImage: (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-    return res
-      .status(200)
-      .json({ message: "File uploaded successfully", file: req.file });
-  },
-
   getImage: (req, res) => {
     const filename = req.params.filename;
     const filepath = path.join(__dirname, "../public/uploads", filename);
-    const returnType = req.query.type; 
+    const returnType = req.query.type;
 
     fs.access(filepath, fs.constants.F_OK, (err) => {
       if (err) {
@@ -47,6 +38,17 @@ const ImageController = {
             res.status(500).json({ message: "Error sending file" });
           }
         });
+      }
+    });
+  },
+
+  getImagePost: (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, "../public/uploads/postImage", filename);
+
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        res.status(404).json({ message: "File not found" });
       }
     });
   },

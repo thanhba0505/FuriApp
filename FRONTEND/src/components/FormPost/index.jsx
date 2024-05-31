@@ -16,7 +16,7 @@ import PersonAdd from "@mui/icons-material/PersonAdd";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 
-function FormPost({ children, date }) {
+function FormPost({ children, fullName, date }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -35,7 +35,7 @@ function FormPost({ children, date }) {
         <Grid item xs>
           <Box>
             <Typography variant="body1" fontWeight={700}>
-              Furina!
+              {fullName}
             </Typography>
             <Typography variant="body2">{date}</Typography>
           </Box>
