@@ -12,38 +12,38 @@ function PostList() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const observer = useRef();
-  const limit = 0;
-
+  const limit = 20;
+  
   useEffect(() => {
     const loadPosts = async () => {
       setLoading(true);
 
       const res = await getPosts(accessToken, limit);
-        setPosts((prevPosts) => [...prevPosts, ...res.data]);
+      setPosts((prevPosts) => [...prevPosts, ...res.data]);
 
       setLoading(false);
     };
     loadPosts();
   }, [page, accessToken]);
 
-  const lastPostRef = useCallback(node => {
-    if (loading) return; // Nếu đang tải, không làm gì cả
-    if (observer.current) observer.current.disconnect(); // Ngắt kết nối observer trước đó nếu có
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
-        setPage(prevPage => prevPage + 1); // Tăng giá trị 'page' khi phần tử cuối cùng hiện ra trong viewport
-      }
-    });
-    if (node) observer.current.observe(node); // Quan sát phần tử cuối cùng
-  }, [loading]);
-
-  console.log(posts);
+  const lastPostRef = useCallback(
+    (node) => {
+      if (loading) return; 
+      if (observer.current) observer.current.disconnect(); 
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node); 
+    },
+    [loading]
+  );
 
   return (
     <Box>
       {posts.map((post, index) => {
         if (posts.length === index + 1) {
-          // Đặt ref vào phần tử cuối cùng
           return (
             <div ref={lastPostRef} key={index}>
               <PostItem post={post} />
