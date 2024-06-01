@@ -1,8 +1,7 @@
-// src/PostItem.js
 import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import FormPost from "~/components/FormPost";
+import FormPost from "./FormPost";
 
 const ImageWithSize = React.memo(({ src, onLoad }) => {
   useEffect(() => {

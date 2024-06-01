@@ -1,7 +1,4 @@
-import { useState } from "react";
-
 import Avatar from "~/components/Avatar";
-// import {  } from "module";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -16,17 +13,14 @@ import IconButton from "@mui/material/IconButton";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
+import { useState } from "react";
 
-
-
-function PostHeader() {
+function PostHeader({ fullName, date }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -39,7 +33,7 @@ function PostHeader() {
       <Grid item xs>
         <Box>
           <Typography variant="body1" fontWeight={700}>
-            Furina!
+            {fullName}
           </Typography>
           <Typography variant="body2">{date}</Typography>
         </Box>
