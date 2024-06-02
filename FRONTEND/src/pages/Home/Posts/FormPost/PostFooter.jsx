@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { styled } from "@mui/system";
 
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
@@ -12,8 +13,8 @@ import SentimentDissatisfiedTwoToneIcon from "@mui/icons-material/SentimentDissa
 import SentimentVerySatisfiedRoundedIcon from "@mui/icons-material/SentimentVerySatisfiedRounded";
 import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVerySatisfiedTwoTone";
 
-const StyledIcon = styled("div")(({ theme, color }) => ({
-  display: "inline-block",
+const StyledIconInteract = styled("div")(({ theme, color }) => ({
+  display: "block",
   color: color,
   marginRight: "12px",
   transition: "transform 0.44s ease",
@@ -23,14 +24,15 @@ const StyledIcon = styled("div")(({ theme, color }) => ({
   },
   "&>svg": {
     fontSize: "30px",
+    display: "block",
   },
 }));
 
-const IconCustom = ({ Icon, color, onClick }) => {
+const IconCustomInteract = ({ Icon, color, onClick }) => {
   return (
-    <StyledIcon color={color} onClick={onClick}>
+    <StyledIconInteract color={color} onClick={onClick}>
       <Icon />
-    </StyledIcon>
+    </StyledIconInteract>
   );
 };
 
@@ -43,14 +45,14 @@ const Interact = () => {
 
   return (
     <>
-      <IconCustom
+      <IconCustomInteract
         Icon={
           interact === "like" ? FavoriteTwoToneIcon : FavoriteBorderRoundedIcon
         }
         color={interact === "like" ? "blue" : ""}
         onClick={handleInteract("like")}
       />
-      <IconCustom
+      <IconCustomInteract
         Icon={
           interact === "laugh"
             ? SentimentVerySatisfiedTwoToneIcon
@@ -59,7 +61,7 @@ const Interact = () => {
         color={interact === "laugh" ? "orange" : ""}
         onClick={handleInteract("laugh")}
       />
-      <IconCustom
+      <IconCustomInteract
         Icon={
           interact === "angry"
             ? SentimentDissatisfiedTwoToneIcon
@@ -72,27 +74,99 @@ const Interact = () => {
   );
 };
 
-function PostFooter() {
-    console.log("ádfads");
-  return (
-    <Box
-      marginTop={2}
-      borderTop={1}
-      borderColor={"text.primary"}
-      paddingTop={1}
-    >
-      <Grid container columnSpacing={"16px"}>
-        <Grid item xs height={"28px"}>
-          <Interact />
-        </Grid>
+const StyledIconNumInteract = styled("div")(
+  ({ theme, color, left, zIndex, favoriteIcon }) => ({
+    display: "block",
+    color: color,
+    position: "absolute",
+    left: left || 0,
+    top: 0,
+    backgroundColor: theme.lableSelect,
+    borderRight: !favoriteIcon
+      ? `3px solid ${theme.lableSelect}`
+      : `2px solid ${theme.lableSelect}`,
+    borderRadius: !favoriteIcon ? "50%" : "30% 30% 70% 70%",
+    zIndex: zIndex,
 
-        <Grid item xs>
-          <Box>
-            
-          </Box>
-        </Grid>
-      </Grid>
+    "&>svg": {
+      fontSize: "24px",
+      display: "block",
+    },
+  })
+);
+
+const IconCustomNumInteract = ({ Icon, color, left, zIndex, onClick }) => {
+  return (
+    <StyledIconNumInteract
+      zIndex={zIndex}
+      color={color}
+      left={left}
+      onClick={onClick}
+      favoriteIcon={Icon == FavoriteTwoToneIcon ? true : false}
+    >
+      <Icon />
+    </StyledIconNumInteract>
+  );
+};
+
+const NumInteract = () => {
+  return (
+    <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
+      <IconCustomNumInteract
+        Icon={FavoriteTwoToneIcon}
+        color="blue"
+        zIndex={3}
+      />
+      <IconCustomNumInteract
+        Icon={SentimentDissatisfiedTwoToneIcon}
+        color="orange"
+        left="20px"
+        zIndex={2}
+      />
+      <IconCustomNumInteract
+        Icon={SentimentVerySatisfiedTwoToneIcon}
+        color="red"
+        left="40px"
+        zIndex={1}
+      />
     </Box>
+  );
+};
+
+function PostFooter() {
+  return (
+    <>
+      <Box marginTop={1} paddingTop={1}>
+        <Grid container columnSpacing={"16px"}>
+          <Grid item xs container alignItems={"center"} height={"24px"}>
+            <NumInteract />
+          </Grid>
+
+          <Grid item xs container alignItems={"center"} justifyContent={"end"}>
+            <Typography variant="body1" lineHeight={"1"}>
+              1 comment
+            </Typography>
+          </Grid>
+        </Grid>
+      </Box>
+
+      <Box
+        marginTop={2}
+        borderTop={1}
+        borderColor={"text.primary"}
+        paddingTop={1}
+      >
+        <Grid container columnSpacing={"16px"}>
+          <Grid item xs container alignItems={"end"} height={"28px"}>
+            <Interact />
+          </Grid>
+
+          <Grid item xs>
+            <Box></Box>
+          </Grid>
+        </Grid>
+      </Box>
+    </>
   );
 }
 

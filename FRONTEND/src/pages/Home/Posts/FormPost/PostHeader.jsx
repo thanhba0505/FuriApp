@@ -24,7 +24,7 @@ function PostHeader({ fullName, date }) {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
+  
   return (
     <Grid container columnSpacing={"16px"}>
       <Grid item xs={"auto"}>
