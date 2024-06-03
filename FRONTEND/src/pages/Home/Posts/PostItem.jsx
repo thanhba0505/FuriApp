@@ -253,7 +253,11 @@ const PostItem = ({ post }) => {
   };
 
   return (
-    <FormPost fullName={post.account.user?.fullName} date={post?.updatedAt}>
+    <FormPost
+      fullName={post.account.user?.fullName}
+      date={post?.updatedAt}
+      interact={post?.interact}
+    >
       <Typography variant="body1" sx={{ mt: 2 }}>
         {post?.content}
       </Typography>
