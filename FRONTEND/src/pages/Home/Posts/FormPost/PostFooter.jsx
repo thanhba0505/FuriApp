@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { Avatar, Button, TextField } from "@mui/material";
 import { styled } from "@mui/system";
 
 import Accordion from "@mui/material/Accordion";
@@ -18,7 +19,6 @@ import SentimentDissatisfiedTwoToneIcon from "@mui/icons-material/SentimentDissa
 
 import SentimentVerySatisfiedRoundedIcon from "@mui/icons-material/SentimentVerySatisfiedRounded";
 import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVerySatisfiedTwoTone";
-import { Button, FormControl, InputLabel, TextField } from "@mui/material";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -152,7 +152,34 @@ const NumInteract = ({ interact }) => {
   );
 };
 
+const Comment = ({ avatar, name, comment }) => {
+  return (
+    <Grid container mt={2}>
+      <Grid item>
+        <Avatar src={avatar} alt={name} sx={{ width: 32, height: 32, mr: 2 }} />
+      </Grid>
+      <Grid item sx={{ backgroundColor: "red", p: 1, borderRadius: 2 }}>
+        <Typography variant="h6" fontSize={"12px"} lineHeight={1}>
+          {name}
+        </Typography>
+        <Typography lineHeight={1.1} mt={"2px"} fontSize={"14px"}>
+          {" "}
+          {comment}
+        </Typography>
+      </Grid>
+    </Grid>
+  );
+};
+
 const PostComment = ({ expanded }) => {
+  const [commentLoaded, setConmentLoad] = useState(false);
+
+  useEffect(() => {
+    if (expanded === "panel" && !commentLoaded) {
+      setConmentLoad(true);
+    }
+  }, [expanded, commentLoaded]);
+
   return (
     <>
       <Accordion
@@ -168,11 +195,35 @@ const PostComment = ({ expanded }) => {
           id="panelbh-header"
           sx={{ display: "none" }}
         ></AccordionSummary>
-        <AccordionDetails sx={{ pb: 0, pt: 2}}>
-          <Typography>
-            Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat.
-            Aliquam eget maximus est, id dignissim quam.
-          </Typography>
+        <AccordionDetails
+          sx={{
+            p: 0,
+            backgroundColor: (theme) => `${theme.lableSelect}`,
+          }}
+        >
+          {commentLoaded && (
+            <Box
+              sx={{
+                maxHeight: "250px",
+                overflowY: "auto",
+                "::-webkit-scrollbar": {
+                  width: "4px",
+                  height: "8px",
+                  backgroundColor: "action.hover",
+                },
+                "::-webkit-scrollbar-thumb": {
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              <Comment name={"Mutsumi"} comment={"Taiyo"} />
+              <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
+              <Comment
+                name={"Mutsumi"}
+                comment={"alsda;lsk alsfdjaslkfdjalskd"}
+              />
+            </Box>
+          )}
         </AccordionDetails>
       </Accordion>
     </>
@@ -257,7 +308,7 @@ const PostFooter = ({ interact }) => {
       </Box>
 
       {/* add comment */}
-      <Box mt={2} grid container>
+      <Box mt={2}>
         <AddComment />
       </Box>
     </>
