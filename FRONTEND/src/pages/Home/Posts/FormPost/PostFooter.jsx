@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -10,6 +10,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SendIcon from "@mui/icons-material/Send";
+import AddCommentIcon from "@mui/icons-material/AddComment";
 
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteTwoToneIcon from "@mui/icons-material/FavoriteTwoTone";
@@ -152,14 +153,32 @@ const NumInteract = ({ interact }) => {
   );
 };
 
-const Comment = ({ avatar, name, comment }) => {
+const Comment = ({ avatar, name, comment, mt = true }) => {
   return (
-    <Grid container mt={2}>
+    <Grid container wrap="nowrap" mt={mt ? 1.2 : ""}>
       <Grid item>
-        <Avatar src={avatar} alt={name} sx={{ width: 32, height: 32, mr: 2 }} />
+        <Avatar
+          src={avatar}
+          alt={name}
+          sx={{ width: 32, height: 32, mr: 1.2 }}
+        />
       </Grid>
-      <Grid item sx={{ backgroundColor: "red", p: 1, borderRadius: 2 }}>
-        <Typography variant="h6" fontSize={"12px"} lineHeight={1}>
+      <Grid
+        item
+        sx={{
+          border: 1,
+          borderColor: "secondary.light",
+          p: 1,
+          mr: 2,
+          borderRadius: 2,
+        }}
+      >
+        <Typography
+          variant="body1"
+          fontSize={"13px"}
+          fontWeight={700}
+          lineHeight={1}
+        >
           {name}
         </Typography>
         <Typography lineHeight={1.1} mt={"2px"} fontSize={"14px"}>
@@ -183,7 +202,7 @@ const PostComment = ({ expanded }) => {
   return (
     <>
       <Accordion
-        expanded={expanded === "panel"}
+        expanded={commentLoaded && expanded === "panel"}
         sx={{
           backgroundColor: (theme) => `${theme.lableSelect}`,
           boxShadow: "none",
@@ -198,14 +217,16 @@ const PostComment = ({ expanded }) => {
         <AccordionDetails
           sx={{
             p: 0,
+            pt: 2,
             backgroundColor: (theme) => `${theme.lableSelect}`,
           }}
         >
           {commentLoaded && (
             <Box
               sx={{
-                maxHeight: "250px",
+                maxHeight: "400px",
                 overflowY: "auto",
+                pb: "2px",
                 "::-webkit-scrollbar": {
                   width: "4px",
                   height: "8px",
@@ -216,8 +237,16 @@ const PostComment = ({ expanded }) => {
                 },
               }}
             >
-              <Comment name={"Mutsumi"} comment={"Taiyo"} />
+              <Comment name={"Mutsumi"} comment={"Taiyo"} mt={false} />
               <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
+              <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
+              <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
+              <Comment
+                name={"Futaba"}
+                comment={
+                  "ka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdka"
+                }
+              />
               <Comment
                 name={"Mutsumi"}
                 comment={"alsda;lsk alsfdjaslkfdjalskd"}
@@ -230,7 +259,23 @@ const PostComment = ({ expanded }) => {
   );
 };
 
-const AddComment = () => {
+const AddComment = ({ focused, onFocusChange }) => {
+  const textFieldRef = useRef(null);
+
+  const handleFocusChange = () => {
+    onFocusChange(true);
+  };
+
+  const handleBlur = () => {
+    onFocusChange(false);
+  };
+
+  useEffect(() => {
+    if (focused && textFieldRef.current) {
+      textFieldRef.current.focus();
+    }
+  }, [focused]);
+
   return (
     <>
       <TextField
@@ -238,6 +283,9 @@ const AddComment = () => {
         placeholder="Write your comment here..."
         size="small"
         multiline
+        inputRef={textFieldRef}
+        onFocus={handleFocusChange}
+        onBlur={handleBlur}
       />
       <Button
         color="secondary"
@@ -257,11 +305,15 @@ const AddComment = () => {
   );
 };
 
-const PostFooter = ({ interact }) => {
+const PostFooter = ({ interact, comment }) => {
   const [expanded, setExpanded] = useState(false);
+  const [focused, setFocused] = useState(false);
 
-  const handleButtonClick = (panel) => () => {
-    setExpanded((prevExpanded) => (prevExpanded === panel ? false : panel));
+  const handleButtonClick = () => {
+    setExpanded(!expanded ? "panel" : false);
+  };
+  const handleFocusChange = (isFocus) => {
+    setFocused(isFocus);
   };
 
   return (
@@ -278,9 +330,9 @@ const PostFooter = ({ interact }) => {
               variant="body1"
               lineHeight={"1"}
               sx={{ cursor: "pointer", userSelect: "none" }}
-              onClick={handleButtonClick("panel")}
+              onClick={handleButtonClick}
             >
-              1 comment
+              {comment?.length} comment
             </Typography>
           </Grid>
         </Grid>
@@ -293,23 +345,27 @@ const PostFooter = ({ interact }) => {
             <Interact />
           </Grid>
 
-          <Grid item xs>
-            <Box></Box>
+          <Grid item>
+            <Button
+              onClick={() => handleFocusChange(!focused)}
+              variant="outlined"
+              endIcon={<AddCommentIcon />}
+              color="inherit"
+            >
+              Add comment
+            </Button>
           </Grid>
         </Grid>
       </Box>
 
       {/* comment */}
       <Box mt={1} borderTop={1} borderColor={"divider"}>
-        <PostComment
-          expanded={expanded}
-          handleButtonClick={handleButtonClick}
-        />
+        <PostComment expanded={expanded} />
       </Box>
 
       {/* add comment */}
       <Box mt={2}>
-        <AddComment />
+        <AddComment focused={focused} onFocusChange={handleFocusChange} />
       </Box>
     </>
   );

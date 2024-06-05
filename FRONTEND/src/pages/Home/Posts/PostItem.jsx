@@ -257,6 +257,7 @@ const PostItem = ({ post }) => {
       fullName={post.account.user?.fullName}
       date={post?.updatedAt}
       interact={post?.interact}
+      comment={post?.comment}
     >
       <Typography variant="body1" sx={{ mt: 2 }}>
         {post?.content}
