@@ -38,8 +38,10 @@ const PostController = {
 
   getPosts: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
-    const baseUrlAccount = process.env.FURI_BASE_URL + "/public/uploads/accountImage/";
-    const baseUrlPost = process.env.FURI_BASE_URL + "/public/uploads/postImage/";
+    const baseUrlAccount =
+      process.env.FURI_BASE_URL + "/public/uploads/accountImage/";
+    const baseUrlPost =
+      process.env.FURI_BASE_URL + "/public/uploads/postImage/";
 
     try {
       const posts = await Post.find().limit(limit).populate({
@@ -107,7 +109,70 @@ const PostController = {
     }
   },
 
-  addComment: async (req, res) => {},
+  addComment: async (req, res) => {
+    try {
+      const postId = req.params.postId;
+      const accountID = req.account.id;
+      const content = req.body.content;
+
+      if (!content || content.trim() === "") {
+        return res.status(400).json({ message: "Content cannot be empty" });
+      }
+
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      const newComment = {
+        content: content,
+        account: accountID,
+      };
+
+      post.comment.push(newComment);
+
+      await post.save();
+
+      return res.status(200).json({ message: "Add comment successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  deleteComment: async (req, res) => {
+    try {
+      const postId = req.params.postId;
+      const commentId = req.params.commentId;
+      const accountID = req.account.id;
+
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      const comment = post.comment.id(commentId);
+
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+
+      if (comment.account.toString() !== accountID) {
+        return res.status(403).json({
+          message: "You do not have permission to delete this comment",
+        });
+      }
+
+      post.comment.pull(commentId);
+
+      await post.save();
+
+      return res.status(200).json({ message: "Delete comment successfully" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };
 
 module.exports = PostController;
