@@ -1,37 +1,16 @@
 const multer = require("multer");
 const path = require("path");
 
-// config storagePost
-const storagePost = multer.diskStorage({
+const createStorage = (folderName) => multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../../public/uploads/postImage"));
+    cb(null, path.join(__dirname, `../../public/uploads/${folderName}`));
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
-// config storageAccount
-const storageAccount = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../../public/uploads/accountImage"));
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-// config storageStory
-const storageStory = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../../public/uploads/storyImage"));
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const limits = { fileSize: 10 * 1024 * 1024 }; // 10MB
+const limits = { fileSize: 10 * 1024 * 1024 };
 
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png/;
@@ -46,19 +25,19 @@ const fileFilter = (req, file, cb) => {
 };
 
 const uploadPostImage = multer({
-  storage: storagePost,
+  storage: createStorage('postImage'),
   limits: limits,
   fileFilter: fileFilter,
-}).array("images", 10); // 10 image
+}).array("images", 10);
 
 const uploadAccountImage = multer({
-  storage: storageAccount,
+  storage: createStorage('accountImage'),
   limits: limits,
   fileFilter: fileFilter,
 }).single("image");
 
 const uploadStoryImage = multer({
-  storage: storageStory,
+  storage: createStorage('storyImage'),
   limits: limits,
   fileFilter: fileFilter,
 }).single("image");

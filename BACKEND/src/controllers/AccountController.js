@@ -1,6 +1,7 @@
-const Account = require("../models/Account");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+
+const Account = require("../models/Account");
 const RefreshToken = require("../models/RefreshToken");
 const BlackListToken = require("../models/BlackListToken");
 

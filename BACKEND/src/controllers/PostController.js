@@ -1,6 +1,7 @@
-const { uploadPostImage } = require("../config/uploads/multer");
-const Post = require("../models/Post");
 const multer = require("multer");
+const { uploadPostImage } = require("../config/uploads/multer");
+
+const Post = require("../models/Post");
 
 const PostController = {
   addPost: (req, res) => {
