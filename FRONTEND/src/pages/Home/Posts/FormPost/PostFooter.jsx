@@ -259,7 +259,7 @@ const PostComment = ({ expanded }) => {
   );
 };
 
-const AddComment = ({ focused, onFocusChange }) => {
+const AddComment = ({ focused, onFocusChange, isButtonClick }) => {
   const textFieldRef = useRef(null);
 
   const handleFocusChange = () => {
@@ -267,7 +267,9 @@ const AddComment = ({ focused, onFocusChange }) => {
   };
 
   const handleBlur = () => {
-    onFocusChange(false);
+    if (!isButtonClick.current) {
+      onFocusChange(false);
+    }
   };
 
   useEffect(() => {
@@ -308,12 +310,26 @@ const AddComment = ({ focused, onFocusChange }) => {
 const PostFooter = ({ interact, comment }) => {
   const [expanded, setExpanded] = useState(false);
   const [focused, setFocused] = useState(false);
+  const isButtonClick = useRef(false);
 
-  const handleButtonClick = () => {
+  const handleCommentClick = () => {
+    isButtonClick.current = true;
     setExpanded(!expanded ? "panel" : false);
+    setTimeout(() => {
+      isButtonClick.current = false;
+    }, 0);
   };
+
   const handleFocusChange = (isFocus) => {
     setFocused(isFocus);
+  };
+
+  const handleButtonAddComment = () => {
+    isButtonClick.current = true;
+    handleFocusChange(!focused);
+    setTimeout(() => {
+      isButtonClick.current = false;
+    }, 0);
   };
 
   return (
@@ -330,7 +346,9 @@ const PostFooter = ({ interact, comment }) => {
               variant="body1"
               lineHeight={"1"}
               sx={{ cursor: "pointer", userSelect: "none" }}
-              onClick={handleButtonClick}
+              onClick={() => {
+                handleCommentClick();
+              }}
             >
               {comment?.length} comment
             </Typography>
@@ -347,7 +365,7 @@ const PostFooter = ({ interact, comment }) => {
 
           <Grid item>
             <Button
-              onClick={() => handleFocusChange(!focused)}
+              onClick={handleButtonAddComment}
               variant="outlined"
               endIcon={<AddCommentIcon />}
               color="inherit"
@@ -365,10 +383,15 @@ const PostFooter = ({ interact, comment }) => {
 
       {/* add comment */}
       <Box mt={2}>
-        <AddComment focused={focused} onFocusChange={handleFocusChange} />
+        <AddComment
+          focused={focused}
+          onFocusChange={handleFocusChange}
+          isButtonClick={isButtonClick}
+        />
       </Box>
     </>
   );
 };
+
 
 export default PostFooter;
