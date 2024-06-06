@@ -12,8 +12,7 @@ const interactSchema = new mongoose.Schema(
       ref: "Account",
       required: true,
     },
-  },
-  { timestamps: true }
+  }
 );
 
 const commentSchema = new mongoose.Schema(

@@ -15,9 +15,19 @@ const schema = new mongoose.Schema(
       required: true,
     },
 
-    user: {
-      type: mongoose.Schema.ObjectId,
-      ref: "User",
+    fullname: {
+      type: String,
+      require: true,
+      maxlength: 50,
+      minlength: 4,
+    },
+
+    avatar: {
+      type: String,
+    },
+
+    background: {
+      type: String,
     },
 
     admin: {

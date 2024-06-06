@@ -11,10 +11,4 @@ router.post(
   PostController.addInteraction
 );
 
-router.get(
-  "/:postId",
-  middlewareController.verifyToken,
-  PostController.getPostById
-);
-
 module.exports = router;

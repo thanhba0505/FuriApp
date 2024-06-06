@@ -1,14 +1,13 @@
 const Account = require("../models/Account");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const User = require("../models/User");
 const RefreshToken = require("../models/RefreshToken");
 const BlackListToken = require("../models/BlackListToken");
 
 const AccountController = {
   registerAccount: async (req, res) => {
     try {
-      const { username, password, fullName } = req.body;
+      const { username, password, fullname } = req.body;
 
       if (username.length < 8 || username.length > 30) {
         return res
@@ -24,7 +23,7 @@ const AccountController = {
         return res.status(409).json({ message: "Username already exists" });
       }
 
-      if (fullName.length < 4 || fullName.length > 50) {
+      if (fullname.length < 4 || fullname.length > 50) {
         return res
           .status(400)
           .json({ message: "Full name must be between 10 and 50 characters" });
@@ -39,22 +38,12 @@ const AccountController = {
       const salt = await bcrypt.genSalt(10);
       const hashed = await bcrypt.hash(password, salt);
 
-      // Create new user
-      const newUser = new User({
-        fullName: fullName,
-      });
-
-      // Save new user to DB
-      const user = await newUser.save();
-
-      // Create new account with reference to the new user
       const newAccount = new Account({
         username: username,
         password: hashed,
-        user: user._id, // Reference to the user
+        fullname: fullname,
       });
 
-      // Save account to DB
       await newAccount.save();
 
       return res.status(200).json({ message: "Registration successful" });
@@ -89,7 +78,7 @@ const AccountController = {
     try {
       const account = await Account.findOne({
         username: req.body.username,
-      }).populate("user");
+      })
 
       if (!account) {
         return res.status(404).json({ message: "Wrong username" });
@@ -141,7 +130,7 @@ const AccountController = {
 
       jwt.verify(
         refreshToken,
-        process.env.FURI_JWT_ACCESS_KEY,
+        process.env.FURI_JWT_REFRESH_KEY,
         async (err, account) => {
           if (err) {
             return res.status(403).json("Refresh token is not valid");
@@ -191,11 +180,9 @@ const AccountController = {
 
       await blackListToken.save();
 
-
       res.clearCookie("refreshToken");
 
       res.status(200).json({ message: "Logged out successfully" });
-
     } catch (error) {
       res.status(500).json({ message: "Internal Server Error" });
     }

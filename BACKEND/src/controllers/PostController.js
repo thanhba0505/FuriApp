@@ -29,7 +29,7 @@ const PostController = {
         });
 
         await newPost.save();
-        res.status(201).json({ message: "Success creating post", newPost });
+        res.status(201).json({ message: "Success creating post" });
       } catch (error) {
         res.status(500).json({ message: "Error creating post", error });
       }
@@ -38,34 +38,30 @@ const PostController = {
 
   getPosts: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
+    const baseUrlAccount = process.env.FURI_BASE_URL + "/public/uploads/accountImage/";
+    const baseUrlPost = process.env.FURI_BASE_URL + "/public/uploads/postImage/";
 
     try {
-      const posts = await Post.find()
-        .limit(limit)
-        .populate({
-          path: "account",
-          select: "username user",
-          populate: {
-            select: "avatar fullName",
-            path: "user",
-          },
-        });
-      return res.status(200).json(posts);
-    } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
+      const posts = await Post.find().limit(limit).populate({
+        path: "account",
+        select: "fullname avatar background",
+      });
 
-  getPostById: async (req, res) => {
-    const postId = req.params.postId;
+      const updatedPosts = posts.map((post) => {
+        if (post.account && post.account.avatar) {
+          post.account.avatar = baseUrlAccount + post.account.avatar;
+        }
+        if (post.account && post.account.background) {
+          post.account.background = baseUrlAccount + post.account.background;
+        }
+        if (post.images && Array.isArray(post.images)) {
+          post.images = post.images.map((image) => baseUrlPost + image);
+        }
 
-    try {
-      const post = await Post.findById(postId).populate("account");
-      if (!post) {
-        return res.status(404).json({ message: "Post not found" });
-      }
+        return post;
+      });
 
-      return res.status(200).json(post);
+      return res.status(200).json(updatedPosts);
     } catch (error) {
       return res.status(500).json({ message: "Internal Server Error" });
     }

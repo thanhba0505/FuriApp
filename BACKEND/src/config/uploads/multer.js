@@ -11,10 +11,10 @@ const storagePost = multer.diskStorage({
   },
 });
 
-// config storageUser
-const storageUser = multer.diskStorage({
+// config storageAccount
+const storageAccount = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../../public/uploads/userImage"));
+    cb(null, path.join(__dirname, "../../public/uploads/accountImage"));
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -51,8 +51,8 @@ const uploadPostImage = multer({
   fileFilter: fileFilter,
 }).array("images", 10); // 10 image
 
-const uploadUserImage = multer({
-  storage: storageUser,
+const uploadAccountImage = multer({
+  storage: storageAccount,
   limits: limits,
   fileFilter: fileFilter,
 }).single("image");
@@ -65,6 +65,6 @@ const uploadStoryImage = multer({
 
 module.exports = {
   uploadPostImage,
-  uploadUserImage,
+  uploadAccountImage,
   uploadStoryImage,
 };
