@@ -9,6 +9,7 @@ export const getPosts = async (accessToken, limit) => {
       },
     });
 
+    console.log(res);
     return res;
   } catch (error) {
     console.log({ error });

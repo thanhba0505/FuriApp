@@ -7,7 +7,7 @@ function Posts() {
     <>
       <AddPost />
 
-      <PostList />
+      {/* <PostList /> */}
     </>
   );
 }

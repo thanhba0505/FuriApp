@@ -12,7 +12,7 @@ function PostList() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const observer = useRef();
-  const limit = 20;
+  const limit = 6;
   
   useEffect(() => {
     const loadPosts = async () => {

@@ -7,13 +7,10 @@ import NotifyMenu from "./NotifyMenu";
 import AccountMenu from "./AccountMenu";
 import SearchField from "./SearchField";
 import Box from "@mui/material/Box";
-import { useSelector } from "react-redux";
-// import theme from "~/theme";
+import appApi from "~/api/appApi";
 
 function Header() {
-  const logo = useSelector((state) => state.other?.app?.logo);
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const user = account?.user;
+  const logoUrl = appApi("logo");
 
   return (
     <Box
@@ -36,7 +33,7 @@ function Header() {
       >
         <Toolbar sx={{ height: "100%", paddingX: "0px !important" }}>
           <img
-            src={logo}
+            src={logoUrl}
             alt="logo"
             width="40"
             height="40"

@@ -1,23 +1,13 @@
-import {
-  getImageFailed,
-  getImageStart,
-  getImageSuccess,
-} from "~/redux/imageSlice";
 import axios from "~/utils/axios";
 
-export const getImage = async (dispatch, image, callback) => {
-  dispatch(getImageStart());
-
+export const getImage = async (folder, image) => {
   try {
-    const res = await axios.get("/api/image/" + image, {
+    const res = await axios.get(`/api/${folder}/${image}`, {
       responseType: "blob",
     });
     const url = URL.createObjectURL(res.data);
-    callback(url);
-    dispatch(getImageSuccess());
+    return url;
   } catch (error) {
-    dispatch(getImageFailed());
+    console.log({ error });
   }
 };
-
-
