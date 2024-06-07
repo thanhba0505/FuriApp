@@ -11,31 +11,34 @@ function PostList() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+
   const observer = useRef();
   const limit = 6;
-  
+
   useEffect(() => {
-    const loadPosts = async () => {
-      setLoading(true);
+    if (accessToken) {
+      const loadPosts = async () => {
+        setLoading(true);
 
-      const res = await getPosts(accessToken, limit);
-      setPosts((prevPosts) => [...prevPosts, ...res.data]);
+        const res = await getPosts(accessToken, limit);
+        setPosts((prevPosts) => [...prevPosts, ...res.data]);
 
-      setLoading(false);
-    };
-    loadPosts();
+        setLoading(false);
+      };
+      loadPosts();
+    }
   }, [page, accessToken]);
 
   const lastPostRef = useCallback(
     (node) => {
-      if (loading) return; 
-      if (observer.current) observer.current.disconnect(); 
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setPage((prevPage) => prevPage + 1);
         }
       });
-      if (node) observer.current.observe(node); 
+      if (node) observer.current.observe(node);
     },
     [loading]
   );
@@ -46,7 +49,7 @@ function PostList() {
         if (posts.length === index + 1) {
           return (
             <div ref={lastPostRef} key={index}>
-              <PostItem post={post} />
+              <PostItem post={post} accessToken={accessToken} />
             </div>
           );
         } else {

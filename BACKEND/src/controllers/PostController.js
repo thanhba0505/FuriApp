@@ -39,26 +39,30 @@ const PostController = {
 
   getPosts: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
-    const baseUrlAccount =
-      process.env.FURI_BASE_URL + "/public/uploads/accountImage/";
-    const baseUrlPost =
-      process.env.FURI_BASE_URL + "/public/uploads/postImage/";
+    const pathAccount = "accountImage/";
+    const pathPost = "postImage/";
 
     try {
-      const posts = await Post.find().limit(limit).populate({
-        path: "account",
-        select: "fullname avatar background",
-      });
+      const posts = await Post.find()
+        .limit(limit)
+        .populate({
+          path: "account",
+          select: "fullname avatar background",
+        })
+        .populate({
+          path: "comment.account",
+          select: "fullname avatar",
+        });
 
       const updatedPosts = posts.map((post) => {
         if (post.account && post.account.avatar) {
-          post.account.avatar = baseUrlAccount + post.account.avatar;
+          post.account.avatar = pathAccount + post.account.avatar;
         }
         if (post.account && post.account.background) {
-          post.account.background = baseUrlAccount + post.account.background;
+          post.account.background = pathAccount + post.account.background;
         }
         if (post.images && Array.isArray(post.images)) {
-          post.images = post.images.map((image) => baseUrlPost + image);
+          post.images = post.images.map((image) => pathPost + image);
         }
 
         return post;

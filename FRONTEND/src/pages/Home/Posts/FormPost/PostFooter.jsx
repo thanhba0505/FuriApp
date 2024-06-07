@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -118,8 +118,20 @@ const IconCustomNumInteract = ({ Icon, color, left, zIndex, onClick }) => {
 };
 
 const NumInteract = ({ interact }) => {
+  const countTypes = (arr) => {
+    return arr.reduce((acc, obj) => {
+      const type = obj.type;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+  };
+
+  const count = countTypes(interact);
+  console.log(count);
+
   return (
     <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
+
       <IconCustomNumInteract
         Icon={FavoriteTwoToneIcon}
         color="blue"
@@ -140,22 +152,22 @@ const NumInteract = ({ interact }) => {
       <Typography
         sx={{
           position: "absolute",
-          bottom: 0,
+          bottom: "4px",
           left: "70px",
           userSelect: "none",
         }}
         variant="body1"
         lineHeight={"1"}
       >
-        {interact?.length}
+        {interact?.length} Interaction
       </Typography>
     </Box>
   );
 };
 
-const Comment = ({ avatar, name, comment, mt = true }) => {
+const Comment = ({ index, avatar, name, comment, mt = true }) => {
   return (
-    <Grid container wrap="nowrap" mt={mt ? 1.2 : ""}>
+    <Grid key={index} container wrap="nowrap" mt={mt ? 1.2 : ""}>
       <Grid item>
         <Avatar
           src={avatar}
@@ -190,12 +202,12 @@ const Comment = ({ avatar, name, comment, mt = true }) => {
   );
 };
 
-const PostComment = ({ expanded }) => {
-  const [commentLoaded, setConmentLoad] = useState(false);
+const PostComment = ({ expanded, comment }) => {
+  const [commentLoaded, setCommentLoad] = useState(false);
 
   useEffect(() => {
     if (expanded === "panel" && !commentLoaded) {
-      setConmentLoad(true);
+      setCommentLoad(true);
     }
   }, [expanded, commentLoaded]);
 
@@ -210,8 +222,6 @@ const PostComment = ({ expanded }) => {
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          aria-controls="panelbh-content"
-          id="panelbh-header"
           sx={{ display: "none" }}
         ></AccordionSummary>
         <AccordionDetails
@@ -237,20 +247,15 @@ const PostComment = ({ expanded }) => {
                 },
               }}
             >
-              <Comment name={"Mutsumi"} comment={"Taiyo"} mt={false} />
-              <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
-              <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
-              <Comment name={"Futaba"} comment={"ka ak akkak ak fkasdka"} />
-              <Comment
-                name={"Futaba"}
-                comment={
-                  "ka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdkaka ak akkak ak fkasdka"
-                }
-              />
-              <Comment
-                name={"Mutsumi"}
-                comment={"alsda;lsk alsfdjaslkfdjalskd"}
-              />
+              {comment &&
+                comment.map((cmt, index) => (
+                  <Comment
+                    key={index}
+                    name={cmt.account?.fullname}
+                    comment={cmt.content}
+                    mt={index !== 0}
+                  />
+                ))}
             </Box>
           )}
         </AccordionDetails>
@@ -307,7 +312,7 @@ const AddComment = ({ focused, onFocusChange, isButtonClick }) => {
   );
 };
 
-const PostFooter = ({ interact, comment }) => {
+const PostFooter = ({ post }) => {
   const [expanded, setExpanded] = useState(false);
   const [focused, setFocused] = useState(false);
   const isButtonClick = useRef(false);
@@ -334,14 +339,14 @@ const PostFooter = ({ interact, comment }) => {
 
   return (
     <>
-      {/* num like and commet */}
+      {/* num like and comment */}
       <Box marginTop={1} paddingTop={1}>
         <Grid container columnSpacing={"16px"}>
-          <Grid item xs container alignItems={"end"} height={"24px"}>
-            <NumInteract interact={interact} />
+          <Grid item xs container alignItems={"center"} height={"24px"}>
+            <NumInteract interact={post?.interact} />
           </Grid>
 
-          <Grid item xs container alignItems={"end"} justifyContent={"end"}>
+          <Grid item xs container alignItems={"center"} justifyContent={"end"}>
             <Typography
               variant="body1"
               lineHeight={"1"}
@@ -350,7 +355,7 @@ const PostFooter = ({ interact, comment }) => {
                 handleCommentClick();
               }}
             >
-              {comment?.length} comment
+              {post?.comment?.length} comment
             </Typography>
           </Grid>
         </Grid>
@@ -378,7 +383,7 @@ const PostFooter = ({ interact, comment }) => {
 
       {/* comment */}
       <Box mt={1} borderTop={1} borderColor={"divider"}>
-        <PostComment expanded={expanded} />
+        <PostComment expanded={expanded} comment={post?.comment} />
       </Box>
 
       {/* add comment */}
@@ -392,6 +397,5 @@ const PostFooter = ({ interact, comment }) => {
     </>
   );
 };
-
 
 export default PostFooter;

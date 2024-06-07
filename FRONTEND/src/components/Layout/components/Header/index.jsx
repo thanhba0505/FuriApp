@@ -11,6 +11,7 @@ import appApi from "~/api/appApi";
 
 function Header() {
   const logoUrl = appApi("logo");
+  const nameAppUrl = appApi("nameApp");
 
   return (
     <Box
@@ -47,14 +48,14 @@ function Header() {
             fontWeight={700}
             sx={{ flexGrow: 1 }}
           >
-            Furi
+            {nameAppUrl}
           </Typography>
 
-          <SearchField />
+          {/* <SearchField /> */}
 
-          <NotifyMenu />
+          {/* <NotifyMenu />
           <MessMenu />
-          <AccountMenu />
+          <AccountMenu /> */}
         </Toolbar>
       </AppBar>
     </Box>

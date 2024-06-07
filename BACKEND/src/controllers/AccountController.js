@@ -76,10 +76,12 @@ const AccountController = {
   },
 
   loginAccount: async (req, res) => {
+    const pathAccount = "accountImage/";
+
     try {
       const account = await Account.findOne({
         username: req.body.username,
-      })
+      });
 
       if (!account) {
         return res.status(404).json({ message: "Wrong username" });
@@ -106,6 +108,10 @@ const AccountController = {
           path: "/",
           sameSite: "strict",
         });
+
+        if (account && account.avatar) {
+          account.avatar = pathAccount + account.avatar;
+        }
 
         const { password, ...others } = account._doc;
         return res.status(200).json({ ...others, accessToken });

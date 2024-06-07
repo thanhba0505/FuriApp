@@ -8,8 +8,7 @@ export const getPosts = async (accessToken, limit) => {
         token: `Bearer ${accessToken}`,
       },
     });
-
-    console.log(res);
+    
     return res;
   } catch (error) {
     console.log({ error });

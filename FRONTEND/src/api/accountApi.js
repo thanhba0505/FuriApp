@@ -1,4 +1,4 @@
-import { loginSuccess, logoutSuccess } from "~/redux/authSlice";
+import { loginSuccess, loginFail, logoutSuccess } from "~/redux/authSlice";
 import axios from "~/utils/axios";
 import axiosJWT from "~/utils/axiosJWT";
 
@@ -9,6 +9,7 @@ export const loginAccount = async (account, dispatch, setError, setOpen) => {
   } catch (error) {
     setError(error.response?.data?.message);
     setOpen(true);
+    dispatch(loginFail());
   }
 };
 

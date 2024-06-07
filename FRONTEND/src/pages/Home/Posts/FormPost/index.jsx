@@ -2,14 +2,17 @@ import Paper from "~/components/Paper";
 import PostHeader from "./PostHeader";
 import PostFooter from "./PostFooter";
 
-function FormPost({ children, fullName, date, interact, comment }) {
+function FormPost({ post, children }) {
   return (
     <Paper>
-      <PostHeader fullName={fullName} date={date} />
+      <PostHeader
+        fullName={post.account?.user?.fullName}
+        date={post?.updatedAt}
+      />
 
       {children}
 
-      <PostFooter interact={interact} comment={comment} />
+      <PostFooter post={post} />
     </Paper>
   );
 }

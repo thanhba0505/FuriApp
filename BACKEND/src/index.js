@@ -30,7 +30,7 @@ const io = setupSocket(server);
 app.set("socketio", io);
 
 // public
-app.use("/public", express.static(path.join(__dirname, "/public")));
+app.use("/public/", express.static(path.join(__dirname, "/public/")));
 
 // 
 app.use(bodyParser.json({ limit: "50mb" }));

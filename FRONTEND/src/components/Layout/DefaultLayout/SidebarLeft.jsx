@@ -10,54 +10,58 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 
 import Sidebar from "../components/SidebarLeft";
 
 import Paper from "~/components/Paper";
-import Avatar from "~/components/Avatar";
 import { NavLink } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
-import { getImage } from "~/api/imageApi";
-import { useRef } from "react";
+import { getImageBlob } from "~/api/imageApi";
 
-// PaperFrist
-function PaperFrist() {
+// PaperFirst
+function PaperFirst() {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const dispatch = useDispatch();
+  
+  const FetchAvatar = ({ accessToken, avatar }) => {
+    const [img, setImg] = useState();
 
-  const [avatar, setAvatar] = useState();
-
-  const hasFetchedImage = useRef(false);
-
-  useEffect(() => {
-    if (account && !hasFetchedImage.current) {
-      hasFetchedImage.current = true;
+    useEffect(() => {
       const fetchImage = async () => {
         try {
-          await getImage(dispatch, account.user?.avatar, (url) => {
-            setAvatar(url);
-          });
+          const result = await getImageBlob(accessToken, avatar);
+          setImg(result);
         } catch (error) {
-          console.error("Error fetching image:", error);
+          console.log({ error });
         }
       };
       fetchImage();
-    }
-  }, [dispatch, account]);
+    }, [avatar, accessToken]);
+
+    return (
+      <Avatar
+        sx={{ width: "48px", height: "48px", borderRadius: 2 }}
+        src={img}
+      ></Avatar>
+    );
+  };
 
   return (
     <Paper>
       <Grid container rowSpacing={1}>
         <Grid item xs={3}>
-          <Avatar src={avatar || undefined} br={2} size="48px" />
+          <FetchAvatar
+            avatar={account?.avatar}
+            accessToken={account?.accessToken}
+          />
         </Grid>
 
         <Grid item xs={9}>
           <Typography variant="body1" fontWeight={700}>
-            {account?.user?.fullName}
+            {account?.fullname}
           </Typography>
           <Typography variant="body2">@{account?.username}</Typography>
         </Grid>
@@ -70,7 +74,6 @@ function PaperFrist() {
 function PaperSecond() {
   const currentUrl = window.location.pathname;
 
-  // Thiết lập giá trị mặc định cho selectedIndex dựa trên đường dẫn URL
   let i = 0;
   const tabs = [
     { label: "Home", path: "/", icon: <HomeIcon />, custom: false },
@@ -79,7 +82,6 @@ function PaperSecond() {
     { label: "Store", path: "/store", icon: <StoreIcon />, custom: false },
   ];
 
-  // Thay đổi từ vòng lặp tăng dần sang vòng lặp giảm dần
   for (let index = tabs.length - 1; index >= 0; index--) {
     if (currentUrl.startsWith(tabs[index].path)) {
       i = index;
@@ -143,7 +145,7 @@ function PaperThird() {
 function SidebarLeft({ xs = {} }) {
   return (
     <Sidebar xs={xs}>
-      <PaperFrist />
+      <PaperFirst />
       <PaperSecond />
       <PaperThird />
     </Sidebar>

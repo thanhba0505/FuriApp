@@ -2,21 +2,25 @@ import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FormPost from "./FormPost";
+import { getImageBlob } from "~/api/imageApi";
+import { useSelector } from "react-redux";
 
-const ImageWithSize = React.memo(({ src, onLoad }) => {
+const ImageWithSize = React.memo(({ image, onLoad }) => {
   useEffect(() => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => {
-      const isLandscape = img.width > img.height;
-      onLoad(isLandscape);
-    };
-  }, [src, onLoad]);
+    if (image) {
+      const newImg = new Image();
+      newImg.src = image;
+      newImg.onload = () => {
+        const isLandscape = newImg.width > newImg.height;
+        onLoad(isLandscape);
+      };
+    }
+  }, [image, onLoad]);
 
   return (
     <img
-      src={src}
-      alt="Post"
+      src={image}
+      alt="image post"
       style={{
         width: "100%",
         height: "100%",
@@ -30,6 +34,8 @@ const ImageWithSize = React.memo(({ src, onLoad }) => {
 ImageWithSize.displayName = "ImageWithSize";
 
 const PostItem = ({ post }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
   const [layouts, setLayouts] = useState(Array(post.images?.length).fill(null));
 
   const handleImageLoad = (index, isLandscape) => {
@@ -252,17 +258,35 @@ const PostItem = ({ post }) => {
     }
   };
 
+  const [imageBlobs, setImageBlobs] = useState([]);
+
+  useEffect(() => {
+    const fetchImageBlobs = async () => {
+      if (post.images) {
+        const promises = post.images.map(async (image) => {
+          try {
+            const blobUrl = await getImageBlob(accessToken, image);
+            return blobUrl;
+          } catch (error) {
+            console.error(error);
+            return null;
+          }
+        });
+
+        const resolvedBlobs = await Promise.all(promises);
+        setImageBlobs(resolvedBlobs.filter((blob) => blob !== null));
+      }
+    };
+
+    fetchImageBlobs();
+  }, [post, accessToken]);
+
   return (
-    <FormPost
-      fullName={post.account.user?.fullName}
-      date={post?.updatedAt}
-      interact={post?.interact}
-      comment={post?.comment}
-    >
+    <FormPost post={post}>
       <Typography variant="body1" sx={{ mt: 2 }}>
         {post?.content}
       </Typography>
-      {post.images && post.images.length > 0 && (
+      {imageBlobs && imageBlobs.length > 0 && (
         <Box
           sx={{
             display: "grid",
@@ -271,37 +295,30 @@ const PostItem = ({ post }) => {
             mt: 2,
           }}
         >
-          {post.images &&
-            post.images
-              .slice(0, post.images.length >= 5 ? 3 : post.images.length)
-              .map((image, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    gridArea:
-                      index === 0
-                        ? "a"
-                        : index === 1
-                        ? "b"
-                        : index === 2
-                        ? "c"
-                        : "d",
-                  }}
-                >
-                  <ImageWithSize
-                    src={
-                      import.meta.env.VITE_FURI_API_BASE_URL +
-                      "/api/image/imagepost/" +
-                      image
-                    }
-                    onLoad={(isLandscape) =>
-                      handleImageLoad(index, isLandscape)
-                    }
-                  />
-                </Box>
-              ))}
+          {imageBlobs
+            .slice(0, imageBlobs.length >= 5 ? 3 : imageBlobs.length)
+            .map((image, index) => (
+              <Box
+                key={index}
+                sx={{
+                  gridArea:
+                    index === 0
+                      ? "a"
+                      : index === 1
+                      ? "b"
+                      : index === 2
+                      ? "c"
+                      : "d",
+                }}
+              >
+                <ImageWithSize
+                  image={image}
+                  onLoad={(isLandscape) => handleImageLoad(index, isLandscape)}
+                />
+              </Box>
+            ))}
 
-          {post.images.length >= 5 && (
+          {imageBlobs.length >= 5 && (
             <Box
               sx={{
                 gridArea: "d",
@@ -310,11 +327,7 @@ const PostItem = ({ post }) => {
               }}
             >
               <img
-                src={
-                  import.meta.env.VITE_FURI_API_BASE_URL +
-                  "/api/image/imagepost/" +
-                  post.images[4]
-                }
+                src={imageBlobs[4]}
                 alt="Post"
                 style={{
                   position: "absolute",
@@ -344,7 +357,7 @@ const PostItem = ({ post }) => {
                   backgroundColor: "rgba(0, 0, 0, 0.5)",
                 }}
               >
-                +{post.images.length - 3}
+                +{imageBlobs.length - 3}
               </div>
             </Box>
           )}

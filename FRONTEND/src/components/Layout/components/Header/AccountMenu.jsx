@@ -13,7 +13,7 @@ import ModeSelect from "~/components/ModeSelect";
 import Avatar from "~/components/Avatar";
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
-import { getImage } from "~/api/imageApi";
+// import { getImage } from "~/api/imageApi";
 import { useRef } from "react";
 
 function AccountMenu() {
@@ -65,7 +65,6 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          {/* Thêm ảnh vào đây */}
           <Avatar src={avatar || undefined} />
         </IconButton>
       </Box>
