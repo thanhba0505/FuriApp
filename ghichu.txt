@@ -1,1 +1,5 @@
 import.meta.env.VITE_FURI_API_BASE_URL
+
+
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;

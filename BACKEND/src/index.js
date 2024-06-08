@@ -4,9 +4,10 @@ const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const route = require("./routes");
 const dotenv = require("dotenv");
 const http = require("http");
+
+const route = require("./routes");
 const database = require("./config/database");
 
 

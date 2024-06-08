@@ -1,7 +1,12 @@
 {
     "cSpell.words": [
+        "addcomment",
+        "addinteract",
+        "deletecomment",
         "fullname",
         "furi",
+        "getinteract",
+        "haspopup",
         "lable",
         "reduxjs",
         "socketio"

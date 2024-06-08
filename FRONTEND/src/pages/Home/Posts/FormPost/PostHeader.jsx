@@ -1,5 +1,3 @@
-import Avatar from "~/components/Avatar";
-
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -13,9 +11,16 @@ import IconButton from "@mui/material/IconButton";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getImageBlob } from "~/api/imageApi";
+import { useSelector } from "react-redux";
+import Avatar from "@mui/material/Avatar";
+import formatDate from "~/config/formatDate";
 
-function PostHeader({ fullName, date }) {
+function PostHeader({ fullName, date, avatar }) {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -24,20 +29,39 @@ function PostHeader({ fullName, date }) {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  
+
+  const [img, setImg] = useState("");
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, avatar);
+        setImg(result);
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+
+    if (avatar && accessToken) {
+      fetchImage();
+    }
+  }, [avatar, accessToken]);
+
   return (
-    <Grid container columnSpacing={"16px"}>
+    <Grid container columnSpacing={"16px"} alignItems={"center"}>
       <Grid item xs={"auto"}>
-        <Avatar v={"rounded"} />
+        <Avatar src={img} variant="rounded" sx={{ width: 40, height: 40 }} />
       </Grid>
+
       <Grid item xs>
         <Box>
           <Typography variant="body1" fontWeight={700}>
             {fullName}
           </Typography>
-          <Typography variant="body2">{date}</Typography>
+          <Typography variant="body2">{formatDate(date)}</Typography>
         </Box>
       </Grid>
+
       <Grid item xs={"auto"}>
         <IconButton
           onClick={handleClick}

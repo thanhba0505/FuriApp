@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -30,8 +31,6 @@ const ImageWithSize = React.memo(({ image, onLoad }) => {
     />
   );
 });
-
-ImageWithSize.displayName = "ImageWithSize";
 
 const PostItem = ({ post }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -268,7 +267,7 @@ const PostItem = ({ post }) => {
             const blobUrl = await getImageBlob(accessToken, image);
             return blobUrl;
           } catch (error) {
-            console.error(error);
+            console.log(error);
             return null;
           }
         });
@@ -367,4 +366,6 @@ const PostItem = ({ post }) => {
   );
 };
 
-export default PostItem;
+const PostItemMemo = React.memo(PostItem);
+
+export default PostItemMemo;

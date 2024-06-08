@@ -10,16 +10,16 @@ const setupSocket = (server) => {
       console.log(`User disconnected: ${socket.id}`);
     });
 
-    // Handle like event
-    socket.on("like", (data) => {
-      console.log("Like event received:", data);
-      io.emit("updatePost", data); // Broadcast the update to all clients
+    // Handle interact event
+    socket.on("interact", (data) => {
+      console.log("interact event received:", data);
+      io.emit("updatePost", data);
     });
 
     // Handle comment event
     socket.on("comment", (data) => {
       console.log("Comment event received:", data);
-      io.emit("updatePost", data); // Broadcast the update to all clients
+      io.emit("updatePost", data);
     });
   });
   return io;

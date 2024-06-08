@@ -25,7 +25,7 @@ import { getImageBlob } from "~/api/imageApi";
 // PaperFirst
 function PaperFirst() {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
-  
+
   const FetchAvatar = ({ accessToken, avatar }) => {
     const [img, setImg] = useState();
 
@@ -38,7 +38,9 @@ function PaperFirst() {
           console.log({ error });
         }
       };
-      fetchImage();
+      if (avatar && accessToken) {
+        fetchImage();
+      }
     }, [avatar, accessToken]);
 
     return (

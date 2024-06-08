@@ -42,6 +42,13 @@ const PostController = {
     const pathAccount = "accountImage/";
     const pathPost = "postImage/";
 
+    const addPathIfNeeded = (path, image) => {
+      if (image && !image.startsWith(path)) {
+        return path + image;
+      }
+      return image;
+    };
+
     try {
       const posts = await Post.find()
         .limit(limit)
@@ -55,16 +62,32 @@ const PostController = {
         });
 
       const updatedPosts = posts.map((post) => {
-        if (post.account && post.account.avatar) {
-          post.account.avatar = pathAccount + post.account.avatar;
-        }
-        if (post.account && post.account.background) {
-          post.account.background = pathAccount + post.account.background;
+        if (post.account) {
+          post.account.avatar = addPathIfNeeded(
+            pathAccount,
+            post.account.avatar
+          );
+          post.account.background = addPathIfNeeded(
+            pathAccount,
+            post.account.background
+          );
         }
         if (post.images && Array.isArray(post.images)) {
-          post.images = post.images.map((image) => pathPost + image);
+          post.images = post.images.map((image) =>
+            addPathIfNeeded(pathPost, image)
+          );
         }
-
+        if (post.comment && Array.isArray(post.comment)) {
+          post.comment = post.comment.map((comment) => {
+            if (comment.account) {
+              comment.account.avatar = addPathIfNeeded(
+                pathAccount,
+                comment.account.avatar
+              );
+            }
+            return comment;
+          });
+        }
         return post;
       });
 
@@ -78,11 +101,7 @@ const PostController = {
     try {
       const postId = req.params.postId;
       const accountID = req.account.id;
-      const type = req.body.type;
-
-      if (!["like", "angry", "laugh"].includes(type)) {
-        return res.status(400).json({ message: "Invalid interaction type" });
-      }
+      const { type } = req.body;
 
       const post = await Post.findById(postId);
 
@@ -93,6 +112,20 @@ const PostController = {
       const existingInteractionIndex = post.interact.findIndex(
         (interaction) => interaction.account.toString() === accountID
       );
+
+      if (!type) {
+        if (existingInteractionIndex !== -1) {
+          return res
+            .status(200)
+            .json({ type: post.interact[existingInteractionIndex].type });
+        } else {
+          return res.status(200).json({ type: null });
+        }
+      }
+
+      if (!["like", "angry", "laugh"].includes(type)) {
+        return res.status(400).json({ message: "Invalid interaction type" });
+      }
 
       if (existingInteractionIndex !== -1) {
         if (post.interact[existingInteractionIndex].type === type) {
@@ -106,9 +139,14 @@ const PostController = {
 
       await post.save();
 
-      return res
-        .status(200)
-        .json({ message: "Interaction added successfully" });
+      const updatedInteraction = post.interact.find(
+        (interaction) => interaction.account.toString() === accountID
+      );
+
+      return res.status(200).json({
+        message: "Interaction updated successfully",
+        type: updatedInteraction ? updatedInteraction.type : null,
+      });
     } catch (error) {
       return res.status(500).json({ message: "Internal Server Error" });
     }

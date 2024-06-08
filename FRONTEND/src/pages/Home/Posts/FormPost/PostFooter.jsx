@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+/* eslint-disable react/display-name */
+import React, { useEffect, useRef, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -20,6 +21,9 @@ import SentimentDissatisfiedTwoToneIcon from "@mui/icons-material/SentimentDissa
 
 import SentimentVerySatisfiedRoundedIcon from "@mui/icons-material/SentimentVerySatisfiedRounded";
 import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVerySatisfiedTwoTone";
+import { useSelector } from "react-redux";
+import { getImageBlob } from "~/api/imageApi";
+import { addComment, getInteract } from "~/api/postApi";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -44,43 +48,45 @@ const IconCustomInteract = ({ Icon, color, onClick }) => {
   );
 };
 
-const Interact = () => {
-  const [interact, setInteract] = useState(null);
+const Interact = React.memo(
+  ({ typeInteract, getTypeInteractCurrentAccount }) => {
+    const handleInteract = (type) => () => {
+      getTypeInteractCurrentAccount({ type });
+    };
 
-  const handleInteract = (type) => () => {
-    setInteract(interact === type ? null : type);
-  };
-
-  return (
-    <>
-      <IconCustomInteract
-        Icon={
-          interact === "like" ? FavoriteTwoToneIcon : FavoriteBorderRoundedIcon
-        }
-        color={interact === "like" ? "blue" : ""}
-        onClick={handleInteract("like")}
-      />
-      <IconCustomInteract
-        Icon={
-          interact === "laugh"
-            ? SentimentVerySatisfiedTwoToneIcon
-            : SentimentVerySatisfiedRoundedIcon
-        }
-        color={interact === "laugh" ? "orange" : ""}
-        onClick={handleInteract("laugh")}
-      />
-      <IconCustomInteract
-        Icon={
-          interact === "angry"
-            ? SentimentDissatisfiedTwoToneIcon
-            : SentimentDissatisfiedRoundedIcon
-        }
-        color={interact === "angry" ? "red" : ""}
-        onClick={handleInteract("angry")}
-      />
-    </>
-  );
-};
+    return (
+      <>
+        <IconCustomInteract
+          Icon={
+            typeInteract === "like"
+              ? FavoriteTwoToneIcon
+              : FavoriteBorderRoundedIcon
+          }
+          color={typeInteract === "like" ? "blue" : ""}
+          onClick={handleInteract("like")} // Gọi handleInteract với loại interact tương ứng
+        />
+        <IconCustomInteract
+          Icon={
+            typeInteract === "laugh"
+              ? SentimentVerySatisfiedTwoToneIcon
+              : SentimentVerySatisfiedRoundedIcon
+          }
+          color={typeInteract === "laugh" ? "orange" : ""}
+          onClick={handleInteract("laugh")} // Gọi handleInteract với loại interact tương ứng
+        />
+        <IconCustomInteract
+          Icon={
+            typeInteract === "angry"
+              ? SentimentDissatisfiedTwoToneIcon
+              : SentimentDissatisfiedRoundedIcon
+          }
+          color={typeInteract === "angry" ? "red" : ""}
+          onClick={handleInteract("angry")} // Gọi handleInteract với loại interact tương ứng
+        />
+      </>
+    );
+  }
+);
 
 const StyledIconNumInteract = styled("div")(
   ({ theme, color, left, zIndex, favoriteIcon }) => ({
@@ -103,21 +109,23 @@ const StyledIconNumInteract = styled("div")(
   })
 );
 
-const IconCustomNumInteract = ({ Icon, color, left, zIndex, onClick }) => {
-  return (
-    <StyledIconNumInteract
-      zIndex={zIndex}
-      color={color}
-      left={left}
-      onClick={onClick}
-      favoriteIcon={Icon == FavoriteTwoToneIcon ? true : false}
-    >
-      <Icon />
-    </StyledIconNumInteract>
-  );
-};
+const IconCustomNumInteract = React.memo(
+  ({ Icon, color, left, zIndex, onClick }) => {
+    return (
+      <StyledIconNumInteract
+        zIndex={zIndex}
+        color={color}
+        left={left}
+        onClick={onClick}
+        favoriteIcon={Icon === FavoriteTwoToneIcon ? true : false}
+      >
+        <Icon />
+      </StyledIconNumInteract>
+    );
+  }
+);
 
-const NumInteract = ({ interact }) => {
+const NumInteract = React.memo(({ interact }) => {
   const countTypes = (arr) => {
     return arr.reduce((acc, obj) => {
       const type = obj.type;
@@ -127,33 +135,51 @@ const NumInteract = ({ interact }) => {
   };
 
   const count = countTypes(interact);
-  console.log(count);
+
+  const interactTypes = [
+    {
+      type: "like",
+      count: count.like || 0,
+      Icon: FavoriteTwoToneIcon,
+      color: "blue",
+    },
+    {
+      type: "angry",
+      count: count.angry || 0,
+      Icon: SentimentDissatisfiedTwoToneIcon,
+      color: "red",
+    },
+    {
+      type: "laugh",
+      count: count.laugh || 0,
+      Icon: SentimentVerySatisfiedTwoToneIcon,
+      color: "orange",
+    },
+  ];
+
+  const filteredInteractTypes = interactTypes
+    .filter((interactType) => interactType.count > 0)
+    .sort((a, b) => b.count - a.count);
 
   return (
     <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
-
-      <IconCustomNumInteract
-        Icon={FavoriteTwoToneIcon}
-        color="blue"
-        zIndex={3}
-      />
-      <IconCustomNumInteract
-        Icon={SentimentDissatisfiedTwoToneIcon}
-        color="orange"
-        left="20px"
-        zIndex={2}
-      />
-      <IconCustomNumInteract
-        Icon={SentimentVerySatisfiedTwoToneIcon}
-        color="red"
-        left="40px"
-        zIndex={1}
-      />
+      {filteredInteractTypes.map((interactType, index) => (
+        <IconCustomNumInteract
+          key={interactType.type}
+          Icon={interactType.Icon}
+          color={interactType.color}
+          left={`${index * 20}px`}
+          zIndex={filteredInteractTypes.length - index}
+        />
+      ))}
       <Typography
         sx={{
           position: "absolute",
           bottom: "4px",
-          left: "70px",
+          left:
+            filteredInteractTypes.length > 0
+              ? `${filteredInteractTypes.length * 20 + 10}px`
+              : "0px",
           userSelect: "none",
         }}
         variant="body1"
@@ -163,15 +189,32 @@ const NumInteract = ({ interact }) => {
       </Typography>
     </Box>
   );
-};
+});
 
-const Comment = ({ index, avatar, name, comment, mt = true }) => {
+const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
+  const [img, setImg] = useState("");
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, cmt.account.avatar);
+        setImg(result);
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+
+    if (cmt.account.avatar && accessToken) {
+      fetchImage();
+    }
+  }, [cmt.account.avatar, accessToken]);
+
   return (
     <Grid key={index} container wrap="nowrap" mt={mt ? 1.2 : ""}>
       <Grid item>
         <Avatar
-          src={avatar}
-          alt={name}
+          src={img}
+          alt={cmt?.account?.fullname}
           sx={{ width: 32, height: 32, mr: 1.2 }}
         />
       </Grid>
@@ -191,18 +234,20 @@ const Comment = ({ index, avatar, name, comment, mt = true }) => {
           fontWeight={700}
           lineHeight={1}
         >
-          {name}
+          {cmt?.account?.fullname}
         </Typography>
         <Typography lineHeight={1.1} mt={"2px"} fontSize={"14px"}>
           {" "}
-          {comment}
+          {cmt?.content}
         </Typography>
       </Grid>
     </Grid>
   );
-};
+});
 
-const PostComment = ({ expanded, comment }) => {
+const PostComment = React.memo(({ expanded, comment }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
   const [commentLoaded, setCommentLoad] = useState(false);
 
   useEffect(() => {
@@ -251,8 +296,8 @@ const PostComment = ({ expanded, comment }) => {
                 comment.map((cmt, index) => (
                   <Comment
                     key={index}
-                    name={cmt.account?.fullname}
-                    comment={cmt.content}
+                    accessToken={accessToken}
+                    cmt={cmt}
                     mt={index !== 0}
                   />
                 ))}
@@ -262,60 +307,122 @@ const PostComment = ({ expanded, comment }) => {
       </Accordion>
     </>
   );
-};
+});
 
-const AddComment = ({ focused, onFocusChange, isButtonClick }) => {
-  const textFieldRef = useRef(null);
+const AddComment = React.memo(
+  ({ focused, postID, onFocusChange, isButtonClick }) => {
+    const account = useSelector((state) => state.auth?.login?.currentAccount);
+    const accessToken = account?.accessToken;
 
-  const handleFocusChange = () => {
-    onFocusChange(true);
-  };
+    const [content, setContent] = useState("");
+    const textFieldRef = useRef(null);
 
-  const handleBlur = () => {
-    if (!isButtonClick.current) {
-      onFocusChange(false);
-    }
-  };
+    const handleFocusChange = () => {
+      onFocusChange(true);
+    };
 
-  useEffect(() => {
-    if (focused && textFieldRef.current) {
-      textFieldRef.current.focus();
-    }
-  }, [focused]);
+    const handleBlur = () => {
+      if (!isButtonClick.current) {
+        onFocusChange(false);
+      }
+    };
 
-  return (
-    <>
-      <TextField
-        sx={{ width: "calc(100% - 130px)", mr: "10px" }}
-        placeholder="Write your comment here..."
-        size="small"
-        multiline
-        inputRef={textFieldRef}
-        onFocus={handleFocusChange}
-        onBlur={handleBlur}
-      />
-      <Button
-        color="secondary"
-        sx={{
-          height: "100%",
-          px: "16px !important",
-          py: "8px !important",
-          minWidth: "120px",
-          boxShadow: "none",
-        }}
-        variant="contained"
-        endIcon={<SendIcon />}
-      >
-        Send
-      </Button>
-    </>
-  );
-};
+    const handleOnchange = (e) => {
+      const newValue = e.target.value;
+      if (newValue !== content) {
+        setContent(newValue);
+      }
+    };
+
+    const handleSend = () => {
+      const getTypeInteractCurrentAccount = async () => {
+        if (accessToken) {
+          try {
+            await addComment(accessToken, postID, content);
+            setContent("");
+          } catch (error) {
+            console.log({ error });
+          }
+        }
+      };
+
+      getTypeInteractCurrentAccount();
+    };
+
+    useEffect(() => {
+      if (focused && textFieldRef.current) {
+        textFieldRef.current.focus();
+      }
+    }, [focused]);
+
+    return (
+      <>
+        <TextField
+          sx={{ width: "calc(100% - 130px)", mr: "10px" }}
+          placeholder="Write your comment here..."
+          size="small"
+          multiline
+          inputRef={textFieldRef}
+          onFocus={handleFocusChange}
+          onBlur={handleBlur}
+          value={content}
+          onChange={handleOnchange}
+        />
+
+        <Button
+          color="secondary"
+          sx={{
+            height: "100%",
+            px: "16px !important",
+            py: "8px !important",
+            minWidth: "120px",
+            boxShadow: "none",
+          }}
+          variant="contained"
+          endIcon={<SendIcon />}
+          onClick={handleSend}
+        >
+          Send
+        </Button>
+      </>
+    );
+  }
+);
 
 const PostFooter = ({ post }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+
   const [expanded, setExpanded] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [typeInteract, setTypeInteract] = useState(null);
   const isButtonClick = useRef(false);
+
+  useEffect(() => {
+    const getTypeInteractCurrentAccount = async () => {
+      if (accessToken) {
+        try {
+          const res = await getInteract(accessToken, post._id, null);
+          setTypeInteract(res);
+        } catch (error) {
+          console.log({ error });
+        }
+      }
+    };
+
+    getTypeInteractCurrentAccount();
+  }, [accessToken, post._id]);
+
+  const getTypeInteractCurrentAccount = async ({ type = null }) => {
+    if (accessToken) {
+      try {
+        const res = await getInteract(accessToken, post._id, type);
+        setTypeInteract(res);
+      } catch (error) {
+        console.log({ error });
+      }
+    }
+  };
 
   const handleCommentClick = () => {
     isButtonClick.current = true;
@@ -365,7 +472,12 @@ const PostFooter = ({ post }) => {
       <Box marginTop={1} borderTop={1} borderColor={"divider"} paddingTop={1}>
         <Grid container columnSpacing={"16px"}>
           <Grid item xs container alignItems={"end"} height={"28px"}>
-            <Interact />
+            {typeInteract && (
+              <Interact
+                typeInteract={typeInteract.type}
+                getTypeInteractCurrentAccount={getTypeInteractCurrentAccount}
+              />
+            )}
           </Grid>
 
           <Grid item>
@@ -392,10 +504,13 @@ const PostFooter = ({ post }) => {
           focused={focused}
           onFocusChange={handleFocusChange}
           isButtonClick={isButtonClick}
+          postID={post._id}
         />
       </Box>
     </>
   );
 };
 
-export default PostFooter;
+const PostFooterMemo = React.memo(PostFooter);
+
+export default PostFooterMemo;
