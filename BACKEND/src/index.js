@@ -10,12 +10,10 @@ const http = require("http");
 const route = require("./routes");
 const database = require("./config/database");
 
-
 dotenv.config();
 
 const app = express();
 const port = 5174;
-
 
 // connect database
 database.connect();
@@ -33,7 +31,7 @@ app.set("socketio", io);
 // public
 app.use("/public/", express.static(path.join(__dirname, "/public/")));
 
-// 
+// Middleware
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(
@@ -44,9 +42,10 @@ app.use(
 );
 app.use(morgan("common"));
 
-// route
-route(app);
+// Route
+route(app, io);
 
-app.listen(port, () => {
+// Start server with HTTP server
+server.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });

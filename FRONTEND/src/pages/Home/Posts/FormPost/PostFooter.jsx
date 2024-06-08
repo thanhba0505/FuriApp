@@ -1,5 +1,8 @@
 /* eslint-disable react/display-name */
 import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
+
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -21,7 +24,6 @@ import SentimentDissatisfiedTwoToneIcon from "@mui/icons-material/SentimentDissa
 
 import SentimentVerySatisfiedRoundedIcon from "@mui/icons-material/SentimentVerySatisfiedRounded";
 import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVerySatisfiedTwoTone";
-import { useSelector } from "react-redux";
 import { getImageBlob } from "~/api/imageApi";
 import { addComment, getInteract } from "~/api/postApi";
 
@@ -245,9 +247,11 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
   );
 });
 
-const PostComment = React.memo(({ expanded, comment }) => {
+const PostComment = React.memo(({ expanded, comments }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+
+  const [listComment, setListComment] = useState(comments);
   const [commentLoaded, setCommentLoad] = useState(false);
 
   useEffect(() => {
@@ -255,6 +259,22 @@ const PostComment = React.memo(({ expanded, comment }) => {
       setCommentLoad(true);
     }
   }, [expanded, commentLoaded]);
+
+  useEffect(() => {
+    setListComment(comments);
+  }, [comments]);
+console.log(comments);
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+    socket.on("newComment", (newComment) => {
+      setListComment((prevComments) => [...prevComments, newComment]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <>
@@ -292,15 +312,14 @@ const PostComment = React.memo(({ expanded, comment }) => {
                 },
               }}
             >
-              {comment &&
-                comment.map((cmt, index) => (
-                  <Comment
-                    key={index}
-                    accessToken={accessToken}
-                    cmt={cmt}
-                    mt={index !== 0}
-                  />
-                ))}
+              {listComment?.map((cmt, index) => (
+                <Comment
+                  key={index}
+                  accessToken={accessToken}
+                  cmt={cmt}
+                  mt={index !== 0}
+                />
+              ))}
             </Box>
           )}
         </AccordionDetails>
@@ -495,7 +514,7 @@ const PostFooter = ({ post }) => {
 
       {/* comment */}
       <Box mt={1} borderTop={1} borderColor={"divider"}>
-        <PostComment expanded={expanded} comment={post?.comment} />
+        <PostComment expanded={expanded} comments={post?.comment} />
       </Box>
 
       {/* add comment */}

@@ -3,6 +3,13 @@ const { uploadPostImage } = require("../config/uploads/multer");
 
 const Post = require("../models/Post");
 
+const addPathIfNeeded = (path, image) => {
+  if (image && !image.startsWith(path)) {
+    return path + image;
+  }
+  return image;
+};
+
 const PostController = {
   addPost: (req, res) => {
     uploadPostImage(req, res, async (err) => {
@@ -152,7 +159,9 @@ const PostController = {
     }
   },
 
-  addComment: async (req, res) => {
+  addComment: async (req, res, io) => {
+    const pathAccount = "accountImage/";
+
     try {
       const postId = req.params.postId;
       const accountID = req.account.id;
@@ -162,7 +171,10 @@ const PostController = {
         return res.status(400).json({ message: "Content cannot be empty" });
       }
 
-      const post = await Post.findById(postId);
+      const post = await Post.findById(postId).populate({
+        path: "comment.account",
+        select: "fullname avatar",
+      });
 
       if (!post) {
         return res.status(404).json({ message: "Post not found" });
@@ -176,6 +188,17 @@ const PostController = {
       post.comment.push(newComment);
 
       await post.save();
+
+      const populatedComment = await post.populate({
+        path: "comment.account",
+        select: "fullname avatar",
+        match: { _id: accountID }
+      });
+
+      const addedComment = populatedComment.comment[populatedComment.comment.length - 1];
+      addedComment.account.avatar = addPathIfNeeded(pathAccount, addedComment.account.avatar);
+
+      io.emit("newComment", addedComment);
 
       return res.status(200).json({ message: "Add comment successfully" });
     } catch (error) {
