@@ -15,18 +15,6 @@ const setupSocket = (server) => {
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${socket.id}`);
     });
-
-    // Handle interact event
-    socket.on("interact", (data) => {
-      console.log("interact event received:", data);
-      io.emit("updatePost", data);
-    });
-
-    // Handle comment event
-    socket.on("comment", (data) => {
-      console.log("Comment event received:", data);
-      io.emit("updatePost", data);
-    });
   });
   return io;
 };

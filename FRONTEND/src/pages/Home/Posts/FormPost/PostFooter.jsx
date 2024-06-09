@@ -26,6 +26,7 @@ import SentimentVerySatisfiedRoundedIcon from "@mui/icons-material/SentimentVery
 import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVerySatisfiedTwoTone";
 import { getImageBlob } from "~/api/imageApi";
 import { addComment, getInteract } from "~/api/postApi";
+import formatTimeDifference from "~/config/formatTimeDifference";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -128,6 +129,12 @@ const IconCustomNumInteract = React.memo(
 );
 
 const NumInteract = React.memo(({ interact }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accountID = account?._id;
+  const isAccountInInteract = interact.find(
+    (item) => item.account === accountID
+  );
+
   const countTypes = (arr) => {
     return arr.reduce((acc, obj) => {
       const type = obj.type;
@@ -187,7 +194,13 @@ const NumInteract = React.memo(({ interact }) => {
         variant="body1"
         lineHeight={"1"}
       >
-        {interact?.length} Interaction
+        {isAccountInInteract && interact?.length - 1 > 0
+          ? "You and " +
+            (interact?.length - (isAccountInInteract ? 1 : 0)) +
+            " others"
+          : isAccountInInteract
+          ? "You"
+          : interact?.length + " others"}
       </Typography>
     </Box>
   );
@@ -195,6 +208,10 @@ const NumInteract = React.memo(({ interact }) => {
 
 const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
   const [img, setImg] = useState("");
+  const formatDate =
+    formatTimeDifference(cmt?.createdAt) != "0 minutes ago"
+      ? formatTimeDifference(cmt?.createdAt)
+      : "now";
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -212,7 +229,7 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
   }, [cmt.account.avatar, accessToken]);
 
   return (
-    <Grid key={index} container wrap="nowrap" mt={mt ? 1.2 : ""}>
+    <Grid key={index} container wrap="nowrap" mt={mt ? 1.4 : ""}>
       <Grid item>
         <Avatar
           src={img}
@@ -220,34 +237,43 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
           sx={{ width: 32, height: 32, mr: 1.2 }}
         />
       </Grid>
-      <Grid
-        item
-        sx={{
-          border: 1,
-          borderColor: "secondary.light",
-          p: 1,
-          mr: 2,
-          borderRadius: 2,
-        }}
-      >
+      <Grid item>
+        <Box
+          sx={{
+            border: 1,
+            borderColor: "secondary.light",
+            p: 1.2,
+            mr: 2,
+            borderRadius: 3,
+          }}
+        >
+          <Typography
+            variant="body1"
+            fontSize={"14px"}
+            fontWeight={700}
+            lineHeight={1}
+          >
+            {cmt?.account?.fullname}
+          </Typography>
+          <Typography lineHeight={1.1} mt={"4px"} fontSize={"16px"}>
+            {cmt?.content}
+          </Typography>
+        </Box>
         <Typography
           variant="body1"
-          fontSize={"13px"}
-          fontWeight={700}
-          lineHeight={1}
+          mt={"4px"}
+          px={1}
+          lineHeight={1.1}
+          fontSize={"11px"}
         >
-          {cmt?.account?.fullname}
-        </Typography>
-        <Typography lineHeight={1.1} mt={"2px"} fontSize={"14px"}>
-          {" "}
-          {cmt?.content}
+          {formatDate}
         </Typography>
       </Grid>
     </Grid>
   );
 });
 
-const PostComment = React.memo(({ expanded, comments }) => {
+const PostComment = React.memo(({ expanded, comments, postId }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
@@ -263,18 +289,19 @@ const PostComment = React.memo(({ expanded, comments }) => {
   useEffect(() => {
     setListComment(comments);
   }, [comments]);
-console.log(comments);
+
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-    socket.on("newComment", (newComment) => {
-      setListComment((prevComments) => [...prevComments, newComment]);
+    socket.on("newComment_" + postId, ({ addedComment }) => {
+      setListComment((prevComments) => [...prevComments, addedComment]);
+      console.log(addedComment);
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [postId]);
 
   return (
     <>
@@ -415,6 +442,7 @@ const PostFooter = ({ post }) => {
   const [expanded, setExpanded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [typeInteract, setTypeInteract] = useState(null);
+  const [count, setCount] = useState(post?.comment?.length);
   const isButtonClick = useRef(false);
 
   useEffect(() => {
@@ -431,6 +459,18 @@ const PostFooter = ({ post }) => {
 
     getTypeInteractCurrentAccount();
   }, [accessToken, post._id]);
+
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+    socket.on("newComment_" + post._id, () => {
+      setCount((prev) => prev + 1);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [post._id]);
 
   const getTypeInteractCurrentAccount = async ({ type = null }) => {
     if (accessToken) {
@@ -481,7 +521,7 @@ const PostFooter = ({ post }) => {
                 handleCommentClick();
               }}
             >
-              {post?.comment?.length} comment
+              {count} comment
             </Typography>
           </Grid>
         </Grid>
@@ -514,7 +554,11 @@ const PostFooter = ({ post }) => {
 
       {/* comment */}
       <Box mt={1} borderTop={1} borderColor={"divider"}>
-        <PostComment expanded={expanded} comments={post?.comment} />
+        <PostComment
+          expanded={expanded}
+          comments={post?.comment}
+          postId={post?._id}
+        />
       </Box>
 
       {/* add comment */}

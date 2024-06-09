@@ -104,7 +104,7 @@ const PostController = {
     }
   },
 
-  addInteraction: async (req, res) => {
+  addInteraction: async (req, res, io) => {
     try {
       const postId = req.params.postId;
       const accountID = req.account.id;
@@ -198,7 +198,7 @@ const PostController = {
       const addedComment = populatedComment.comment[populatedComment.comment.length - 1];
       addedComment.account.avatar = addPathIfNeeded(pathAccount, addedComment.account.avatar);
 
-      io.emit("newComment", addedComment);
+      io.emit("newComment_" + postId, {addedComment});
 
       return res.status(200).json({ message: "Add comment successfully" });
     } catch (error) {
