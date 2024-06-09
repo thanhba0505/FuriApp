@@ -1,10 +1,10 @@
-import Stories from "./Stories";
+import Story from "./Story";
 import Posts from "./Posts";
 
 function Home() {
   return (
     <>
-      <Stories />
+      <Story />
       <Posts />
     </>
   );

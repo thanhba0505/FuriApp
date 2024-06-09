@@ -15,6 +15,8 @@ const schema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
+      default: Date.now,
+      index: { expires: "24h" },
     },
   },
   { timestamps: true }

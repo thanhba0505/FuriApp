@@ -110,7 +110,7 @@ const PostController = {
     }
   },
 
-  addInteraction: async (req, res, io) => {
+  addInteraction: async (req, res) => {
     try {
       const postId = req.params.postId;
       const accountID = req.account.id;

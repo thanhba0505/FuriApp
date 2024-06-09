@@ -40,7 +40,7 @@ const uploadStoryImage = multer({
   storage: createStorage('storyImage'),
   limits: limits,
   fileFilter: fileFilter,
-}).single("image");
+}).single("image", 1);
 
 module.exports = {
   uploadPostImage,

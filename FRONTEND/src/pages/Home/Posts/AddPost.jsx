@@ -100,7 +100,7 @@ const AddPost = () => {
     }
   };
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -250,7 +250,6 @@ const AddPost = () => {
                 Image
                 <input
                   type="file"
-                  multiple
                   hidden
                   onChange={handleFileChange}
                 />
