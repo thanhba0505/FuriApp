@@ -211,7 +211,7 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
   const formatDate =
     formatTimeDifference(cmt?.createdAt) != "0 minutes ago"
       ? formatTimeDifference(cmt?.createdAt)
-      : "now";
+      : "Just now";
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -382,7 +382,7 @@ const AddComment = React.memo(
 
     const handleSend = () => {
       const getTypeInteractCurrentAccount = async () => {
-        if (accessToken) {
+        if (accessToken && content.trim().length > 0) {
           try {
             await addComment(accessToken, postID, content);
             setContent("");

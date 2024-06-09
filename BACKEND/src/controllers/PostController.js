@@ -29,6 +29,12 @@ const PostController = {
           .json({ message: "Content or images must be provided" });
       }
 
+      if (images.length > 10) {
+        return res
+          .status(400)
+          .json({ message: "The number of photos must be less than 10" });
+      }
+
       try {
         const newPost = new Post({
           account: accountID,
@@ -192,13 +198,17 @@ const PostController = {
       const populatedComment = await post.populate({
         path: "comment.account",
         select: "fullname avatar",
-        match: { _id: accountID }
+        match: { _id: accountID },
       });
 
-      const addedComment = populatedComment.comment[populatedComment.comment.length - 1];
-      addedComment.account.avatar = addPathIfNeeded(pathAccount, addedComment.account.avatar);
+      const addedComment =
+        populatedComment.comment[populatedComment.comment.length - 1];
+      addedComment.account.avatar = addPathIfNeeded(
+        pathAccount,
+        addedComment.account.avatar
+      );
 
-      io.emit("newComment_" + postId, {addedComment});
+      io.emit("newComment_" + postId, { addedComment });
 
       return res.status(200).json({ message: "Add comment successfully" });
     } catch (error) {

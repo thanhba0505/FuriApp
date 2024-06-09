@@ -54,3 +54,18 @@ export const addComment = async (accessToken, postID, content) => {
     console.log({ error });
   }
 };
+
+export const addPost = async (accessToken, formData) => {
+  try {
+    const res = await axios.post(`/api/post/add`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        token: `Bearer ${accessToken}`,
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    console.log({ error });
+  }
+};

@@ -8,6 +8,7 @@ import AccountMenu from "./AccountMenu";
 import SearchField from "./SearchField";
 import Box from "@mui/material/Box";
 import appInfo from "~/utils/appInfo";
+import ModeSelect from "~/components/ModeSelect";
 
 function Header() {
   return (
@@ -47,6 +48,8 @@ function Header() {
           >
             {appInfo.nameApp}
           </Typography>
+
+          <ModeSelect/>
 
           {/* <SearchField /> */}
 
