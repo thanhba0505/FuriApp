@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import * as React from "react";
 
 import Grid from "@mui/material/Grid";
@@ -23,42 +24,35 @@ import { useEffect } from "react";
 import { getImageBlob } from "~/api/imageApi";
 
 // PaperFirst
-function PaperFirst() {
+const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const avatar = account?.avatar;
 
-  const FetchAvatar = ({ accessToken, avatar }) => {
-    const [img, setImg] = useState();
+  const [img, setImg] = useState();
 
-    useEffect(() => {
-      const fetchImage = async () => {
-        try {
-          const result = await getImageBlob(accessToken, avatar);
-          setImg(result);
-        } catch (error) {
-          console.log({ error });
-        }
-      };
-      if (avatar && accessToken) {
-        fetchImage();
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, avatar);
+        setImg(result);
+      } catch (error) {
+        console.log({ error });
       }
-    }, [avatar, accessToken]);
-
-    return (
-      <Avatar
-        sx={{ width: "48px", height: "48px", borderRadius: 2 }}
-        src={img}
-      ></Avatar>
-    );
-  };
-
+    };
+    if (avatar && accessToken) {
+      fetchImage();
+    }
+  }, [avatar, accessToken]);
+  
   return (
     <Paper>
       <Grid container rowSpacing={1}>
         <Grid item xs={3}>
-          <FetchAvatar
-            avatar={account?.avatar}
-            accessToken={account?.accessToken}
-          />
+          <Avatar
+            sx={{ width: "48px", height: "48px", borderRadius: 2 }}
+            src={img ? img : ""}
+          ></Avatar>
         </Grid>
 
         <Grid item xs={9}>
@@ -70,10 +64,10 @@ function PaperFirst() {
       </Grid>
     </Paper>
   );
-}
+});
 
 // PaperSecond
-function PaperSecond() {
+const PaperSecond = React.memo(() => {
   const currentUrl = window.location.pathname;
 
   let i = 0;
@@ -138,13 +132,14 @@ function PaperSecond() {
       </List>
     </Paper>
   );
-}
-// PaperThird
-function PaperThird() {
-  return <Paper></Paper>;
-}
+});
 
-function SidebarLeft({ xs = {} }) {
+// PaperThird
+const PaperThird = React.memo(() => {
+  return <Paper></Paper>;
+});
+
+const SidebarLeft = ({ xs = {} }) => {
   return (
     <Sidebar xs={xs}>
       <PaperFirst />
@@ -152,6 +147,7 @@ function SidebarLeft({ xs = {} }) {
       <PaperThird />
     </Sidebar>
   );
-}
+};
+const SidebarLeftMemo = React.memo(SidebarLeft);
 
-export default SidebarLeft;
+export default SidebarLeftMemo;

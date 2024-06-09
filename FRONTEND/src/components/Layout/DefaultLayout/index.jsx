@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Content from "../components/Content";
 import SidebarLeft from "./SidebarLeft";
 import SidebarRight from "./SidebarRight";
+import React from "react";
 
 function DefaultLayout({ children }) {
   return (
@@ -21,4 +22,6 @@ function DefaultLayout({ children }) {
   );
 }
 
-export default DefaultLayout;
+const DefaultLayoutMemo = React.memo(DefaultLayout)
+
+export default DefaultLayoutMemo;

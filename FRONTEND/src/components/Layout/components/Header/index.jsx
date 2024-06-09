@@ -9,6 +9,7 @@ import SearchField from "./SearchField";
 import Box from "@mui/material/Box";
 import appInfo from "~/utils/appInfo";
 import ModeSelect from "~/components/ModeSelect";
+import React from "react";
 
 function Header() {
   return (
@@ -62,4 +63,6 @@ function Header() {
   );
 }
 
-export default Header;
+const HeaderMemo = React.memo(Header)
+
+export default HeaderMemo;

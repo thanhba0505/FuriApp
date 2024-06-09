@@ -1,4 +1,5 @@
 import Grid from "@mui/material/Grid";
+import React from "react";
 
 function Content({ children, xs = {} }) {
   return (
@@ -19,4 +20,6 @@ function Content({ children, xs = {} }) {
   );
 }
 
-export default Content;
+const ContentMemo = React.memo(Content)
+
+export default ContentMemo;

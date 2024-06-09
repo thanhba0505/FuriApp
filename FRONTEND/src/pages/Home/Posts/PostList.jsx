@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { getPosts } from "~/api/postApi";
 import PostItem from "./PostItem";
@@ -62,4 +62,6 @@ function PostList() {
   );
 }
 
-export default PostList;
+const PostListMemo = React.memo(PostList)
+
+export default PostListMemo;
