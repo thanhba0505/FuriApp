@@ -96,7 +96,6 @@ const AddPost = () => {
     } catch (error) {
       setMessage("Error posting the article");
       setOpen(true);
-      console.log({ error });
     }
   };
 

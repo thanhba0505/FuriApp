@@ -1,4 +1,3 @@
-// import { getPostFailed, getPostStart, getPostSuccess } from "~/redux/postSlice";
 import axios from "~/utils/axios";
 
 export const getPosts = async (accessToken, limit) => {

@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import Slider from "react-slick";
 import Grid from "@mui/material/Grid";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
@@ -5,8 +6,10 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import Paper from "~/components/Paper";
 import {
   Alert,
+  Avatar,
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,42 +21,115 @@ import {
   Typography,
 } from "@mui/material";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { getImageBlob } from "~/api/imageApi";
+import { addStory, getStories } from "~/api/storyApi";
 
-const SampleNextArrow = (props) => {
-  const { className, style, onClick } = props;
+const StoryItem = React.memo(({ src, fullname, avatar }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const [img, setImg] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        setIsLoading(true);
+        const result = await getImageBlob(accessToken, src);
+        setImg(result);
+        setIsLoading(false);
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+
+    if (src && accessToken) {
+      fetchImage();
+    }
+  }, [src, accessToken]);
+
   return (
-    <div
-      className={className}
-      style={{ ...style, display: "block", background: "red" }}
-      onClick={onClick}
-    />
-  );
-};
+    <Grid item width={"20%"} px={1}>
+      <Box
+        height={"200px"}
+        borderRadius={3}
+        position="relative"
+        overflow="hidden"
+        p={1}
+        sx={{
+          cursor: "pointer",
+          "& .story-zoom": {
+            transition: "ease-out .3s scale",
+          },
+          "&:hover": {
+            "& .story-zoom": {
+              scale: "1.1",
+            },
+          },
+        }}
+      >
+        {/* Background Image */}
+        <Box
+          className="story-zoom"
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url("${img}")`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
 
-const SamplePrevArrow = (props) => {
-  const { className, style, onClick } = props;
-  return (
-    <div
-      className={className}
-      style={{ ...style, display: "block", background: "green" }}
-      onClick={onClick}
-    />
-  );
-};
+            "&::before": {
+              content: "''",
+              position: "absolute",
+              height: "70px",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%)`,
+            },
+          }}
+        />
 
-const settings = {
-  infinite: false,
-  speed: 500,
-  slidesToShow: 4,
-  slidesToScroll: 4,
-  // lazyLoad: true,
-  draggable: false,
-  nextArrow: <SampleNextArrow />,
-  prevArrow: <SamplePrevArrow />,
-};
+        {/* Content */}
+        <Box
+          sx={{
+            zIndex: 1,
+            height: "100%",
+            width: "100%",
+            position: "relative",
+            alignContent: isLoading ? "center" : "end",
+            textAlign: "center",
+          }}
+        >
+          {!isLoading && (
+            <>
+              <Typography variant="body1" fontSize={14} color="white" mb={1}>
+                {fullname}
+              </Typography>
+
+              <Avatar
+                sx={{
+                  height: 30,
+                  width: 30,
+                  position: "absolute",
+                  top: 4,
+                  left: 4,
+                }}
+                variant="rounded"
+              />
+            </>
+          )}
+          {isLoading && <CircularProgress color="primary" />}
+        </Box>
+      </Box>
+    </Grid>
+  );
+});
 
 const Story = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -66,6 +142,7 @@ const Story = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState("");
   const [openNotify, setOpenNotify] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCloseNotify = (event, reason) => {
     if (reason === "clickaway") {
@@ -105,10 +182,12 @@ const Story = () => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    setSelectedFile(file);
+    if (file) {
+      setSelectedFile(file);
 
-    const filePreviews = URL.createObjectURL(file);
-    setPreviewImage(filePreviews);
+      const filePreviews = URL.createObjectURL(file);
+      setPreviewImage(filePreviews);
+    }
   };
 
   const handlePostSubmit = async () => {
@@ -122,28 +201,59 @@ const Story = () => {
 
     formData.append("image", selectedFile);
 
-    // try {
-    //   const res = await addPost(accessToken, formData);
+    try {
+      const res = await addStory(accessToken, formData);
 
-    //   if (res) {
-    //     setSelectedFile(null);
-    //     setPreviewImage(null);
-    //   }
+      if (res) {
+        setSelectedFile(null);
+        setPreviewImage(null);
+      }
 
-    //   setMessage("Post the story successfully");
-    //   setOpen(true);
-    // } catch (error) {
-    //   setMessage("Error posting the story");
-    //   setOpen(true);
-    //   console.log({ error });
-    // }
+      setMessage("Post the story successfully");
+      setOpenNotify(true);
+    } catch (error) {
+      setMessage("Error posting the story");
+      setOpenNotify(true);
+    }
+  };
+
+  const limit = 4;
+
+  const [stories, setStories] = useState([]);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const loadPosts = async () => {
+      setIsLoading(true);
+      const res = await getStories(accessToken, page, limit);
+      setStories(res.data);
+      setIsLoading(false);
+    };
+
+    if (page && accessToken) {
+      loadPosts();
+    }
+  }, [page, accessToken]);
+
+  console.log(stories);
+
+  const handleNext = () => {
+    if (stories.length == 4) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (page > 1) {
+      setPage((prevPage) => prevPage - 1);
+    }
   };
 
   return (
     <Paper>
       <Box>
-        <Slider {...settings}>
-          <Box px={1}>
+        <Grid container>
+          <Grid item width={"20%"} px={1}>
             <Box
               height={"200px"}
               borderRadius={3}
@@ -176,6 +286,16 @@ const Story = () => {
                   backgroundRepeat: "no-repeat",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
+
+                  "&::before": {
+                    content: "''",
+                    position: "absolute",
+                    height: "50px",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: `linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 70%, rgba(0, 0, 0, 0) 100%)`,
+                  },
                 }}
               />
 
@@ -204,26 +324,23 @@ const Story = () => {
               >
                 <AddCircleIcon color="primary" fontSize="large" />
 
-                <Typography variant="body1" fontSize={16} color="white" mb={1}>
+                <Typography variant="body1" fontSize={14} color="white" mb={1}>
                   Add story
                 </Typography>
               </Box>
             </Box>
-          </Box>
+          </Grid>
 
-          <Box px={1}>
-            <Box height={"200px"} bgcolor={"bisque"}></Box>
-          </Box>
-          <Box px={1}>
-            <Box height={"200px"} bgcolor={"bisque"}></Box>
-          </Box>
-          <Box px={1}>
-            <Box height={"200px"} bgcolor={"bisque"}></Box>
-          </Box>
-          <Box px={1}>
-            <Box height={"200px"} bgcolor={"bisque"}></Box>
-          </Box>
-        </Slider>
+          {!isLoading &&
+            stories?.map((story, index) => (
+              <StoryItem
+                key={index}
+                fullname={story.account.fullname}
+                avatar={story.account.avatar}
+                src={story.image}
+              />
+            ))}
+        </Grid>
       </Box>
 
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth={"sm"}>
@@ -297,7 +414,7 @@ const Story = () => {
           <Alert
             onClose={handleCloseNotify}
             severity={
-              message == "Post the story successfully" ? "success" : "error"
+              message == "Post the story successfully" ? "info" : "error"
             }
             variant="filled"
             sx={{ width: "100%" }}
@@ -306,6 +423,9 @@ const Story = () => {
           </Alert>
         </Snackbar>
       </span>
+
+      <Button onClick={handlePrevious}>previous</Button>
+      <Button onClick={handleNext}>next</Button>
     </Paper>
   );
 };
