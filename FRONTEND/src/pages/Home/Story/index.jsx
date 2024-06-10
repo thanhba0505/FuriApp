@@ -1,7 +1,8 @@
 /* eslint-disable react/display-name */
-import Slider from "react-slick";
 import Grid from "@mui/material/Grid";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import PrevIcon from "@mui/icons-material/KeyboardDoubleArrowLeftTwoTone";
+import NextIcon from "@mui/icons-material/KeyboardDoubleArrowRightTwoTone";
 
 import Paper from "~/components/Paper";
 import {
@@ -13,15 +14,13 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
-  IconButton,
+  Skeleton,
   Snackbar,
-  TextField,
   Typography,
 } from "@mui/material";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getImageBlob } from "~/api/imageApi";
 import { addStory, getStories } from "~/api/storyApi";
@@ -30,7 +29,9 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const [img, setImg] = useState("");
+  const [imgAvatar, setImgAvatar] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -49,6 +50,23 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
     }
   }, [src, accessToken]);
 
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        setIsAvatarLoading(true);
+        const result = await getImageBlob(accessToken, avatar);
+        setImgAvatar(result);
+        setIsAvatarLoading(false);
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+
+    if (avatar && accessToken) {
+      fetchImage();
+    }
+  }, [avatar, accessToken]);
+
   return (
     <Grid item width={"20%"} px={1}>
       <Box
@@ -58,6 +76,7 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
         overflow="hidden"
         p={1}
         sx={{
+          userSelect: "none",
           cursor: "pointer",
           "& .story-zoom": {
             transition: "ease-out .3s scale",
@@ -78,20 +97,23 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
             left: 0,
             right: 0,
             bottom: 0,
+            backgroundColor: isLoading ? "rgba(0, 0, 0, 0.1)" : "",
             backgroundImage: `url("${img}")`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
             backgroundPosition: "center",
 
-            "&::before": {
-              content: "''",
-              position: "absolute",
-              height: "70px",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%)`,
-            },
+            "&::before": isLoading
+              ? ""
+              : {
+                  content: "''",
+                  position: "absolute",
+                  height: "70px",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%)`,
+                },
           }}
         />
 
@@ -112,16 +134,24 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
                 {fullname}
               </Typography>
 
-              <Avatar
+              <Box
+                p={0.4}
                 sx={{
-                  height: 30,
-                  width: 30,
+                  border: "2px solid white",
+                  borderRadius: "8px",
                   position: "absolute",
                   top: 4,
                   left: 4,
                 }}
-                variant="rounded"
-              />
+              >
+                <Avatar
+                  sx={{ p: "2px", width: "30px", height: "30px" }}
+                  src={!isAvatarLoading ? imgAvatar : ""}
+                  variant="rounded"
+                >
+                  {isAvatarLoading && account.fullname.charAt(0).toUpperCase()}
+                </Avatar>
+              </Box>
             </>
           )}
           {isLoading && <CircularProgress color="primary" />}
@@ -143,6 +173,7 @@ const Story = () => {
   const [message, setMessage] = useState("");
   const [openNotify, setOpenNotify] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAddStory, setIsLoadingAddStory] = useState(false);
 
   const handleCloseNotify = (event, reason) => {
     if (reason === "clickaway") {
@@ -168,8 +199,10 @@ const Story = () => {
   useEffect(() => {
     const fetchImage = async () => {
       try {
+        setIsLoadingAddStory(true);
         const result = await getImageBlob(accessToken, avatar);
         setImg(result);
+        setIsLoadingAddStory(false);
       } catch (error) {
         console.log({ error });
       }
@@ -235,8 +268,6 @@ const Story = () => {
     }
   }, [page, accessToken]);
 
-  console.log(stories);
-
   const handleNext = () => {
     if (stories.length == 4) {
       setPage((prevPage) => prevPage + 1);
@@ -261,6 +292,7 @@ const Story = () => {
               overflow="hidden"
               p={1}
               sx={{
+                userSelect: "none",
                 cursor: "pointer",
                 "& .story-zoom": {
                   transition: "ease-out .3s scale",
@@ -282,6 +314,7 @@ const Story = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
+                  backgroundColor: isLoadingAddStory ? "black" : "",
                   backgroundImage: `url("${img}")`,
                   backgroundRepeat: "no-repeat",
                   backgroundSize: "cover",
@@ -331,7 +364,42 @@ const Story = () => {
             </Box>
           </Grid>
 
-          {!isLoading &&
+          {isLoading ? (
+            <>
+              <Grid item width={"20%"} px={1}>
+                <Skeleton
+                  variant="rounded"
+                  width={"100%"}
+                  height={"100%"}
+                  sx={{ borderRadius: 3 }}
+                />
+              </Grid>
+              <Grid item width={"20%"} px={1}>
+                <Skeleton
+                  variant="rounded"
+                  width={"100%"}
+                  height={"100%"}
+                  sx={{ borderRadius: 3 }}
+                />
+              </Grid>
+              <Grid item width={"20%"} px={1}>
+                <Skeleton
+                  variant="rounded"
+                  width={"100%"}
+                  height={"100%"}
+                  sx={{ borderRadius: 3 }}
+                />
+              </Grid>
+              <Grid item width={"20%"} px={1}>
+                <Skeleton
+                  variant="rounded"
+                  width={"100%"}
+                  height={"100%"}
+                  sx={{ borderRadius: 3 }}
+                />
+              </Grid>
+            </>
+          ) : (
             stories?.map((story, index) => (
               <StoryItem
                 key={index}
@@ -339,7 +407,20 @@ const Story = () => {
                 avatar={story.account.avatar}
                 src={story.image}
               />
-            ))}
+            ))
+          )}
+
+          {stories?.length < 4 && (
+            <Grid
+              item
+              width={(4 - stories.length) * 20 + "%"}
+              textAlign={"center"}
+              alignContent={"center"}
+              sx={{ userSelect: "none" }}
+            >
+              No more
+            </Grid>
+          )}
         </Grid>
       </Box>
 
@@ -373,6 +454,7 @@ const Story = () => {
               />
             </Box>
           )}
+
           <Button
             sx={{
               width: "100%",
@@ -424,12 +506,29 @@ const Story = () => {
         </Snackbar>
       </span>
 
-      <Button onClick={handlePrevious}>previous</Button>
-      <Button onClick={handleNext}>next</Button>
+      <Box textAlign={"center"} mt={2}>
+        <Button
+          size="small"
+          onClick={handlePrevious}
+          variant="outlined"
+          startIcon={<PrevIcon />}
+        >
+          Prev
+        </Button>
+        <Button
+          size="small"
+          sx={{ ml: 1 }}
+          onClick={handleNext}
+          variant="outlined"
+          endIcon={<NextIcon />}
+        >
+          Next
+        </Button>
+      </Box>
     </Paper>
   );
 };
 
 const StoryMemo = React.memo(Story);
 
-export default Story;
+export default StoryMemo;

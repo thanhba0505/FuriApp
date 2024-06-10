@@ -9,7 +9,9 @@
         "furi",
         "getinteract",
         "haspopup",
+        "jfif",
         "lable",
+        "pjpeg",
         "reduxjs",
         "socketio"
     ]

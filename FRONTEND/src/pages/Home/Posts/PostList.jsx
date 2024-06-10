@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { getPosts } from "~/api/postApi";
 import PostItem from "./PostItem";
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 function PostList() {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -11,6 +11,7 @@ function PostList() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const observer = useRef();
   const limit = 6;
@@ -20,27 +21,34 @@ function PostList() {
       const loadPosts = async () => {
         setLoading(true);
 
-        const res = await getPosts(accessToken, limit);
-        setPosts((prevPosts) => [...prevPosts, ...res.data]);
+        const res = await getPosts(accessToken, page, limit);
+        const newPosts = res.data;
 
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
         setLoading(false);
+
+        if (newPosts.length < limit) {
+          setHasMore(false);
+        }
       };
-      loadPosts();
+      if (hasMore) {
+        loadPosts();
+      }
     }
-  }, [page, accessToken]);
+  }, [page, hasMore, accessToken]);
 
   const lastPostRef = useCallback(
     (node) => {
       if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && hasMore) {
           setPage((prevPage) => prevPage + 1);
         }
       });
       if (node) observer.current.observe(node);
     },
-    [loading]
+    [loading, hasMore]
   );
 
   return (
@@ -57,11 +65,20 @@ function PostList() {
         }
       })}
 
-      {loading && <p>Loading...</p>}
+      {loading && (
+        <Box textAlign={"center"}  mt={2}>
+          <CircularProgress />
+        </Box>
+      )}
+      {!hasMore && (
+        <Typography textAlign={"center"} mt={2}>
+          No more posts
+        </Typography>
+      )}
     </Box>
   );
 }
 
-const PostListMemo = React.memo(PostList)
+const PostListMemo = React.memo(PostList);
 
 export default PostListMemo;

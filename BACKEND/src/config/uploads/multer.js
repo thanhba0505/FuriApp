@@ -13,7 +13,7 @@ const createStorage = (folderName) => multer.diskStorage({
 const limits = { fileSize: 10 * 1024 * 1024 };
 
 const fileFilter = (req, file, cb) => {
-  const filetypes = /jpeg|jpg|png/;
+  const filetypes = /jpeg|jpg|png|jfif|pjpeg|pjp/;
   const mimetype = filetypes.test(file.mimetype);
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 

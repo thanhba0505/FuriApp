@@ -52,6 +52,7 @@ const PostController = {
 
   getPosts: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
+    const page = parseInt(req.query._page) || 1;
     const pathAccount = "accountImage/";
     const pathPost = "postImage/";
 
@@ -64,6 +65,7 @@ const PostController = {
 
     try {
       const posts = await Post.find()
+        .skip((page - 1) * limit)
         .limit(limit)
         .populate({
           path: "account",

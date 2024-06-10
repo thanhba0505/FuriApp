@@ -347,6 +347,8 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
                   mt={index !== 0}
                 />
               ))}
+
+              {listComment.length == 0 && <Typography textAlign={"center"}>No comment</Typography>}
             </Box>
           )}
         </AccordionDetails>

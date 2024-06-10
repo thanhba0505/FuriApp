@@ -30,6 +30,15 @@ const AddPost = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [message, setMessage] = useState("");
+  const validImageTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "image/jfif",
+    "image/pjpeg",
+    "image/pjp",
+  ];
+  const maxImageSize = 10 * 1024 * 1024; // 10MB
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -48,10 +57,39 @@ const AddPost = () => {
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
-    setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
+    const newFiles = [];
+    const newPreviews = [];
 
-    const filePreviews = files.map((file) => URL.createObjectURL(file));
-    setPreviewImages((prevImages) => [...prevImages, ...filePreviews]);
+    for (const file of files) {
+      if (!validImageTypes.includes(file.type)) {
+        setMessage(`File ${file.name} is not a valid image type`);
+        setOpen(true);
+        continue;
+      }
+
+      if (file.size > maxImageSize) {
+        setMessage(`File ${file.name} exceeds the maximum size of 10MB`);
+        setOpen(true);
+        continue;
+      }
+
+      const isDuplicate = selectedFiles.some(
+        (selectedFile) =>
+          selectedFile.name === file.name && selectedFile.size === file.size
+      );
+
+      if (!isDuplicate) {
+        newFiles.push(file);
+        newPreviews.push(URL.createObjectURL(file));
+      } else {
+        console.log("SDFsd");
+        setMessage(`File ${file.name} is already selected`);
+        setOpen(true);
+      }
+    }
+
+    setSelectedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    setPreviewImages((prevImages) => [...prevImages, ...newPreviews]);
   };
 
   const handleDeleteImage = (index) => {
@@ -76,10 +114,8 @@ const AddPost = () => {
 
     formData.append("content", content);
 
-    if (selectedFiles.length > 0) {
-      selectedFiles.forEach((file) => {
-        formData.append("images", file);
-      });
+    for (const file of selectedFiles) {
+      formData.append("images", file);
     }
 
     try {
@@ -250,6 +286,8 @@ const AddPost = () => {
                 <input
                   type="file"
                   hidden
+                  multiple
+                  accept="image/jpeg, image/png, image/jpg"
                   onChange={handleFileChange}
                 />
               </Button>
@@ -288,7 +326,7 @@ const AddPost = () => {
           <Alert
             onClose={handleClose}
             severity={
-              message == "Post the article successfully" ? "success" : "error"
+              message == "Post the article successfully" ? "info" : "error"
             }
             variant="filled"
             sx={{ width: "100%" }}
