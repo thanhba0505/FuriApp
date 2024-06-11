@@ -24,7 +24,7 @@ const PostRoutes = (io) => {
   router.post(
     "/interact/:postId",
     middlewareController.verifyToken,
-    (req, res) => PostController.addInteraction(req, res, io)
+    (req, res) => PostController.addInteraction(req, res)
   );
 
   router.post(

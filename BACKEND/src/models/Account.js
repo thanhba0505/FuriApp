@@ -30,6 +30,27 @@ const schema = new mongoose.Schema(
       type: String,
     },
 
+    sentFriendRequests: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Account",
+      },
+    ],
+
+    receivedFriendRequests: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Account",
+      },
+    ],
+
+    friends: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Account",
+      },
+    ],
+
     admin: {
       type: Boolean,
       default: false,

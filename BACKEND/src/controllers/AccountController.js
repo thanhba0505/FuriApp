@@ -194,6 +194,129 @@ const AccountController = {
       res.status(500).json({ message: "Internal Server Error" });
     }
   },
+
+  sendFriendRequest: async (req, res, io) => {
+    try {
+      const senderId = req.account.id;
+      const { receiverId } = req.body;
+
+      const receiver = await Account.findById(receiverId);
+
+      if (!receiver) {
+        return res.status(404).json({ message: "Receiver does not exist" });
+      }
+
+      if (senderId === receiverId) {
+        return res
+          .status(400)
+          .json({ message: "Can not send requests to yourself" });
+      }
+
+      const sender = await Account.findById(senderId);
+
+      if (sender.friends.includes(receiverId)) {
+        return res.status(400).json({ message: "This person is your friend" });
+      }
+
+      if (sender.sentFriendRequests.includes(receiverId)) {
+        return res.status(400).json({
+          message: "You have sent a request to make friends with this person",
+        });
+      }
+
+      sender.sentFriendRequests.push(receiverId);
+      receiver.receivedFriendRequests.push(senderId);
+
+      await sender.save();
+      await receiver.save();
+
+      io.to(receiverId).emit("sendFriendRequest", { senderId });
+
+      return res.status(200).json({ message: "Send invitation successfully" });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error", error });
+    }
+  },
+
+  acceptFriendRequest: async (req, res, io) => {
+    try {
+      const receiverId = req.account.id;
+      const { senderId } = req.body;
+
+      const sender = await Account.findById(senderId);
+
+      if (!sender) {
+        return res.status(404).json({ message: "Sender does not exist" });
+      }
+
+      const receiver = await Account.findById(receiverId);
+
+      if (!receiver.receivedFriendRequests.includes(senderId)) {
+        return res
+          .status(400)
+          .json({ message: "No friend request from this user" });
+      }
+
+      receiver.friends.push(senderId);
+      sender.friends.push(receiverId);
+
+      receiver.receivedFriendRequests = receiver.receivedFriendRequests.filter(
+        (id) => id.toString() !== senderId
+      );
+      sender.sentFriendRequests = sender.sentFriendRequests.filter(
+        (id) => id.toString() !== receiverId
+      );
+
+      await receiver.save();
+      await sender.save();
+
+      io.to(senderId).emit("acceptFriendRequest", { receiverId });
+
+      return res.status(200).json({ message: "Friend request accepted" });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error", error });
+    }
+  },
+
+  rejectFriendRequest: async (req, res, io) => {
+    try {
+      const receiverId = req.account.id;
+      const { senderId } = req.body;
+
+      const sender = await Account.findById(senderId);
+
+      if (!sender) {
+        return res.status(404).json({ message: "Sender does not exist" });
+      }
+
+      const receiver = await Account.findById(receiverId);
+
+      if (!receiver.receivedFriendRequests.includes(senderId)) {
+        return res
+          .status(400)
+          .json({ message: "No friend request from this user" });
+      }
+
+      receiver.receivedFriendRequests = receiver.receivedFriendRequests.filter(
+        (id) => id.toString() !== senderId
+      );
+      sender.sentFriendRequests = sender.sentFriendRequests.filter(
+        (id) => id.toString() !== receiverId
+      );
+
+      await receiver.save();
+      await sender.save();
+
+      io.to(receiverId).emit("rejectFriendRequest", { senderId });
+
+      return res.status(200).json({ message: "Friend request rejected" });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error", error });
+    }
+  },
+
+  
 };
 
 module.exports = AccountController;

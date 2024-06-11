@@ -4,7 +4,7 @@ const Story = require("./Story");
 const Image = require("./Image");
 
 function route(app, io) {
-  app.use("/api/account", Account);
+  app.use("/api/account", Account(io));
   app.use("/api/post", Post(io));
   app.use("/api/story", Story);
   app.use("/api/image", Image);

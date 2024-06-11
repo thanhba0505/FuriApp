@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const BlackListToken = require("../models/BlackListToken");
+const Account = require("../models/Account");
 
 const middlewareController = {
   verifyToken: async (req, res, next) => {
@@ -8,7 +9,9 @@ const middlewareController = {
     if (token) {
       const accessToken = token.split(" ")[1];
 
-      const accessTokenExists = await BlackListToken.findOne({ token: accessToken });
+      const accessTokenExists = await BlackListToken.findOne({
+        token: accessToken,
+      });
 
       if (accessTokenExists) {
         return res.status(403).json({ message: "Token is not valid" });
@@ -17,10 +20,16 @@ const middlewareController = {
       jwt.verify(
         accessToken,
         process.env.FURI_JWT_ACCESS_KEY,
-        (err, account) => {
+        async (err, account) => {
           if (err) {
             return res.status(403).json({ message: "Token is not valid" });
           }
+
+          const accountID = await Account.findById(account.id);
+          if (!accountID) {
+            return res.status(404).json({ message: "Account does not exist" });
+          }
+
           req.account = account;
           next();
         }
