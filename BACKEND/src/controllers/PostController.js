@@ -205,6 +205,7 @@ const PostController = {
 
       const addedComment =
         populatedComment.comment[populatedComment.comment.length - 1];
+
       addedComment.account.avatar = addPathIfNeeded(
         pathAccount,
         addedComment.account.avatar

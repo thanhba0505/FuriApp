@@ -316,7 +316,56 @@ const AccountController = {
     }
   },
 
-  
+  getFriends: async (req, res) => {
+    const pathAccount = "accountImage/";
+
+    try {
+      const accountId = req.account.id;
+
+      const account = await Account.findById(accountId).populate(
+        "friends",
+        "username fullname avatar"
+      );
+
+      account.friends?.map(
+        (friend) => (friend.avatar = pathAccount + friend.avatar)
+      );
+
+      return res.status(200).json({ friends: account.friends });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error", error });
+    }
+  },
+
+  getNonFriends : async (req, res) => {
+    const limit = parseInt(req.query._limit) || 10;
+    const page = parseInt(req.query._page) || 1;
+    const pathAccount = "accountImage/";
+
+    try {
+      const accountId = req.account.id;
+
+      const account = await Account.findById(accountId).populate(
+        "friends",
+        "_id"
+      );
+
+      const friendsIds = account.friends.map((friend) => friend._id);
+
+      friendsIds.push(accountId);
+
+      const nonFriends = await Account.find(
+        { _id: { $nin: friendsIds } },
+        "username fullname avatar"
+      )
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+      return res.status(200).json({ nonFriends });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error", error });
+    }
+  },
 };
 
 module.exports = AccountController;
