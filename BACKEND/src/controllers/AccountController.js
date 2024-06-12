@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const Account = require("../models/Account");
 const RefreshToken = require("../models/RefreshToken");
 const BlackListToken = require("../models/BlackListToken");
+const Conversation = require("../models/Conversation");
 
 const AccountController = {
   registerAccount: async (req, res) => {
@@ -214,7 +215,10 @@ const AccountController = {
 
       const sender = await Account.findById(senderId);
 
-      if (sender.friends.includes(receiverId)) {
+      const isFriend = sender.friends.some((friend) =>
+        friend.account._id.equals(receiverId)
+      );
+      if (isFriend) {
         return res.status(400).json({ message: "This person is your friend" });
       }
 
@@ -258,8 +262,20 @@ const AccountController = {
           .json({ message: "No friend request from this user" });
       }
 
-      receiver.friends.push(senderId);
-      sender.friends.push(receiverId);
+      const newConversation = new Conversation({
+        participants: [senderId, receiverId],
+        messages: [],
+      });
+      await newConversation.save();
+
+      receiver.friends.push({
+        account: senderId,
+        conversation: newConversation._id,
+      });
+      sender.friends.push({
+        account: receiverId,
+        conversation: newConversation._id,
+      });
 
       receiver.receivedFriendRequests = receiver.receivedFriendRequests.filter(
         (id) => id.toString() !== senderId
@@ -308,8 +324,6 @@ const AccountController = {
       await receiver.save();
       await sender.save();
 
-      io.to(receiverId).emit("rejectFriendRequest", { senderId });
-
       return res.status(200).json({ message: "Friend request rejected" });
     } catch (error) {
       return res.status(500).json({ message: "Internal Server Error", error });
@@ -323,12 +337,13 @@ const AccountController = {
       const accountId = req.account.id;
 
       const account = await Account.findById(accountId).populate(
-        "friends",
+        "friends.account",
         "username fullname avatar"
       );
 
       account.friends?.map(
-        (friend) => (friend.avatar = pathAccount + friend.avatar)
+        (friend) =>
+          (friend.account.avatar = pathAccount + friend.account.avatar)
       );
 
       return res.status(200).json({ friends: account.friends });
@@ -337,7 +352,7 @@ const AccountController = {
     }
   },
 
-  getNonFriends : async (req, res) => {
+  getNonFriends: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
     const page = parseInt(req.query._page) || 1;
     const pathAccount = "accountImage/";
@@ -345,12 +360,9 @@ const AccountController = {
     try {
       const accountId = req.account.id;
 
-      const account = await Account.findById(accountId).populate(
-        "friends",
-        "_id"
-      );
+      const account = await Account.findById(accountId).populate("friends");
 
-      const friendsIds = account.friends.map((friend) => friend._id);
+      const friendsIds = account.friends.map((friend) => friend.account._id);
 
       friendsIds.push(accountId);
 
@@ -360,6 +372,10 @@ const AccountController = {
       )
         .skip((page - 1) * limit)
         .limit(limit);
+
+      nonFriends?.map(
+        (friend) => (friend.avatar = pathAccount + friend.avatar)
+      );
 
       return res.status(200).json({ nonFriends });
     } catch (error) {

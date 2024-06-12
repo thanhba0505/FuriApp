@@ -46,8 +46,16 @@ const schema = new mongoose.Schema(
 
     friends: [
       {
-        type: mongoose.Schema.ObjectId,
-        ref: "Account",
+        account: {
+          type: mongoose.Schema.ObjectId,
+          ref: "Account",
+          require: true,
+        },
+
+        conversation: {
+          type: mongoose.Schema.ObjectId,
+          ref: "Conversation",
+        },
       },
     ],
 

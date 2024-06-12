@@ -2,7 +2,7 @@ const express = require("express");
 const Account = require("../controllers/AccountController");
 const middleware = require("../controllers/middlewareController");
 
-const StoryRoutes = (io) => {
+const AccountRoutes = (io) => {
   const router = express.Router();
 
   router.post("/register", Account.registerAccount);
@@ -16,22 +16,22 @@ const StoryRoutes = (io) => {
   );
 
   // accept friend request
-  router.post("/friend/accept", middleware.verifyToken, (req, res) =>
+  router.put("/friend/accept", middleware.verifyToken, (req, res) =>
     Account.acceptFriendRequest(req, res, io)
   );
 
   // reject friend request
-  router.post("/friend/reject", middleware.verifyToken, (req, res) =>
+  router.put("/friend/reject", middleware.verifyToken, (req, res) =>
     Account.rejectFriendRequest(req, res, io)
   );
 
   // get list friend
   router.get("/friends", middleware.verifyToken, Account.getFriends);
 
-  // get non friend
+  // get list non friend
   router.get("/nonfriends", middleware.verifyToken, Account.getNonFriends);
 
   return router;
 };
 
-module.exports = StoryRoutes;
+module.exports = AccountRoutes;
