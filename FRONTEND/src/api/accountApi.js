@@ -13,14 +13,14 @@ export const loginAccount = async (account, dispatch, setError, setOpen) => {
   }
 };
 
-export const registerAccount = async (account, setMessage, setOpen) => {
+export const registerAccount = async (account) => {
+  console.log(account);
   try {
     const res = await axios.post("/api/account/register", account);
-    setMessage(res.data?.message);
-    setOpen(true);
+    console.log(res);
+    return res.data;
   } catch (error) {
-    setMessage(error.response?.data?.message);
-    setOpen(true);
+    console.log({ error });
   }
 };
 
@@ -28,7 +28,7 @@ export const logOut = async (dispatch, accessToken) => {
   try {
     await axiosJWT.post(
       "/api/account/logout",
-      { a: "a" },
+      { logout: "logout" },
       {
         headers: {
           token: `Bearer ${accessToken}`,
@@ -36,6 +36,18 @@ export const logOut = async (dispatch, accessToken) => {
       }
     );
     dispatch(logoutSuccess());
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
+export const getFriends = async (accessToken) => {
+  try {
+    await axios.post("/api/account/friends", {
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
   } catch (error) {
     console.log({ error });
   }

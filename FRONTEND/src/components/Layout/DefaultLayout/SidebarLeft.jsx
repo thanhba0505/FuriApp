@@ -5,7 +5,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import HomeIcon from "@mui/icons-material/HomeTwoTone";
 import VideoIcon from "@mui/icons-material/VideoLibraryTwoTone";
-import StoreIcon from "@mui/icons-material/StorefrontTwoTone";
 import GroupsIcon from "@mui/icons-material/GroupsTwoTone";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -13,6 +12,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
+import ForumIcon from "@mui/icons-material/ForumTwoTone";
 
 import Sidebar from "../components/SidebarLeft";
 
@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
 import { getImageBlob } from "~/api/imageApi";
+import usePath from "~/hooks/usePath";
 
 // PaperFirst
 const PaperFirst = React.memo(() => {
@@ -44,7 +45,7 @@ const PaperFirst = React.memo(() => {
       fetchImage();
     }
   }, [avatar, accessToken]);
-  
+
   return (
     <Paper>
       <Grid container rowSpacing={1}>
@@ -68,18 +69,23 @@ const PaperFirst = React.memo(() => {
 
 // PaperSecond
 const PaperSecond = React.memo(() => {
-  const currentUrl = window.location.pathname;
+  const currentPath = usePath();
 
   let i = 0;
   const tabs = [
     { label: "Home", path: "/", icon: <HomeIcon />, custom: false },
     { label: "Video", path: "/video", icon: <VideoIcon />, custom: false },
-    { label: "Group", path: "/group", icon: <GroupsIcon />, custom: true },
-    { label: "Store", path: "/store", icon: <StoreIcon />, custom: false },
+    {
+      label: "Everyone",
+      path: "/everyone",
+      icon: <GroupsIcon />,
+      custom: false,
+    },
+    { label: "Message", path: "/message", icon: <ForumIcon />, custom: true },
   ];
 
   for (let index = tabs.length - 1; index >= 0; index--) {
-    if (currentUrl.startsWith(tabs[index].path)) {
+    if (currentPath.startsWith(tabs[index].path)) {
       i = index;
       break;
     }
@@ -148,6 +154,7 @@ const SidebarLeft = ({ xs = {} }) => {
     </Sidebar>
   );
 };
+
 const SidebarLeftMemo = React.memo(SidebarLeft);
 
 export default SidebarLeftMemo;

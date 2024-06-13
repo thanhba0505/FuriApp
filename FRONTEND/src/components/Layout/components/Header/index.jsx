@@ -11,7 +11,7 @@ import appInfo from "~/utils/appInfo";
 import ModeSelect from "~/components/ModeSelect";
 import React from "react";
 
-function Header() {
+const Header = () => {
   return (
     <Box
       sx={{
@@ -50,7 +50,7 @@ function Header() {
             {appInfo.nameApp}
           </Typography>
 
-          <ModeSelect/>
+          <ModeSelect />
 
           {/* <SearchField /> */}
 
@@ -61,8 +61,8 @@ function Header() {
       </AppBar>
     </Box>
   );
-}
+};
 
-const HeaderMemo = React.memo(Header)
+const HeaderMemo = React.memo(Header);
 
 export default HeaderMemo;

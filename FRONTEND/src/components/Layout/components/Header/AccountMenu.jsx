@@ -56,7 +56,7 @@ function AccountMenu() {
   return (
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
-        {img && <IconButton
+        <IconButton
           onClick={handleClick}
           size="small"
           sx={{ ml: 2 }}
@@ -64,8 +64,8 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          <Avatar src={img} />
-        </IconButton>}
+          <Avatar src={img || ""} />
+        </IconButton>
       </Box>
 
       <Menu
@@ -106,7 +106,7 @@ function AccountMenu() {
         <MenuItem>
           <Avatar /> Profile
         </MenuItem>
-        
+
         <MenuItem>
           <Avatar /> My account
         </MenuItem>

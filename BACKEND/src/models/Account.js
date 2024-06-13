@@ -17,7 +17,7 @@ const schema = new mongoose.Schema(
 
     fullname: {
       type: String,
-      require: true,
+      required: true,
       maxlength: 50,
       minlength: 4,
     },
@@ -49,7 +49,7 @@ const schema = new mongoose.Schema(
         account: {
           type: mongoose.Schema.ObjectId,
           ref: "Account",
-          require: true,
+          required: true,
         },
 
         conversation: {

@@ -34,7 +34,7 @@ const uploadAccountImage = multer({
   storage: createStorage('accountImage'),
   limits: limits,
   fileFilter: fileFilter,
-}).single("image");
+}).single("image", 1);
 
 const uploadStoryImage = multer({
   storage: createStorage('storyImage'),

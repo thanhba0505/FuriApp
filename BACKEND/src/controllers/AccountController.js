@@ -6,15 +6,20 @@ const RefreshToken = require("../models/RefreshToken");
 const BlackListToken = require("../models/BlackListToken");
 const Conversation = require("../models/Conversation");
 
+const multer = require("multer");
+const { uploadAccountImage } = require("../config/uploads/multer");
+
 const AccountController = {
   registerAccount: async (req, res) => {
     try {
       const { username, password, fullname } = req.body;
+      console.log({ username, password, fullname });
 
-      if (username.length < 8 || username.length > 30) {
-        return res
-          .status(400)
-          .json({ message: "Username must be between 10 and 30 characters" });
+      if (!username || username.length < 8 || username.length > 30) {
+        return res.json({
+          status: 400,
+          message: "Username must be between 10 and 30 characters",
+        });
       }
 
       const existingAccount = await Account.findOne({
@@ -22,19 +27,21 @@ const AccountController = {
       });
 
       if (existingAccount) {
-        return res.status(409).json({ message: "Username already exists" });
+        return res.json({ status: 409, message: "Username already exists" });
       }
 
-      if (fullname.length < 4 || fullname.length > 50) {
-        return res
-          .status(400)
-          .json({ message: "Full name must be between 10 and 50 characters" });
+      if (!fullname || fullname.length < 4 || fullname.length > 50) {
+        return res.json({
+          status: 400,
+          message: "Full name must be between 10 and 50 characters",
+        });
       }
 
-      if (password.length < 8 || password.length > 20) {
-        return res
-          .status(400)
-          .json({ message: "Password must be between 8 and 20 characters" });
+      if (!password || password.length < 8 || password.length > 20) {
+        return res.json({
+          status: 400,
+          message: "Password must be between 8 and 20 characters",
+        });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -48,9 +55,9 @@ const AccountController = {
 
       await newAccount.save();
 
-      return res.status(200).json({ message: "Registration successful" });
+      return res.json({ message: "Registration successful", status: 200 });
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.json({ message: "Internal Server Error", status: 500 });
     }
   },
 
@@ -82,7 +89,9 @@ const AccountController = {
     try {
       const account = await Account.findOne({
         username: req.body.username,
-      });
+      }).select(
+        "_id username fullname admin createAt updateAt __v avatar password"
+      );
 
       if (!account) {
         return res.status(404).json({ message: "Wrong username" });
@@ -194,6 +203,37 @@ const AccountController = {
     } catch (error) {
       res.status(500).json({ message: "Internal Server Error" });
     }
+  },
+
+  uploadAvatar: async (req, res) => {
+    uploadAccountImage(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+      } else if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+
+      const accountID = req.account.id;
+      const image = req.file;
+
+      if (!image) {
+        return res.status(400).json({ message: "No photo uploaded" });
+      }
+
+      const account = Account.findById(accountID).populate("avatar");
+
+      const pathAccount = "accountImage/";
+
+      if (account.avatar) {
+        account.avatar = pathAccount + image.filename;
+      }
+
+      try {
+        res.status(201).json({ message: "Success upload avatar", account });
+      } catch (error) {
+        res.status(500).json({ message: "Error creating post", error });
+      }
+    });
   },
 
   sendFriendRequest: async (req, res, io) => {
@@ -331,30 +371,38 @@ const AccountController = {
   },
 
   getFriends: async (req, res) => {
+    const limit = parseInt(req.query._limit) || 10;
+    const skip = parseInt(req.query._skip) || 0;
+
     const pathAccount = "accountImage/";
 
     try {
       const accountId = req.account.id;
 
-      const account = await Account.findById(accountId).populate(
-        "friends.account",
-        "username fullname avatar"
-      );
+      const account = await Account.findById(accountId).populate({
+        path: "friends.account",
+        select: "username fullname avatar",
+      });
+      const friends = account.friends.slice(skip, skip + limit);
 
-      account.friends?.map(
-        (friend) =>
-          (friend.account.avatar = pathAccount + friend.account.avatar)
-      );
+      if (friends.length > 0) {
+        friends.forEach((friend) => {
+          if (friend.account.avatar) {
+            friend.account.avatar = pathAccount + friend.account.avatar;
+          }
+        });
+      }
 
-      return res.status(200).json({ friends: account.friends });
+      return res.status(200).json({ friends });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({ message: "Internal Server Error", error });
     }
   },
 
   getNonFriends: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
-    const page = parseInt(req.query._page) || 1;
+    const skip = parseInt(req.query._skip) || 0;
     const pathAccount = "accountImage/";
 
     try {
@@ -370,12 +418,16 @@ const AccountController = {
         { _id: { $nin: friendsIds } },
         "username fullname avatar"
       )
-        .skip((page - 1) * limit)
+        .skip(skip)
         .limit(limit);
 
-      nonFriends?.map(
-        (friend) => (friend.avatar = pathAccount + friend.avatar)
-      );
+      if (nonFriends.length > 0) {
+        nonFriends.forEach((nonFriend) => {
+          if (nonFriend.avatar) {
+            nonFriend.avatar = pathAccount + nonFriend.avatar;
+          }
+        });
+      }
 
       return res.status(200).json({ nonFriends });
     } catch (error) {

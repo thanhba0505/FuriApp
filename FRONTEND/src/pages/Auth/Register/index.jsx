@@ -10,12 +10,12 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
 function Register() {
-  const [fullName, setFullName] = useState("");
+  const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [message, setMessage] = useState("");
+  const [result, setResult] = useState("");
   const [open, setOpen] = useState(false);
 
   const [samePassword, setSamePassword] = useState(true);
@@ -27,23 +27,36 @@ function Register() {
 
     setDisabled(
       username == "" ||
-        fullName == "" ||
+        fullname == "" ||
         password == "" ||
         confirmPassword == "" ||
         !samePassword
     );
-  }, [password, confirmPassword, username, fullName, samePassword]);
+  }, [password, confirmPassword, username, fullname, samePassword]);
 
-  const dispatch = useDispatch();
-
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const newAccount = {
       username: username,
       password: password,
-      fullName: fullName,
+      fullname: fullname,
     };
 
-    registerAccount(newAccount, dispatch, setMessage, setOpen);
+    try {
+      const res = await registerAccount(newAccount);
+
+      if (res.status == 200) {
+        setUsername("");
+        setFullname("");
+        setPassword("");
+        setConfirmPassword("");
+      }
+
+      setResult(res);
+      setOpen(true);
+    } catch (error) {
+      setResult("Registration failed");
+      setOpen(true);
+    }
   };
 
   const handleClose = (event, reason) => {
@@ -59,8 +72,8 @@ function Register() {
         label="Full Name"
         type="text"
         placeholder="Furi"
-        value={fullName}
-        onChange={(e) => setFullName(e.target.value)}
+        value={fullname}
+        onChange={(e) => setFullname(e.target.value)}
       />
 
       <TextInput
@@ -110,11 +123,11 @@ function Register() {
       >
         <Alert
           onClose={handleClose}
-          severity={message == "Registration successful" ? "info" : "error"}
+          severity={result.status == 200 ? "info" : "error"}
           variant="filled"
           sx={{ width: "100%" }}
         >
-          {message}
+          {result.message}
         </Alert>
       </Snackbar>
     </Box>

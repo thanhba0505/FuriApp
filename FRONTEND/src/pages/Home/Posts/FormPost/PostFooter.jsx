@@ -295,7 +295,6 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
 
     socket.on("newComment_" + postId, ({ addedComment }) => {
       setListComment((prevComments) => [...prevComments, addedComment]);
-      console.log(addedComment);
     });
 
     return () => {

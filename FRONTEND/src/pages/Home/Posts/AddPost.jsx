@@ -168,7 +168,7 @@ const AddPost = () => {
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1-content"
-          id="panel1-header"
+          sx={{ minHeight: "48px !important" }}
         >
           {img && (
             <Avatar
@@ -197,6 +197,7 @@ const AddPost = () => {
             minRows={4}
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            sx={{ mt: 2 }}
           />
 
           <Grid container pt="16px" columnSpacing="16px" alignItems={"center"}>

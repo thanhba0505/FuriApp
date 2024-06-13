@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 
 function App() {
   let account = useSelector((state) => state.auth.login?.currentAccount);
-
+  
   return (
     <Router>
       <Routes>

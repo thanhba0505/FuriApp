@@ -10,6 +10,8 @@ const AccountRoutes = (io) => {
   router.post("/refresh", middleware.verifyToken, Account.requestRefreshToken);
   router.post("/logout", middleware.verifyToken, Account.logoutAccount);
 
+  router.post("/avatar", middleware.verifyToken, Account.uploadAvatar);
+
   // send friend request
   router.post("/friend/send", middleware.verifyToken, (req, res) =>
     Account.sendFriendRequest(req, res, io)

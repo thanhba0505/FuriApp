@@ -1,7 +1,8 @@
 import { Box } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import React from "react";
 
-function Body({ children }) {
+const Body = ({ children }) => {
   return (
     <Box
       sx={{
@@ -35,6 +36,8 @@ function Body({ children }) {
       </Box>
     </Box>
   );
-}
+};
 
-export default Body;
+const BodyMemo = React.memo(Body);
+
+export default BodyMemo;

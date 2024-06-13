@@ -6,8 +6,8 @@ import NoLayout from "~/components/Layout/NoLayout";
 // Pages
 import Home from "~/pages/Home";
 import Video from "~/pages/Video";
-import Group from "~/pages/Group";
-import Store from "~/pages/Store";
+import Everyone from "~/pages/Everyone";
+import Message from "~/pages/Message";
 
 import Friends from "~/pages/Friends";
 import Profile from "~/pages/Profile";
@@ -18,8 +18,8 @@ import Auth from "~/pages/Auth";
 const loginRoutes = [
   { path: "/", component: Home },
   { path: "/video", component: Video },
-  { path: "/group", component: Group },
-  { path: "/store", component: Store },
+  { path: "/everyone", component: Everyone },
+  { path: "/message", component: Message },
   { path: "/friends", component: Friends, layout: SidebarLeftLayout },
   { path: "/profile", component: Profile, layout: ContainerLayout },
 ];

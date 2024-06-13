@@ -10,21 +10,10 @@ import TabPanel from "@mui/lab/TabPanel";
 import Login from "./Login";
 import Register from "./Register";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { Typography } from "@mui/material";
 import { setPageLogin, setPageRegister } from "~/redux/otherSlice";
 
 function Auth() {
-  const account = useSelector((state) => state.auth.login?.currentAccount);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (account) {
-      navigate("/");
-    }
-  }, [account, navigate]);
-
   const dispatch = useDispatch();
 
   const page = useSelector((state) => state.other.authPage?.page);
