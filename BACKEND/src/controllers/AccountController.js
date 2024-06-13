@@ -154,7 +154,7 @@ const AccountController = {
 
           res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
-            secure: false, // Deloy -> true
+            secure: false, // Deploy -> true
             path: "/",
             sameSite: "strict",
           });

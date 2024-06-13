@@ -1,31 +1,68 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { publicRoutes } from "~/routes";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { loginRoutes, noLoginRoutes } from "~/routes";
 import DefaultLayout from "~/components/Layout/DefaultLayout";
+import { useSelector } from "react-redux";
 
 function App() {
+  let account = useSelector((state) => state.auth.login?.currentAccount);
+
   return (
     <Router>
       <Routes>
-        {publicRoutes.map((route, index) => {
-          const Page = route.component;
-          let Layout = DefaultLayout;
+        {account ? (
+          <>
+            {loginRoutes.map((route, index) => {
+              const Page = route.component;
+              let Layout = DefaultLayout;
 
-          if (route.layout) {
-            Layout = route.layout;
-          }
-
-          return (
-            <Route
-              key={index}
-              path={route.path}
-              element={
-                <Layout>
-                  <Page />
-                </Layout>
+              if (route.layout) {
+                Layout = route.layout;
               }
-            />
-          );
-        })}
+
+              return (
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={
+                    <Layout>
+                      <Page />
+                    </Layout>
+                  }
+                />
+              );
+            })}
+            <Route path="*" element={<Navigate to="/" />} />
+          </>
+        ) : (
+          <>
+            {noLoginRoutes.map((route, index) => {
+              const Page = route.component;
+              let Layout = DefaultLayout;
+
+              if (route.layout) {
+                Layout = route.layout;
+              }
+
+              return (
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={
+                    <Layout>
+                      <Page />
+                    </Layout>
+                  }
+                />
+              );
+            })}
+            <Route path="*" element={<Navigate to="/auth" />} />
+          </>
+        )}
       </Routes>
     </Router>
   );

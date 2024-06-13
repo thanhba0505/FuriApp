@@ -14,6 +14,7 @@
         "lable",
         "maxlength",
         "nonfriends",
+        "persistor",
         "pjpeg",
         "reduxjs",
         "socketio"

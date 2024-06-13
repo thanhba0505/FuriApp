@@ -7,7 +7,7 @@ const AccountRoutes = (io) => {
 
   router.post("/register", Account.registerAccount);
   router.post("/login", Account.loginAccount);
-  router.post("/refresh", Account.requestRefreshToken);
+  router.post("/refresh", middleware.verifyToken, Account.requestRefreshToken);
   router.post("/logout", middleware.verifyToken, Account.logoutAccount);
 
   // send friend request

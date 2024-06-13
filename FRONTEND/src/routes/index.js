@@ -15,17 +15,16 @@ import Profile from "~/pages/Profile";
 import Auth from "~/pages/Auth";
 
 // public routes
-const publicRoutes = [
+const loginRoutes = [
   { path: "/", component: Home },
   { path: "/video", component: Video },
   { path: "/group", component: Group },
   { path: "/store", component: Store },
   { path: "/friends", component: Friends, layout: SidebarLeftLayout },
   { path: "/profile", component: Profile, layout: ContainerLayout },
-  { path: "/auth", component: Auth, layout: NoLayout },
 ];
 
 // private routes
-const privateRoutes = [];
+const noLoginRoutes = [{ path: "/auth", component: Auth, layout: NoLayout }];
 
-export { publicRoutes, privateRoutes };
+export { loginRoutes, noLoginRoutes };

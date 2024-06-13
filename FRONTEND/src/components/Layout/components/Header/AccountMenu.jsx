@@ -10,11 +10,12 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
 
 import ModeSelect from "~/components/ModeSelect";
-import Avatar from "~/components/Avatar";
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
 // import { getImage } from "~/api/imageApi";
 import { useRef } from "react";
+import { Avatar } from "@mui/material";
+import { getImageBlob } from "~/api/imageApi";
 
 function AccountMenu() {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -29,35 +30,33 @@ function AccountMenu() {
 
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const avatar = account?.avatar;
   const dispatch = useDispatch();
 
   const handleLogOut = () => {
     logOut(dispatch, accessToken);
   };
 
-  const [avatar, setAvatar] = useState();
-  const hasFetchedImage = useRef(false);
+  const [img, setImg] = useState();
 
   useEffect(() => {
-    if (account && !hasFetchedImage.current) {
-      hasFetchedImage.current = true;
-      const fetchImage = async () => {
-        try {
-          await getImage(dispatch, account.user?.avatar, (url) => {
-            setAvatar(url);
-          });
-        } catch (error) {
-          console.error("Error fetching image:", error);
-        }
-      };
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, avatar);
+        setImg(result);
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+    if (avatar && accessToken) {
       fetchImage();
     }
-  }, [dispatch, account]);
+  }, [avatar, accessToken]);
 
   return (
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
-        <IconButton
+        {img && <IconButton
           onClick={handleClick}
           size="small"
           sx={{ ml: 2 }}
@@ -65,9 +64,10 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          <Avatar src={avatar || undefined} />
-        </IconButton>
+          <Avatar src={img} />
+        </IconButton>}
       </Box>
+
       <Menu
         anchorEl={anchorEl}
         id="account-menu"
@@ -106,27 +106,25 @@ function AccountMenu() {
         <MenuItem>
           <Avatar /> Profile
         </MenuItem>
+        
         <MenuItem>
           <Avatar /> My account
         </MenuItem>
+
         <Divider />
+
         <MenuItem>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
           Add another account
         </MenuItem>
+
         <MenuItem>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
           Settings
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          <ModeSelect />
         </MenuItem>
 
         <MenuItem onClick={handleLogOut}>
