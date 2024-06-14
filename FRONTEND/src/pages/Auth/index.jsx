@@ -13,9 +13,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Typography } from "@mui/material";
 import { setPageLogin, setPageRegister } from "~/redux/otherSlice";
 
-function Auth() {
+const Auth = () => {
   const dispatch = useDispatch();
-
   const page = useSelector((state) => state.other.authPage?.page);
 
   const [value, setValue] = React.useState(page);
@@ -79,6 +78,8 @@ function Auth() {
       </Paper>
     </>
   );
-}
+};
 
-export default Auth;
+const AuthMemo = React.memo(Auth);
+
+export default AuthMemo;

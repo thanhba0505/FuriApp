@@ -1,8 +1,8 @@
-import axios from "~/utils/axios";
+import axiosJWT from "~/utils/axiosJWT";
 
 export const getPosts = async (accessToken, page, limit) => {
   try {
-    const res = await axios.get(
+    const res = await axiosJWT.get(
       `/api/post/posts?_page=${page}&_limit=${limit}`,
       {
         headers: {
@@ -19,7 +19,7 @@ export const getPosts = async (accessToken, page, limit) => {
 
 export const getInteract = async (accessToken, postID, type) => {
   try {
-    const res = await axios.post(
+    const res = await axiosJWT.post(
       `/api/post/interact/${postID}`,
       {
         type: type ? type : null,
@@ -39,7 +39,7 @@ export const getInteract = async (accessToken, postID, type) => {
 
 export const addComment = async (accessToken, postID, content) => {
   try {
-    const res = await axios.post(
+    const res = await axiosJWT.post(
       `/api/post/addcomment/${postID}`,
       {
         content: content,
@@ -59,7 +59,7 @@ export const addComment = async (accessToken, postID, content) => {
 
 export const addPost = async (accessToken, formData) => {
   try {
-    const res = await axios.post(`/api/post/add`, formData, {
+    const res = await axiosJWT.post(`/api/post/add`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         token: `Bearer ${accessToken}`,

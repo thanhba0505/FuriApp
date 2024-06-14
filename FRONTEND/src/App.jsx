@@ -7,10 +7,11 @@ import {
 import { loginRoutes, noLoginRoutes } from "~/routes";
 import DefaultLayout from "~/components/Layout/DefaultLayout";
 import { useSelector } from "react-redux";
+import React from "react";
 
-function App() {
+const App = () => {
   let account = useSelector((state) => state.auth.login?.currentAccount);
-  
+
   return (
     <Router>
       <Routes>
@@ -66,6 +67,8 @@ function App() {
       </Routes>
     </Router>
   );
-}
+};
 
-export default App;
+const AppMemo = React.memo(App);
+
+export default AppMemo;

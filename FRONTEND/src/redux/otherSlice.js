@@ -3,10 +3,6 @@ import { createSlice } from "@reduxjs/toolkit";
 const otherSlice = createSlice({
   name: "other",
   initialState: {
-    app: {
-      logo:
-        import.meta.env.VITE_FURI_API_BASE_URL + "/public/app/logo-furi.png",
-    },
     authPage: {
       page: "login",
     },

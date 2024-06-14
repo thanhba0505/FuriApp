@@ -7,6 +7,7 @@ import theme from "~/theme.js";
 import { Provider } from "react-redux";
 import store, { persistor } from "~/redux/store";
 import { PersistGate } from "redux-persist/integration/react";
+import SnackbarProviderCustom from "./components/SnackbarProviderCustom";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <>
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <CssBaseline />
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <App />
+          <SnackbarProviderCustom>
+            <App />
+          </SnackbarProviderCustom>
         </PersistGate>
       </Provider>
     </CssVarsProvider>

@@ -68,7 +68,7 @@ const AccountController = {
         admin: account.admin,
       },
       process.env.FURI_JWT_ACCESS_KEY,
-      { expiresIn: "7d" }
+      { expiresIn: "10s" }
     );
   },
 
@@ -87,23 +87,22 @@ const AccountController = {
     const pathAccount = "accountImage/";
 
     try {
+      const { username, password } = req.body;
+
       const account = await Account.findOne({
-        username: req.body.username,
+        username: username,
       }).select(
         "_id username fullname admin createAt updateAt __v avatar password"
       );
 
       if (!account) {
-        return res.status(404).json({ message: "Wrong username" });
+        return res.json({ status: 404, message: "Wrong username" });
       }
 
-      const validPassword = await bcrypt.compare(
-        req.body.password,
-        account.password
-      );
+      const validPassword = await bcrypt.compare(password, account.password);
 
       if (!validPassword) {
-        return res.status(404).json({ message: "Wrong password" });
+        return res.json({ status: 404, message: "Wrong password" });
       }
 
       if (account && validPassword) {
@@ -124,10 +123,17 @@ const AccountController = {
         }
 
         const { password, ...others } = account._doc;
-        return res.status(200).json({ ...others, accessToken });
+        return res.json({
+          status: 200,
+          message: "Login successful",
+          result: {
+            ...others,
+            accessToken,
+          },
+        });
       }
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.json({ status: 500, message: "Internal Server Error" });
     }
   },
 
@@ -135,14 +141,14 @@ const AccountController = {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json("You're not authenticated");
+      return res.json({ status: 401, message: "You're not authenticated" });
     }
 
     try {
       const tokenExists = await RefreshToken.exists({ token: refreshToken });
 
       if (!tokenExists) {
-        return res.status(403).json("Refresh token is not valid");
+        return res.json({ status: 403, message: "Refresh token is not valid" });
       }
 
       jwt.verify(
@@ -150,7 +156,10 @@ const AccountController = {
         process.env.FURI_JWT_REFRESH_KEY,
         async (err, account) => {
           if (err) {
-            return res.status(403).json("Refresh token is not valid");
+            return res.json({
+              status: 403,
+              message: "Refresh token is not valid",
+            });
           }
 
           await RefreshToken.deleteOne({ token: refreshToken });
@@ -168,11 +177,11 @@ const AccountController = {
             sameSite: "strict",
           });
 
-          return res.status(200).json({ accessToken: newAccessToken });
+          return res.json({ status: 200, accessToken: newAccessToken });
         }
       );
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.json({ status: 500, message: "Internal Server Error" });
     }
   },
 
@@ -182,7 +191,7 @@ const AccountController = {
       const accessToken = req.headers.token?.split(" ")[1];
 
       if (!refreshToken || !accessToken) {
-        return res.status(401).json({ message: "You're not authenticated" });
+        return res.json({ status: 401, message: "You're not authenticated" });
       }
 
       await RefreshToken.deleteOne({ token: refreshToken });
@@ -199,9 +208,9 @@ const AccountController = {
 
       res.clearCookie("refreshToken");
 
-      res.status(200).json({ message: "Logged out successfully" });
+      res.json({ status: 200, message: "Logged out successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Internal Server Error" });
+      res.json({ status: 500, message: "Internal Server Error" });
     }
   },
 

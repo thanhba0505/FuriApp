@@ -2,42 +2,51 @@ import { loginSuccess, loginFail, logoutSuccess } from "~/redux/authSlice";
 import axios from "~/utils/axios";
 import axiosJWT from "~/utils/axiosJWT";
 
-export const loginAccount = async (account, dispatch, setError, setOpen) => {
+export const loginAccount = async (account, dispatch) => {
   try {
     const res = await axios.post("/api/account/login", account);
-    dispatch(loginSuccess(res.data));
+
+    if (res.data.status == 200) {
+      dispatch(loginSuccess(res.data.result));
+    } else {
+      dispatch(loginFail());
+    }
+    return res.data;
   } catch (error) {
-    setError(error.response?.data?.message);
-    setOpen(true);
     dispatch(loginFail());
+    console.log({ error });
+    return { status: 500, message: "Internal Server Error" };
   }
 };
 
 export const registerAccount = async (account) => {
-  console.log(account);
   try {
     const res = await axios.post("/api/account/register", account);
-    console.log(res);
     return res.data;
   } catch (error) {
     console.log({ error });
+    return { status: 500, message: "Internal Server Error" };
   }
 };
 
 export const logOut = async (dispatch, accessToken) => {
   try {
-    await axiosJWT.post(
+    const res = await axiosJWT.post(
       "/api/account/logout",
-      { logout: "logout" },
+      {},
       {
         headers: {
           token: `Bearer ${accessToken}`,
         },
       }
     );
-    dispatch(logoutSuccess());
+    if (res.data.status == 200) {
+      dispatch(logoutSuccess());
+    }
+    return res.data;
   } catch (error) {
     console.log({ error });
+    return { status: 500, message: "Internal Server Error" };
   }
 };
 

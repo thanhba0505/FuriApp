@@ -1,22 +1,35 @@
+import { Avatar } from "@mui/material";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { getImageBlob } from "~/api/imageApi";
 // import { testUser } from "~/api/userApi";
 import Paper from "~/components/Paper";
 
 function Video() {
-  const account = useSelector((state) => state.other.app?.logo);
-  const page = useSelector((state) => state.other.authPage?.page);
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const avatar = account?.avatar;
+  const [img, setImg] = useState();
 
-  // // const dispatch = useDispatch();
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, avatar);
+        setImg(result);
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+    if (avatar && accessToken) {
+      fetchImage();
+    }
+  }, [avatar, accessToken]);
 
-  // // const axiosJWTa = axiosJWT(dispatch, account);
-
-  // const test = testUser(account?.accessToken);
-
-  console.log(account);
-  console.log(import.meta.env.VITE_FURI_API_BASE_URL + "/api/app/logo-furi.png");
   return (
     <>
-      <Paper></Paper>
+      <Paper>
+        <Avatar src={img || ""} />
+      </Paper>
     </>
   );
 }

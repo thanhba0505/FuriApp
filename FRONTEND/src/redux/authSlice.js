@@ -12,6 +12,10 @@ const authSlice = createSlice({
       state.login.currentAccount = action.payload;
     },
 
+    refreshSuccess: (state, action) => {
+      state.login.currentAccount = action.payload;
+    },
+
     loginFail: (state) => {
       state.login.currentAccount = null;
     },
@@ -22,6 +26,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginSuccess, loginFail, logoutSuccess } = authSlice.actions;
+export const { loginSuccess, loginFail, refreshSuccess, logoutSuccess } =
+  authSlice.actions;
 
 export default authSlice.reducer;

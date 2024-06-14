@@ -14,12 +14,23 @@ import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
 // import { getImage } from "~/api/imageApi";
 import { useRef } from "react";
-import { Avatar } from "@mui/material";
+import Avatar from "@mui/material/Avatar";
 import { getImageBlob } from "~/api/imageApi";
+import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 
 function AccountMenu() {
+  const navigate = useNavigate();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const avatar = account?.avatar;
+  const dispatch = useDispatch();
+
+  const [img, setImg] = useState();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -28,16 +39,14 @@ function AccountMenu() {
     setAnchorEl(null);
   };
 
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
-  const avatar = account?.avatar;
-  const dispatch = useDispatch();
-
-  const handleLogOut = () => {
-    logOut(dispatch, accessToken);
+  const handleLogOut = async () => {
+    const res = await logOut(dispatch, accessToken);
+    if (res) {
+      enqueueSnackbar(res.message, {
+        variant: res.status == 200 ? "success" : "error",
+      });
+    }
   };
-
-  const [img, setImg] = useState();
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -64,7 +73,7 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          <Avatar src={img || ""} />
+          <Avatar src={img ? img : ""} />
         </IconButton>
       </Box>
 
@@ -138,4 +147,6 @@ function AccountMenu() {
   );
 }
 
-export default AccountMenu;
+const AccountMenuMemo = React.memo(AccountMenu);
+
+export default AccountMenuMemo;

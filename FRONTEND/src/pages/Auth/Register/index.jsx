@@ -3,20 +3,15 @@ import Box from "@mui/material/Box";
 
 import TextInput from "~/components/TextInput";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { registerAccount } from "~/api/accountApi";
-import { useDispatch } from "react-redux";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
+import { enqueueSnackbar } from "notistack";
 
-function Register() {
+const Register = () => {
   const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [result, setResult] = useState("");
-  const [open, setOpen] = useState(false);
 
   const [samePassword, setSamePassword] = useState(true);
   const [disabled, setDisabled] = useState(true);
@@ -51,19 +46,12 @@ function Register() {
         setConfirmPassword("");
       }
 
-      setResult(res);
-      setOpen(true);
+      enqueueSnackbar(res.message, {
+        variant: res.status == 200 ? "success" : "error",
+      });
     } catch (error) {
-      setResult("Registration failed");
-      setOpen(true);
+      console.log({ error });
     }
-  };
-
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpen(false);
   };
 
   return (
@@ -109,29 +97,10 @@ function Register() {
       >
         Register
       </Button>
-
-      <Snackbar
-        open={open}
-        autoHideDuration={3000}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        sx={{
-          bottom: "30px!important",
-          right: "30px!important",
-          maxHeight: "30vw",
-        }}
-      >
-        <Alert
-          onClose={handleClose}
-          severity={result.status == 200 ? "info" : "error"}
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {result.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
-}
+};
 
-export default Register;
+const RegisterMemo = React.memo(Register);
+
+export default RegisterMemo;

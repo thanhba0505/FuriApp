@@ -4,6 +4,7 @@ const fs = require("fs");
 const ImageController = {
   getImage: async (req, res) => {
     const { folder, filename } = req.params;
+
     const imagePath = path.join(
       __dirname,
       "../public/uploads",
@@ -13,7 +14,7 @@ const ImageController = {
 
     fs.access(imagePath, fs.constants.F_OK, (err) => {
       if (err) {
-        return res.status(404).json({ message: "Image not found" });
+        return res.json({ status: 404, message: "Image not found" });
       }
 
       res.sendFile(imagePath);

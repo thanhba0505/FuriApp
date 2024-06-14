@@ -14,7 +14,7 @@ const middlewareController = {
       });
 
       if (accessTokenExists) {
-        return res.status(403).json({ message: "Token is not valid" });
+        return res.json({ status: 403, message: "Token is not valid" });
       }
 
       jwt.verify(
@@ -22,12 +22,12 @@ const middlewareController = {
         process.env.FURI_JWT_ACCESS_KEY,
         async (err, account) => {
           if (err) {
-            return res.status(403).json({ message: "Token is not valid" });
+            return res.json({ status: 403, message: "Token is not valid" });
           }
 
           const accountID = await Account.findById(account.id);
           if (!accountID) {
-            return res.status(404).json({ message: "Account does not exist" });
+            return res.json({ status: 404, message: "Account does not exist" });
           }
 
           req.account = account;
@@ -35,7 +35,10 @@ const middlewareController = {
         }
       );
     } else {
-      return res.status(401).json({ message: "You're not authenticated" });
+      return res.json({
+        status: 401,
+        message: "You're not authenticated",
+      });
     }
   },
 
