@@ -9,18 +9,28 @@ const authSlice = createSlice({
   },
   reducers: {
     loginSuccess: (state, action) => {
+      console.log("loginSuccess");
       state.login.currentAccount = action.payload;
     },
 
     refreshSuccess: (state, action) => {
-      state.login.currentAccount = action.payload;
+      console.log("refreshSuccess");
+      const newAccessToken = action.payload;
+      const account = state.login.currentAccount;
+      if (account) {
+        // eslint-disable-next-line no-unused-vars
+        const { accessToken, ...others } = account;
+        state.login.currentAccount = { ...others, accessToken: newAccessToken };
+      }
     },
 
     loginFail: (state) => {
+      console.log("loginFail");
       state.login.currentAccount = null;
     },
 
     logoutSuccess: (state) => {
+      console.log("logoutSuccess");
       state.login.currentAccount = null;
     },
   },

@@ -68,7 +68,7 @@ const AccountController = {
         admin: account.admin,
       },
       process.env.FURI_JWT_ACCESS_KEY,
-      { expiresIn: "10s" }
+      { expiresIn: "120s" }
     );
   },
 
@@ -126,7 +126,7 @@ const AccountController = {
         return res.json({
           status: 200,
           message: "Login successful",
-          result: {
+          account: {
             ...others,
             accessToken,
           },
@@ -177,7 +177,11 @@ const AccountController = {
             sameSite: "strict",
           });
 
-          return res.json({ status: 200, accessToken: newAccessToken });
+          return res.json({
+            status: 200,
+            message: "Refresh token successful",
+            accessToken: newAccessToken,
+          });
         }
       );
     } catch (error) {

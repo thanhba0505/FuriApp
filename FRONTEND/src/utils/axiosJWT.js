@@ -1,6 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { refreshSuccess } from "~/redux/authSlice";
+import { handleRefreshSuccess } from "~/services/authService";
 import store from "~/redux/store";
 import request from "~/utils/axios";
 
@@ -16,16 +16,21 @@ axiosJWT.interceptors.request.use(
 
     let date = new Date();
     const decodedToken = jwtDecode(account.accessToken);
-
     if (decodedToken.exp < date.getTime() / 1000) {
-      console.log("refresh");
-      const data = await refreshToken();
-      const refreshAccount = {
-        ...account,
-        accessToken: data.accessToken,
-      };
-      store.dispatch(refreshSuccess(refreshAccount));
-      config.headers.token = `Bearer ${data.accessToken}`;
+      try {
+        const res = await request.post("/api/account/refresh");
+        const refreshAccount = {
+          ...account,
+          accessToken: res.data.accessToken,
+        };
+        handleRefreshSuccess(refreshAccount);
+        config.headers["token"] = `Bearer ${res.data.accessToken}`;
+      } catch (error) {
+        console.log({ message: "Refresh token failed", error });
+        // Optionally, you can dispatch a logout action here
+      }
+    } else {
+      config.headers["token"] = `Bearer ${account.accessToken}`;
     }
     return config;
   },
@@ -33,14 +38,5 @@ axiosJWT.interceptors.request.use(
     return Promise.reject(err);
   }
 );
-
-const refreshToken = async () => {
-  try {
-    const res = await request.post("/api/account/refresh");
-    return res.data;
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export default axiosJWT;
