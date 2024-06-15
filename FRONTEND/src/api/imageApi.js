@@ -1,9 +1,9 @@
-import axiosJWT from "~/utils/axiosJWT";
+import axios from "~/utils/axios";
 
 export const getImageBlob = async (accessToken, path) => {
   try {
     if (path) {
-      const res = await axiosJWT.get(`/api/image/${path}`, {
+      const res = await axios.get(`/api/image/${path}`, {
         responseType: "blob",
         headers: {
           token: `Bearer ${accessToken}`,

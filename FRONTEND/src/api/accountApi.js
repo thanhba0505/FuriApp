@@ -1,6 +1,5 @@
 import { loginSuccess, loginFail, logoutSuccess } from "~/redux/authSlice";
 import axios from "~/utils/axios";
-import axiosJWT from "~/utils/axiosJWT";
 
 export const loginAccount = async (account, dispatch) => {
   try {
@@ -31,7 +30,7 @@ export const registerAccount = async (account) => {
 
 export const logOut = async (dispatch, accessToken) => {
   try {
-    const res = await axiosJWT.post(
+    const res = await axios.post(
       "/api/account/logout",
       {},
       {

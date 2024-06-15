@@ -1,8 +1,8 @@
-import axiosJWT from "~/utils/axiosJWT";
+import axios from "~/utils/axios";
 
 export const addStory = async (accessToken, formData) => {
   try {
-    const res = await axiosJWT.post(`/api/story/add`, formData, {
+    const res = await axios.post(`/api/story/add`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         token: `Bearer ${accessToken}`,
@@ -17,7 +17,7 @@ export const addStory = async (accessToken, formData) => {
 
 export const getStories = async (accessToken, page, limit) => {
   try {
-    const res = await axiosJWT.get(
+    const res = await axios.get(
       `/api/story/stories?_page=${page}&_limit=${limit}`,
       {
         headers: {

@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import React from "react";
 
 const App = () => {
-  let account = useSelector((state) => state.auth.login?.currentAccount);
+  const account = useSelector((state) => state.auth.login?.currentAccount);
 
   return (
     <Router>
