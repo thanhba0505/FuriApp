@@ -68,7 +68,7 @@ const AccountController = {
         admin: account.admin,
       },
       process.env.FURI_JWT_ACCESS_KEY,
-      { expiresIn: "120s" }
+      { expiresIn: "7d" }
     );
   },
 
@@ -218,6 +218,7 @@ const AccountController = {
     }
   },
 
+  //
   uploadAvatar: async (req, res) => {
     uploadAccountImage(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
@@ -257,13 +258,14 @@ const AccountController = {
       const receiver = await Account.findById(receiverId);
 
       if (!receiver) {
-        return res.status(404).json({ message: "Receiver does not exist" });
+        return res.json({ status: 404, message: "Receiver does not exist" });
       }
 
       if (senderId === receiverId) {
-        return res
-          .status(400)
-          .json({ message: "Can not send requests to yourself" });
+        return res.json({
+          status: 400,
+          message: "Can not send requests to yourself",
+        });
       }
 
       const sender = await Account.findById(senderId);
@@ -272,12 +274,20 @@ const AccountController = {
         friend.account._id.equals(receiverId)
       );
       if (isFriend) {
-        return res.status(400).json({ message: "This person is your friend" });
+        return res.json({ status: 400, message: "This person is your friend" });
       }
 
       if (sender.sentFriendRequests.includes(receiverId)) {
-        return res.status(400).json({
+        return res.json({
+          status: 400,
           message: "You have sent a request to make friends with this person",
+        });
+      }
+
+      if (receiver.sentFriendRequests.includes(senderId)) {
+        return res.json({
+          status: 400,
+          message: "This person has already sent a friend request to you",
         });
       }
 
@@ -289,10 +299,10 @@ const AccountController = {
 
       io.to(receiverId).emit("sendFriendRequest", { senderId });
 
-      return res.status(200).json({ message: "Send invitation successfully" });
+      return res.json({ status: 200, message: "Send invitation successfully" });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 
@@ -304,15 +314,16 @@ const AccountController = {
       const sender = await Account.findById(senderId);
 
       if (!sender) {
-        return res.status(404).json({ message: "Sender does not exist" });
+        return res.json({ status: 404, message: "Sender does not exist" });
       }
 
       const receiver = await Account.findById(receiverId);
 
       if (!receiver.receivedFriendRequests.includes(senderId)) {
-        return res
-          .status(400)
-          .json({ message: "No friend request from this user" });
+        return res.json({
+          status: 400,
+          message: "No friend request from this user",
+        });
       }
 
       const newConversation = new Conversation({
@@ -342,9 +353,9 @@ const AccountController = {
 
       io.to(senderId).emit("acceptFriendRequest", { receiverId });
 
-      return res.status(200).json({ message: "Friend request accepted" });
+      return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 
@@ -356,15 +367,16 @@ const AccountController = {
       const sender = await Account.findById(senderId);
 
       if (!sender) {
-        return res.status(404).json({ message: "Sender does not exist" });
+        return res.json({ status: 404, message: "Sender does not exist" });
       }
 
       const receiver = await Account.findById(receiverId);
 
       if (!receiver.receivedFriendRequests.includes(senderId)) {
-        return res
-          .status(400)
-          .json({ message: "No friend request from this user" });
+        return res.json({
+          status: 400,
+          message: "No friend request from this user",
+        });
       }
 
       receiver.receivedFriendRequests = receiver.receivedFriendRequests.filter(
@@ -377,9 +389,9 @@ const AccountController = {
       await receiver.save();
       await sender.save();
 
-      return res.status(200).json({ message: "Friend request rejected" });
+      return res.json({ status: 200, message: "Friend request rejected" });
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 
@@ -394,7 +406,7 @@ const AccountController = {
 
       const account = await Account.findById(accountId).populate({
         path: "friends.account",
-        select: "username fullname avatar",
+        select: "fullname avatar",
       });
       const friends = account.friends.slice(skip, skip + limit);
 
@@ -406,33 +418,48 @@ const AccountController = {
         });
       }
 
-      return res.status(200).json({ friends });
+      return res.json({
+        status: 200,
+        message: "Get friends successful",
+        friends,
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 
   getNonFriends: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
-    const skip = parseInt(req.query._skip) || 0;
     const pathAccount = "accountImage/";
 
     try {
       const accountId = req.account.id;
 
-      const account = await Account.findById(accountId).populate("friends");
+      const account = await Account.findById(accountId)
+        .populate("friends.account")
+        .populate("sentFriendRequests")
+        .populate("receivedFriendRequests");
 
       const friendsIds = account.friends.map((friend) => friend.account._id);
+      const sentFriendRequestsIds = account.sentFriendRequests.map(
+        (request) => request._id
+      );
+      const receivedFriendRequestsIds = account.receivedFriendRequests.map(
+        (request) => request._id
+      );
 
-      friendsIds.push(accountId);
+      const excludedIds = friendsIds.concat(
+        sentFriendRequestsIds,
+        receivedFriendRequestsIds,
+        accountId
+      );
 
-      const nonFriends = await Account.find(
-        { _id: { $nin: friendsIds } },
-        "username fullname avatar"
-      )
-        .skip(skip)
-        .limit(limit);
+      const nonFriends = await Account.aggregate([
+        { $match: { _id: { $nin: excludedIds } } },
+        { $sample: { size: limit } },
+        { $project: { fullname: 1, avatar: 1 } },
+      ]);
 
       if (nonFriends.length > 0) {
         nonFriends.forEach((nonFriend) => {
@@ -442,7 +469,83 @@ const AccountController = {
         });
       }
 
-      return res.status(200).json({ nonFriends });
+      return res.json({
+        status: 200,
+        message: "Get non friends successful",
+        nonFriends,
+      });
+    } catch (error) {
+      return res.json({ status: 500, message: "Internal Server Error", error });
+    }
+  },
+
+  getSentFriendRequests: async (req, res) => {
+    const limit = parseInt(req.query._limit) || 10;
+    const skip = parseInt(req.query._skip) || 0;
+    const pathAccount = "accountImage/";
+
+    try {
+      const accountId = req.account.id;
+
+      const account = await Account.findById(accountId).populate({
+        path: "sentFriendRequests",
+        select: "fullname avatar",
+      });
+
+      let sentFriendRequests = account.sentFriendRequests;
+
+      if (sentFriendRequests.length > 0) {
+        sentFriendRequests = sentFriendRequests
+          .map((request) => {
+            if (request.avatar) {
+              request.avatar = pathAccount + request.avatar;
+            }
+            return request;
+          })
+          .slice(skip, skip + limit);
+      }
+
+      return res.json({
+        status: 200,
+        message: "Get sent friend requests successful",
+        sentFriendRequests,
+      });
+    } catch (error) {
+      return res.json({ status: 500, message: "Internal Server Error", error });
+    }
+  },
+
+  getReceivedFriendRequests: async (req, res) => {
+    const limit = parseInt(req.query._limit) || 10;
+    const skip = parseInt(req.query._skip) || 0;
+    const pathAccount = "accountImage/";
+
+    try {
+      const accountId = req.account.id;
+
+      const account = await Account.findById(accountId).populate({
+        path: "receivedFriendRequests",
+        select: "fullname avatar",
+      });
+
+      let receivedFriendRequests = account.receivedFriendRequests;
+
+      if (receivedFriendRequests.length > 0) {
+        receivedFriendRequests = receivedFriendRequests
+          .map((request) => {
+            if (request.avatar) {
+              request.avatar = pathAccount + request.avatar;
+            }
+            return request;
+          })
+          .slice(skip, skip + limit);
+      }
+
+      return res.json({
+        status: 200,
+        message: "Get received friend requests successful",
+        receivedFriendRequests,
+      });
     } catch (error) {
       return res.status(500).json({ message: "Internal Server Error", error });
     }

@@ -12,26 +12,30 @@ const AccountRoutes = (io) => {
 
   router.post("/avatar", middleware.verifyToken, Account.uploadAvatar);
 
-  // send friend request
+  // Friends
   router.post("/friend/send", middleware.verifyToken, (req, res) =>
     Account.sendFriendRequest(req, res, io)
   );
 
-  // accept friend request
   router.put("/friend/accept", middleware.verifyToken, (req, res) =>
     Account.acceptFriendRequest(req, res, io)
   );
 
-  // reject friend request
   router.put("/friend/reject", middleware.verifyToken, (req, res) =>
     Account.rejectFriendRequest(req, res, io)
   );
 
-  // get list friend
   router.get("/friends", middleware.verifyToken, Account.getFriends);
 
-  // get list non friend
   router.get("/nonfriends", middleware.verifyToken, Account.getNonFriends);
+
+  router.get("/sent", middleware.verifyToken, Account.getSentFriendRequests);
+
+  router.get(
+    "/received",
+    middleware.verifyToken,
+    Account.getReceivedFriendRequests
+  );
 
   return router;
 };

@@ -13,8 +13,6 @@ const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
-  
-
   return (
     <Paper>
       <Accordion
@@ -46,9 +44,7 @@ const PaperFirst = React.memo(() => {
           </Typography>
         </AccordionSummary>
 
-        <AccordionDetails sx={{ p: 0 }}>
-
-        </AccordionDetails>
+        <AccordionDetails sx={{ p: 0 }}></AccordionDetails>
       </Accordion>
     </Paper>
   );
@@ -77,5 +73,7 @@ function SidebarRight({ xs = {} }) {
     </Sidebar>
   );
 }
+
+const SidebarRightMemo = React.memo(SidebarRight);
 
 export default SidebarRight;
