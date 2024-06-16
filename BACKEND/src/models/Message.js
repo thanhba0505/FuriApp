@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema(
   {
+    conversation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
+      required: true,
+    },
+
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Account",
@@ -11,6 +17,11 @@ const schema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
+    },
+
+    read: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

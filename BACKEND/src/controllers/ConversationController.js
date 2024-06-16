@@ -13,16 +13,21 @@ const ConversationController = {
       const conversation = await Conversation.findById(conversationId);
 
       if (!conversation) {
-        return res.status(404).json({ message: "Conversation does not exist" });
+        return res.json({
+          status: 404,
+          message: "Conversation does not exist",
+        });
       }
 
       if (!conversation.participants.includes(senderId)) {
-        return res
-          .status(403)
-          .json({ message: "You are not part of this conversation" });
+        return res.json({
+          status: 403,
+          message: "You are not part of this conversation",
+        });
       }
 
       const newMessage = new Message({
+        conversation: conversationId,
         sender: senderId,
         content,
       });
@@ -44,13 +49,14 @@ const ConversationController = {
 
       io.to(conversationId).emit("newMessage", populatedMessage);
 
-      return res.status(200).json({
+      return res.json({
+        status: 200,
         message: "Message sent successfully",
         newMessage: populatedMessage,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 
@@ -79,13 +85,17 @@ const ConversationController = {
       );
 
       if (!conversation) {
-        return res.status(404).json({ message: "Conversation does not exist" });
+        return res.json({
+          status: 404,
+          message: "Conversation does not exist",
+        });
       }
 
       if (!conversation.participants.includes(senderId)) {
-        return res
-          .status(403)
-          .json({ message: "You are not part of this conversation" });
+        return res.json({
+          status: 403,
+          message: "You are not part of this conversation",
+        });
       }
 
       if (conversation.messages) {
@@ -100,13 +110,14 @@ const ConversationController = {
         });
       }
 
-      return res.status(200).json({
+      return res.json({
+        status: 200,
         message: "Get messages successfully",
         messages: conversation.messages,
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 };

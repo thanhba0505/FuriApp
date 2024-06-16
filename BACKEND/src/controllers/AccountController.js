@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const Account = require("../models/Account");
+const Message = require("../models/Message");
 const RefreshToken = require("../models/RefreshToken");
 const BlackListToken = require("../models/BlackListToken");
 const Conversation = require("../models/Conversation");
@@ -406,22 +407,67 @@ const AccountController = {
 
       const account = await Account.findById(accountId).populate({
         path: "friends.account",
-        select: "fullname avatar",
+        select: "fullname avatar username",
       });
-      const friends = account.friends.slice(skip, skip + limit);
 
-      if (friends.length > 0) {
-        friends.forEach((friend) => {
-          if (friend.account.avatar) {
-            friend.account.avatar = pathAccount + friend.account.avatar;
-          }
-        });
-      }
+      let friends = account.friends;
+
+      const friendsWithDetails = await Promise.all(
+        friends.map(async (friend) => {
+          const conversation = await Conversation.findById(
+            friend.conversation
+          ).populate({
+            path: "messages",
+            populate: {
+              path: "sender",
+              select: "fullname",
+            },
+            options: { sort: { createdAt: -1 }, limit: 1 },
+          });
+
+          const lastMessage = conversation.messages[0];
+
+          const unreadMessagesCount = await Message.countDocuments({
+            conversation: friend.conversation,
+            sender: { $ne: accountId },
+            read: false,
+          });
+
+          return {
+            ...friend.toObject(),
+            lastMessage: lastMessage
+              ? {
+                  content: lastMessage.content,
+                  senderName: lastMessage.sender.fullname,
+                  createdAt: lastMessage.createdAt,
+                }
+              : null,
+            unreadMessagesCount,
+          };
+        })
+      );
+
+      friendsWithDetails.sort((a, b) => {
+        if (!a.lastMessage || !b.lastMessage) {
+          return !a.lastMessage ? 1 : -1;
+        }
+        return (
+          new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt)
+        );
+      });
+
+      const paginatedFriends = friendsWithDetails.slice(skip, skip + limit);
+
+      paginatedFriends.forEach((friend) => {
+        if (friend.account.avatar) {
+          friend.account.avatar = pathAccount + friend.account.avatar;
+        }
+      });
 
       return res.json({
         status: 200,
         message: "Get friends successful",
-        friends,
+        friends: paginatedFriends,
       });
     } catch (error) {
       console.log(error);
@@ -452,13 +498,13 @@ const AccountController = {
       const excludedIds = friendsIds.concat(
         sentFriendRequestsIds,
         receivedFriendRequestsIds,
-        accountId
+        account._id
       );
 
       const nonFriends = await Account.aggregate([
         { $match: { _id: { $nin: excludedIds } } },
         { $sample: { size: limit } },
-        { $project: { fullname: 1, avatar: 1 } },
+        { $project: { fullname: 1, avatar: 1, username: 1 } },
       ]);
 
       if (nonFriends.length > 0) {
@@ -473,6 +519,7 @@ const AccountController = {
         status: 200,
         message: "Get non friends successful",
         nonFriends,
+        excludedIds,
       });
     } catch (error) {
       return res.json({ status: 500, message: "Internal Server Error", error });
@@ -489,7 +536,7 @@ const AccountController = {
 
       const account = await Account.findById(accountId).populate({
         path: "sentFriendRequests",
-        select: "fullname avatar",
+        select: "fullname avatar username",
       });
 
       let sentFriendRequests = account.sentFriendRequests;
@@ -525,7 +572,7 @@ const AccountController = {
 
       const account = await Account.findById(accountId).populate({
         path: "receivedFriendRequests",
-        select: "fullname avatar",
+        select: "fullname avatar username createAt",
       });
 
       let receivedFriendRequests = account.receivedFriendRequests;
