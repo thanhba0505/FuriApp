@@ -6,6 +6,7 @@ import {
 } from "~/redux/authSlice";
 import axios from "~/utils/axios";
 
+// AUTH
 export const loginAccount = async (account, dispatch) => {
   try {
     const res = await axios.post("/api/account/login", account);
@@ -74,6 +75,50 @@ export const registerAccount = async (account) => {
   }
 };
 
+// INFO
+export const getInfo = async (accessToken, id) => {
+  try {
+    const res = await axios.get("/api/account/info/" + id, {
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.log({ error });
+    return { status: 500, message: "Internal Server Error" };
+  }
+};
+
+export const uploadAvatar = async (accessToken, formData) => {
+  try {
+    const res = await axios.post("/api/account/avatar", formData, {
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.log({ error });
+    return { status: 500, message: "Internal Server Error" };
+  }
+};
+
+export const uploadBackground = async (accessToken, formData) => {
+  try {
+    const res = await axios.post("/api/account/background", formData, {
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.log({ error });
+    return { status: 500, message: "Internal Server Error" };
+  }
+};
+
+// FRIENDS
 export const getFriends = async (accessToken, limit) => {
   try {
     const res = await axios.get("/api/account/friends", {

@@ -6,7 +6,7 @@ const Body = ({ children }) => {
   return (
     <Box
       sx={{
-        backgroundColor: "background.default",
+        backgroundColor: "custom.backgroundApp",
         height: (theme) => `calc(100vh - ${theme.furi.header.height})`,
         paddingX: (theme) => `${theme.furi.global.paddingX}`,
         paddingBottom: (theme) => `${theme.spacing(1)}`,
@@ -16,7 +16,7 @@ const Body = ({ children }) => {
         borderTop={1}
         borderColor={"rgba(0,0,0,0.1)"}
         sx={{
-          backgroundColor: (theme) => `${theme.palette.background.paper}75`,
+          backgroundColor: (theme) => `${theme.palette.background.paper}`,
           height: "100%",
           paddingX: (theme) => `${theme.furi.global.paddingX}`,
           borderRadius: (theme) => `${theme.spacing(1)}`,

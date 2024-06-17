@@ -15,7 +15,7 @@ const Header = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "background.default",
+        backgroundColor: "custom.backgroundApp",
         position: "relative",
         // boxShadow: 1,
         paddingX: (theme) => `${theme.furi.global.paddingX}`,

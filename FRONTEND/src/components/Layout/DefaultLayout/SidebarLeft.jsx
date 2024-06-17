@@ -23,6 +23,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { getImageBlob } from "~/api/imageApi";
 import { useMemo } from "react";
+import { Box } from "@mui/material";
 
 // PaperFirst
 const PaperFirst = React.memo(() => {
@@ -79,12 +80,7 @@ const PaperSecond = React.memo(() => {
         icon: <GroupsIcon />,
         custom: false,
       },
-      {
-        label: "Message",
-        path: "/message",
-        icon: <ForumIcon />,
-        custom: true,
-      },
+      { label: "Message", path: "/message", icon: <ForumIcon />, custom: true },
     ],
     []
   );
@@ -94,6 +90,13 @@ const PaperSecond = React.memo(() => {
 
   const handleLink = (to) => {
     navigate(to);
+  };
+
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -123,20 +126,18 @@ const PaperSecond = React.memo(() => {
         aria-label="main mailbox folders"
       >
         {tabs.map((tab, index) => (
-          <>
+          <React.Fragment key={index}>
             <ListItemButton
-              key={index}
               onClick={() => handleLink(tab.path)}
-              className={location.pathname.startsWith(tab.path) ? "active" : ""}
+              className={isActive(tab.path) ? "active" : ""}
             >
               <ListItemIcon>{tab.icon}</ListItemIcon>
-
               <ListItemText>
                 <Typography variant="body1">{tab.label}</Typography>
               </ListItemText>
             </ListItemButton>
             <Divider />
-          </>
+          </React.Fragment>
         ))}
       </List>
     </Paper>

@@ -1,24 +1,10 @@
 {
     "cSpell.words": [
         "addcomment",
-        "addfriends",
-        "addinteract",
-        "bgcolor",
-        "clickaway",
-        "deletecomment",
         "fullname",
-        "furi",
-        "getinteract",
-        "haspopup",
         "jfif",
-        "labelledby",
-        "lable",
         "maxlength",
         "nonfriends",
-        "notistack",
-        "persistor",
-        "pjpeg",
-        "reduxjs",
-        "socketio"
+        "pjpeg"
     ]
 }

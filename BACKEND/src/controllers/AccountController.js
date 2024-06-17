@@ -8,7 +8,7 @@ const BlackListToken = require("../models/BlackListToken");
 const Conversation = require("../models/Conversation");
 
 const multer = require("multer");
-const { uploadAccountImage } = require("../config/uploads/multer");
+const { uploadAccountImage, deleteFile } = require("../config/uploads/multer");
 
 const AccountController = {
   registerAccount: async (req, res) => {
@@ -219,36 +219,135 @@ const AccountController = {
     }
   },
 
-  //
-  uploadAvatar: async (req, res) => {
+  uploadBackground: async (req, res) => {
     uploadAccountImage(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
-        return res.status(400).json({ message: err.message });
+        return res.json({ status: 400, message: err.message });
       } else if (err) {
-        return res.status(400).json({ message: err.message });
+        return res.json({ status: 400, message: err.message });
       }
 
       const accountID = req.account.id;
       const image = req.file;
 
       if (!image) {
-        return res.status(400).json({ message: "No photo uploaded" });
-      }
-
-      const account = Account.findById(accountID).populate("avatar");
-
-      const pathAccount = "accountImage/";
-
-      if (account.avatar) {
-        account.avatar = pathAccount + image.filename;
+        return res.json({ status: 400, message: "No photo uploaded" });
       }
 
       try {
-        res.status(201).json({ message: "Success upload avatar", account });
+        const account = await Account.findById(accountID).select("background");
+
+        const pathAccount = "accountImage/";
+        const oldBackground = pathAccount + account.background;
+
+        if (oldBackground) {
+          deleteFile(oldBackground);
+        }
+
+        account.background = image.filename;
+        await account.save();
+
+        res.json({
+          status: 201,
+          message: "Success upload background",
+          background: pathAccount + account.background,
+        });
       } catch (error) {
-        res.status(500).json({ message: "Error creating post", error });
+        return res.json({
+          status: 500,
+          message: "Internal Server Error",
+          error,
+        });
       }
     });
+  },
+
+  uploadAvatar: async (req, res) => {
+    uploadAccountImage(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.json({ status: 400, message: err.message });
+      } else if (err) {
+        return res.json({ status: 400, message: err.message });
+      }
+
+      const accountID = req.account.id;
+      const image = req.file;
+
+      if (!image) {
+        return res.json({ status: 400, message: "No photo uploaded" });
+      }
+
+      try {
+        const account = await Account.findById(accountID).select("avatar");
+
+        const pathAccount = "accountImage/";
+        const oldAvatar = pathAccount + account.avatar;
+
+        if (oldAvatar) {
+          deleteFile(oldAvatar);
+        }
+
+        account.avatar = image.filename;
+        await account.save();
+
+        res.json({
+          status: 201,
+          message: "Success upload avatar",
+          avatar: pathAccount + account.avatar,
+        });
+      } catch (error) {
+        return res.json({
+          status: 500,
+          message: "Internal Server Error",
+          error,
+        });
+      }
+    });
+  },
+
+  getInfo: async (req, res) => {
+    const pathAccount = "accountImage/";
+
+    try {
+      const { accountId } = req.params;
+
+      const account = await Account.findById(accountId).select(
+        "username fullname avatar background friends"
+      );
+
+      if (!account) {
+        return res
+          .status(404)
+          .json({ status: 404, message: "Account not found" });
+      }
+
+      if (account.avatar) {
+        account.avatar = pathAccount + account.avatar;
+      }
+      if (account.background) {
+        account.background = pathAccount + account.background;
+      }
+
+      const friendCount = account.friends.length;
+
+      const newAccount = {
+        username: account.username,
+        fullname: account.fullname,
+        avatar: account.avatar,
+        background: account.background,
+        friendCount: friendCount,
+      };
+
+      return res.json({
+        status: 200,
+        message: "Get account info successfully",
+        account: newAccount,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "Internal Server Error", error });
+    }
   },
 
   sendFriendRequest: async (req, res, io) => {
@@ -302,7 +401,6 @@ const AccountController = {
 
       return res.json({ status: 200, message: "Send invitation successfully" });
     } catch (error) {
-      console.log(error);
       return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
@@ -470,7 +568,6 @@ const AccountController = {
         friends: paginatedFriends,
       });
     } catch (error) {
-      console.log(error);
       return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
