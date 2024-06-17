@@ -22,7 +22,7 @@ const loginRoutes = [
   { path: "/message/:conversationId", component: Message },
   { path: "/message", component: Message },
 
-  { path: "/everyone/:tabId", component: Everyone },
+  { path: "/everyone/:tabName", component: Everyone },
   { path: "/everyone", component: Everyone },
 
   { path: "/profile/:accountId", component: Profile },

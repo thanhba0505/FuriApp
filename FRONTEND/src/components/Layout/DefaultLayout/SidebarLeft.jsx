@@ -17,7 +17,7 @@ import ForumIcon from "@mui/icons-material/ForumTwoTone";
 import Sidebar from "../components/SidebarLeft";
 
 import Paper from "~/components/Paper";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -71,23 +71,30 @@ const PaperFirst = React.memo(() => {
 const PaperSecond = React.memo(() => {
   const tabs = useMemo(
     () => [
-      { label: "Home", paths: ["/"], icon: <HomeIcon />, custom: false },
-      { label: "Video", paths: ["/video"], icon: <VideoIcon />, custom: false },
+      { label: "Home", path: "/", icon: <HomeIcon />, custom: false },
+      { label: "Video", path: "/video", icon: <VideoIcon />, custom: false },
       {
         label: "Everyone",
-        paths: ["/everyone", "/profile"],
+        path: "/everyone",
         icon: <GroupsIcon />,
         custom: false,
       },
       {
         label: "Message",
-        paths: ["/message"],
+        path: "/message",
         icon: <ForumIcon />,
         custom: true,
       },
     ],
     []
   );
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLink = (to) => {
+    navigate(to);
+  };
 
   return (
     <Paper>
@@ -116,8 +123,12 @@ const PaperSecond = React.memo(() => {
         aria-label="main mailbox folders"
       >
         {tabs.map((tab, index) => (
-          <NavLink to={tab.paths[0]} key={index}>
-            <ListItemButton>
+          <>
+            <ListItemButton
+              key={index}
+              onClick={() => handleLink(tab.path)}
+              className={location.pathname.startsWith(tab.path) ? "active" : ""}
+            >
               <ListItemIcon>{tab.icon}</ListItemIcon>
 
               <ListItemText>
@@ -125,7 +136,7 @@ const PaperSecond = React.memo(() => {
               </ListItemText>
             </ListItemButton>
             <Divider />
-          </NavLink>
+          </>
         ))}
       </List>
     </Paper>

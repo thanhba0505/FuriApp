@@ -1,15 +1,12 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import Paper from "~/components/Paper";
+import ListConversation from "./ListConversation";
+import MainMessage from "./MainMessage";
 
 function Message() {
   const { conversationId } = useParams();
 
-  return (
-    <>
-      <Paper>Message: {conversationId}</Paper>
-    </>
-  );
+  return <>{conversationId ? <MainMessage /> : <ListConversation />}</>;
 }
 
 const MessageMemo = React.memo(Message);

@@ -11,9 +11,13 @@ import Friends from "./Friends";
 import Received from "./Received";
 import Sent from "./Sent";
 
-const CustomNav = ({ children, icon, to }) => {
+const CustomNav = ({ children, icon, to, exact }) => {
   return (
-    <NavLink to={"/everyone" + to}>
+    <NavLink
+      to={"/everyone" + to}
+      className={({ isActive }) => (isActive ? "active" : "")}
+      end={exact}
+    >
       <Button endIcon={icon} variant="outlined" color="secondary">
         {children}
       </Button>
@@ -22,7 +26,20 @@ const CustomNav = ({ children, icon, to }) => {
 };
 
 const Everyone = () => {
-  const { tabId } = useParams();
+  const { tabName } = useParams();
+
+  const renderContent = () => {
+    switch (tabName?.toLowerCase()) {
+      case "friends":
+        return <Friends />;
+      case "received":
+        return <Received />;
+      case "sent":
+        return <Sent />;
+      default:
+        return <All />;
+    }
+  };
 
   return (
     <>
@@ -36,7 +53,7 @@ const Everyone = () => {
             },
           }}
         >
-          <CustomNav to={"/all"} icon={<PersonSearchTwoToneIcon />}>
+          <CustomNav to={""} icon={<PersonSearchTwoToneIcon />} exact>
             All
           </CustomNav>
           <CustomNav to={"/friends"} icon={<Diversity3TwoToneIcon />}>
@@ -50,16 +67,7 @@ const Everyone = () => {
           </CustomNav>
         </Box>
       </Paper>
-
-      {!tabId || tabId == "all" ? (
-        <All />
-      ) : tabId == "friends" ? (
-        <Friends />
-      ) : tabId == "Received" ? (
-        <Received />
-      ) : (
-        <Sent />
-      )}
+      {renderContent()}
     </>
   );
 };

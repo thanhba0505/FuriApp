@@ -101,6 +101,8 @@ const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const limit = 100;
+  const navigate = useNavigate();
+
   const [listItems, setListItems] = useState([]);
 
   useEffect(() => {
@@ -114,6 +116,14 @@ const PaperFirst = React.memo(() => {
       loadRequest();
     }
   }, [accessToken]);
+
+  const handleLinkMessage = () => {
+    navigate("/message");
+  };
+
+  const handleLinkFriends = () => {
+    navigate("/everyone/friends");
+  };
 
   return (
     <Paper>
@@ -174,6 +184,27 @@ const PaperFirst = React.memo(() => {
                   ))
                 : "No requirements"}
             </List>
+          </Box>
+          <Box mt={1} display={"flex"} gap={1}>
+            <Button variant="outlined" color="secondary" sx={{ width: "30%" }}>
+              <ReplayTwoToneIcon fontSize="small" />
+            </Button>
+            <Button
+              onClick={handleLinkFriends}
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "35%" }}
+            >
+              Friends
+            </Button>
+            <Button
+              onClick={handleLinkMessage}
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "35%" }}
+            >
+              Messages
+            </Button>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -278,6 +309,8 @@ const PaperSecond = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const limit = 5;
+  const navigate = useNavigate();
+
   const [listItems, setListItems] = useState([]);
 
   useEffect(() => {
@@ -300,6 +333,10 @@ const PaperSecond = React.memo(() => {
       }
     };
     loadRequest();
+  };
+
+  const handleLinkReceived = () => {
+    navigate("/everyone/received");
   };
 
   return (
@@ -350,8 +387,13 @@ const PaperSecond = React.memo(() => {
             >
               <ReplayTwoToneIcon fontSize="small" />
             </Button>
-            <Button variant="outlined" color="secondary" sx={{ width: "70%" }}>
-              See more
+            <Button
+              onClick={handleLinkReceived}
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "70%" }}
+            >
+              See all
             </Button>
           </Box>
         </AccordionDetails>
@@ -438,6 +480,8 @@ const PaperThird = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const limit = 5;
+  const navigate = useNavigate();
+  
   const [listItems, setListItems] = useState([]);
 
   useEffect(() => {
@@ -460,6 +504,10 @@ const PaperThird = React.memo(() => {
       }
     };
     loadRequest();
+  };
+
+  const handleLinkEveryone = () => {
+    navigate("/everyone");
   };
 
   return (
@@ -510,7 +558,12 @@ const PaperThird = React.memo(() => {
             >
               <ReplayTwoToneIcon fontSize="small" />
             </Button>
-            <Button variant="outlined" color="secondary" sx={{ width: "70%" }}>
+            <Button
+              onClick={handleLinkEveryone}
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "70%" }}
+            >
               See more
             </Button>
           </Box>
