@@ -22,7 +22,7 @@ import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
 import { getImageBlob } from "~/api/imageApi";
-import usePath from "~/hooks/usePath";
+import { useMemo } from "react";
 
 // PaperFirst
 const PaperFirst = React.memo(() => {
@@ -69,33 +69,25 @@ const PaperFirst = React.memo(() => {
 
 // PaperSecond
 const PaperSecond = React.memo(() => {
-  const currentPath = usePath();
-
-  let i = 0;
-  const tabs = [
-    { label: "Home", path: "/", icon: <HomeIcon />, custom: false },
-    { label: "Video", path: "/video", icon: <VideoIcon />, custom: false },
-    {
-      label: "Everyone",
-      path: "/everyone",
-      icon: <GroupsIcon />,
-      custom: false,
-    },
-    { label: "Message", path: "/message", icon: <ForumIcon />, custom: true },
-  ];
-
-  for (let index = tabs.length - 1; index >= 0; index--) {
-    if (currentPath.startsWith(tabs[index].path)) {
-      i = index;
-      break;
-    }
-  }
-
-  const [selectedIndex, setSelectedIndex] = React.useState(i);
-
-  const handleListItemClick = (event, index) => {
-    setSelectedIndex(index);
-  };
+  const tabs = useMemo(
+    () => [
+      { label: "Home", paths: ["/"], icon: <HomeIcon />, custom: false },
+      { label: "Video", paths: ["/video"], icon: <VideoIcon />, custom: false },
+      {
+        label: "Everyone",
+        paths: ["/everyone", "/profile"],
+        icon: <GroupsIcon />,
+        custom: false,
+      },
+      {
+        label: "Message",
+        paths: ["/message"],
+        icon: <ForumIcon />,
+        custom: true,
+      },
+    ],
+    []
+  );
 
   return (
     <Paper>
@@ -116,16 +108,16 @@ const PaperSecond = React.memo(() => {
             justifyContent: "center",
             minWidth: "60px",
           },
+          "& .active": {
+            backgroundColor: (theme) => `${theme.palette.primary.main}10`,
+          },
         }}
         component="nav"
         aria-label="main mailbox folders"
       >
         {tabs.map((tab, index) => (
-          <NavLink to={tab.path} key={index}>
-            <ListItemButton
-              selected={selectedIndex === index}
-              onClick={(event) => handleListItemClick(event, index)}
-            >
+          <NavLink to={tab.paths[0]} key={index}>
+            <ListItemButton>
               <ListItemIcon>{tab.icon}</ListItemIcon>
 
               <ListItemText>

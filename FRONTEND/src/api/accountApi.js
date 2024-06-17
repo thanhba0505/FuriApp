@@ -74,9 +74,12 @@ export const registerAccount = async (account) => {
   }
 };
 
-export const getFriends = async (accessToken) => {
+export const getFriends = async (accessToken, limit) => {
   try {
     const res = await axios.get("/api/account/friends", {
+      params: {
+        _limit: limit,
+      },
       headers: {
         token: `Bearer ${accessToken}`,
       },

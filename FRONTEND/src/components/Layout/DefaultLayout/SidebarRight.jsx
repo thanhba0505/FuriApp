@@ -39,10 +39,19 @@ import {
   rejectFriendRequest,
   sendFriendRequest,
 } from "~/api/accountApi";
+import { useNavigate } from "react-router-dom";
 
 // First
 const ItemFirst = ({ index, item }) => {
-  // use
+  const navigate = useNavigate();
+
+  const handleLinkProfile = () => {
+    navigate("/profile/" + item.account._id);
+  };
+
+  const handleLinkMessage = () => {
+    navigate("/message/" + item.conversation);
+  };
 
   return (
     <>
@@ -51,7 +60,10 @@ const ItemFirst = ({ index, item }) => {
         disablePadding
         secondaryAction={
           <>
-            <IconButton sx={{ width: "40px", height: "40px" }}>
+            <IconButton
+              sx={{ width: "40px", height: "40px" }}
+              onClick={handleLinkMessage}
+            >
               <Badge
                 color="secondary"
                 badgeContent={item.unreadMessagesCount}
@@ -64,6 +76,7 @@ const ItemFirst = ({ index, item }) => {
         }
       >
         <ListItemButton
+          onClick={handleLinkProfile}
           sx={{
             pl: "8px !important",
             pr: "60px !important",
@@ -87,11 +100,12 @@ const ItemFirst = ({ index, item }) => {
 const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const limit = 100;
   const [listItems, setListItems] = useState([]);
 
   useEffect(() => {
     const loadRequest = async () => {
-      const res = await getFriends(accessToken);
+      const res = await getFriends(accessToken, limit);
       if (res.status == 200) {
         setListItems(res.friends);
       }
@@ -172,6 +186,8 @@ const ItemSecond = ({ index, item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
+  const navigate = useNavigate();
+
   const [check, setCheck] = useState(false);
 
   useEffect(() => {
@@ -180,6 +196,10 @@ const ItemSecond = ({ index, item }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item]);
+
+  const handleLinkProfile = () => {
+    navigate("/profile/" + item._id);
+  };
 
   const handleAccept = async () => {
     if (!check) {
@@ -210,11 +230,6 @@ const ItemSecond = ({ index, item }) => {
       <ListItem
         key={index}
         disablePadding
-        sx={{
-          "& > .MuiListItemSecondaryAction-root": {
-            // right: "8px",
-          },
-        }}
         secondaryAction={
           <>
             <IconButton
@@ -238,6 +253,7 @@ const ItemSecond = ({ index, item }) => {
         }
       >
         <ListItemButton
+          onClick={handleLinkProfile}
           sx={{
             pl: "8px !important",
             pr: "72px !important",
@@ -349,6 +365,8 @@ const ItemThird = ({ index, item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
+  const navigate = useNavigate();
+
   const [check, setCheck] = useState(false);
 
   useEffect(() => {
@@ -357,6 +375,10 @@ const ItemThird = ({ index, item }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item]);
+
+  const handleLinkProfile = () => {
+    navigate("/profile/" + item._id);
+  };
 
   const handleAccept = async () => {
     if (!check) {
@@ -391,6 +413,7 @@ const ItemThird = ({ index, item }) => {
         }
       >
         <ListItemButton
+          onClick={handleLinkProfile}
           sx={{
             pl: "8px !important",
             pr: "60px !important",
