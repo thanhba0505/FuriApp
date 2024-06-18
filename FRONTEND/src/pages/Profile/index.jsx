@@ -5,6 +5,8 @@ import { useParams } from "react-router-dom";
 import { getInfo } from "~/api/accountApi";
 import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import Friends from "./Friends";
 
 const fetchInfo = async (accessToken, accountId, setInfo) => {
   try {
@@ -22,7 +24,9 @@ const fetchInfo = async (accessToken, accountId, setInfo) => {
 const fetchImage = async (accessToken, imagePath, setImageState) => {
   try {
     const result = await getImageBlob(accessToken, imagePath);
-    setImageState(result);
+    if (result.status == 200) {
+      setImageState(result.url);
+    }
   } catch (error) {
     console.log({ error });
   }
@@ -58,43 +62,56 @@ const Profile = () => {
   }, [accessToken, info?.background]);
 
   return (
-    <Paper>
-      <Box
-        minHeight={200}
-        sx={{
-          backgroundImage: backgroundImg ? `url(${backgroundImg})` : "none",
-          backgroundColor: backgroundImg ? "transparent" : "divider",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          borderRadius: 2,
-          position: "relative",
-        }}
-      >
-        <Avatar
-          src={avatarImg ? avatarImg : ""}
+    <>
+      <Paper>
+        <Box
+          minHeight={200}
           sx={{
-            position: "absolute",
-            height: 170,
-            width: 170,
-            bottom: -120,
-            left: 30,
-            border: "8px solid white",
-            borderColor: "custom.background",
-            userSelect: "none",
+            backgroundImage: backgroundImg ? `url(${backgroundImg})` : "none",
+            backgroundColor: backgroundImg ? "transparent" : "divider",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            borderRadius: 2,
+            position: "relative",
           }}
-        />
-      </Box>
+        >
+          <Avatar
+            src={avatarImg ? avatarImg : ""}
+            sx={{
+              position: "absolute",
+              height: 170,
+              width: 170,
+              bottom: -120,
+              left: 30,
+              border: "8px solid white",
+              borderColor: "custom.background",
+              userSelect: "none",
+              fontSize: 60,
+            }}
+          >
+            {avatarImg ? "" : getFirstLetterUpperCase(info?.fullname)}
+          </Avatar>
+        </Box>
 
-      <Box minHeight={110} pl={28} pt={3}>
-        <Typography variant="h5" fontWeight={600} mb={1}>
-          {info?.fullname}
-        </Typography>
-        <Typography variant="body1" >
-          {info?.friendCount} friends
-        </Typography>
+        <Box minHeight={110} pl={28} pt={2}>
+          <Typography variant="h5" fontWeight={600}>
+            {info?.fullname}
+          </Typography>
+          <Typography variant="body1" mb={1}>
+            @{info?.username}
+          </Typography>
+          <Typography variant="body2">{info?.friendCount} friends</Typography>
+        </Box>
+      </Paper>
+
+      <Box display={"flex"} gap={3}>
+        <Paper w="50%">
+          <Typography>Biography</Typography>
+        </Paper>
+        <Friends friends={info?.friends} />
       </Box>
-      {/* {avatarImg && <img src={avatarImg} alt="Avatar" width={100} />} */}
-    </Paper>
+      <Paper></Paper>
+    </>
   );
 };
 

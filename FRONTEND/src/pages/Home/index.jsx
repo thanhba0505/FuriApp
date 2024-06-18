@@ -4,8 +4,8 @@ import Posts from "./Posts";
 function Home() {
   return (
     <>
-      {/* <Story />
-      <Posts /> */}
+      {/* <Story /> */}
+      {/* <Posts /> */}
     </>
   );
 }

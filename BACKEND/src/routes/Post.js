@@ -11,6 +11,12 @@ const PostRoutes = (io) => {
     PostController.getPosts
   );
 
+  router.get(
+    "/posts/:accountId",
+    middlewareController.verifyToken,
+    PostController.getPostByAccountId
+  );
+
   router.post("/add", middlewareController.verifyToken, PostController.addPost);
 
   // delete comment

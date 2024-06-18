@@ -8,15 +8,16 @@ export default function PaperCustom({
   h = null,
   br = "8px",
   mh = null,
+  w = "100%",
 }) {
   return (
-    <Paper 
+    <Paper
       sx={{
         boxShadow: bs,
         marginTop: (theme) => (mt ? theme.spacing(3) : "none"),
         overflow: "hidden",
         position: "relative",
-        width: "100%",
+        width: w,
         height: h,
         maxHeight: mh,
         borderRadius: br,

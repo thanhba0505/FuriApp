@@ -40,10 +40,15 @@ import {
   sendFriendRequest,
 } from "~/api/accountApi";
 import { useNavigate } from "react-router-dom";
+import { getImageBlob } from "~/api/imageApi";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 // First
 const ItemFirst = ({ index, item }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
   const navigate = useNavigate();
+  const [img, setImg] = useState();
 
   const handleLinkProfile = () => {
     navigate("/profile/" + item.account._id);
@@ -52,6 +57,22 @@ const ItemFirst = ({ index, item }) => {
   const handleLinkMessage = () => {
     navigate("/message/" + item.conversation);
   };
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, item.account.avatar);
+        if (result.status == 200) {
+          setImg(result.url);
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+    if (item.account.avatar && accessToken) {
+      fetchImage();
+    }
+  }, [item.account.avatar, accessToken]);
 
   return (
     <>
@@ -84,7 +105,9 @@ const ItemFirst = ({ index, item }) => {
           }}
         >
           <ListItemAvatar sx={{ minWidth: "44px" }}>
-            <Avatar sx={{ width: "32px", height: "32px" }}></Avatar>
+            <Avatar src={img ? img : ""} sx={{ width: "32px", height: "32px" }}>
+              {img ? "" : getFirstLetterUpperCase(item.account.fullname)}
+            </Avatar>
           </ListItemAvatar>
           <ListItemText
             primary={item.account.fullname}
@@ -220,6 +243,7 @@ const ItemSecond = ({ index, item }) => {
   const navigate = useNavigate();
 
   const [check, setCheck] = useState(false);
+  const [img, setImg] = useState();
 
   useEffect(() => {
     if (check) {
@@ -255,6 +279,22 @@ const ItemSecond = ({ index, item }) => {
       }
     }
   };
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, item.avatar);
+        if (result.status == 200) {
+          setImg(result.url);
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+    if (item.avatar && accessToken) {
+      fetchImage();
+    }
+  }, [item.avatar, accessToken]);
 
   return (
     <>
@@ -292,7 +332,9 @@ const ItemSecond = ({ index, item }) => {
           }}
         >
           <ListItemAvatar sx={{ minWidth: "44px" }}>
-            <Avatar sx={{ width: "32px", height: "32px" }}></Avatar>
+            <Avatar src={img ? img : ""} sx={{ width: "32px", height: "32px" }}>
+              {img ? "" : getFirstLetterUpperCase(item.fullname)}
+            </Avatar>
           </ListItemAvatar>
           <ListItemText
             primary={item.fullname}
@@ -410,6 +452,7 @@ const ItemThird = ({ index, item }) => {
   const navigate = useNavigate();
 
   const [check, setCheck] = useState(false);
+  const [img, setImg] = useState();
 
   useEffect(() => {
     if (check) {
@@ -433,6 +476,22 @@ const ItemThird = ({ index, item }) => {
       }
     }
   };
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const result = await getImageBlob(accessToken, item.avatar);
+        if (result.status == 200) {
+          setImg(result.url);
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+    if (item.avatar && accessToken) {
+      fetchImage();
+    }
+  }, [item.avatar, accessToken]);
 
   return (
     <>
@@ -463,7 +522,9 @@ const ItemThird = ({ index, item }) => {
           }}
         >
           <ListItemAvatar sx={{ minWidth: "44px" }}>
-            <Avatar sx={{ width: "32px", height: "32px" }}></Avatar>
+            <Avatar src={img ? img : ""} sx={{ width: "32px", height: "32px" }}>
+              {img ? "" : getFirstLetterUpperCase(item.fullname)}
+            </Avatar>
           </ListItemAvatar>
           <ListItemText
             primary={item.fullname}
@@ -481,7 +542,7 @@ const PaperThird = React.memo(() => {
   const accessToken = account?.accessToken;
   const limit = 5;
   const navigate = useNavigate();
-  
+
   const [listItems, setListItems] = useState([]);
 
   useEffect(() => {

@@ -9,10 +9,10 @@ export const getImageBlob = async (accessToken, path) => {
           token: `Bearer ${accessToken}`,
         },
       });
-      
+
       if (!res.data.status) {
         const url = URL.createObjectURL(res.data);
-        return url;
+        return { status: 200, message: "Get image successful", url };
       } else {
         return { status: 500, message: "Internal Server Error" };
       }

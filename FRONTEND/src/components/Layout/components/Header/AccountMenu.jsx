@@ -52,7 +52,9 @@ function AccountMenu() {
     const fetchImage = async () => {
       try {
         const result = await getImageBlob(accessToken, avatar);
-        setImg(result);
+        if (result.status == 200) {
+          setImg(result.url);
+        }
       } catch (error) {
         console.log({ error });
       }

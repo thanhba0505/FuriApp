@@ -310,10 +310,13 @@ const AccountController = {
 
     try {
       const { accountId } = req.params;
+      const currentUserId = req.account.id; // Giả sử bạn có middleware để thêm id của người dùng hiện tại vào req
 
-      const account = await Account.findById(accountId).select(
-        "username fullname avatar background friends"
-      );
+      const account = await Account.findById(accountId)
+        .select(
+          "username fullname avatar background friends sentFriendRequests receivedFriendRequests"
+        )
+        .populate("friends.account", "fullname avatar _id");
 
       if (!account) {
         return res
@@ -330,12 +333,34 @@ const AccountController = {
 
       const friendCount = account.friends.length;
 
+      const isFriend = account.friends.some((friend) =>
+        friend.account.equals(currentUserId)
+      );
+      const hasSentFriendRequest =
+        account.receivedFriendRequests.includes(currentUserId);
+      const hasReceivedFriendRequest =
+        account.sentFriendRequests.includes(currentUserId);
+      const isCurrentUser = accountId === currentUserId;
+
+      const friendsList = account.friends.map((friend) => ({
+        fullname: friend.account.fullname,
+        avatar: friend.account.avatar
+          ? pathAccount + friend.account.avatar
+          : null,
+        _id: friend.account._id,
+      }));
+
       const newAccount = {
         username: account.username,
         fullname: account.fullname,
         avatar: account.avatar,
         background: account.background,
         friendCount: friendCount,
+        isFriend: isFriend,
+        hasSentFriendRequest: hasSentFriendRequest,
+        hasReceivedFriendRequest: hasReceivedFriendRequest,
+        isCurrentUser: isCurrentUser,
+        friends: friendsList,
       };
 
       return res.json({

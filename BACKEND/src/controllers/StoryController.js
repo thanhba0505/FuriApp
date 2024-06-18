@@ -14,16 +14,16 @@ const StoryController = {
   addStory: (req, res) => {
     uploadStoryImage(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
-        return res.status(400).json({ message: err.message });
+        return res.json({ status: 400, message: err.message });
       } else if (err) {
-        return res.status(400).json({ message: err.message });
+        return res.json({ status: 400, message: err.message });
       }
 
       const accountID = req.account.id;
       const image = req.file;
 
       if (!image) {
-        return res.status(400).json({ message: "No photo uploaded" });
+        return res.json({ status: 400, message: "No photo uploaded" });
       }
 
       const newStory = new Story({
@@ -34,44 +34,46 @@ const StoryController = {
 
       try {
         await newStory.save();
-        res.status(201).json({ message: "Success creating story" });
+        res.json({ status: 201, message: "Success creating story" });
       } catch (error) {
-        res.status(500).json({ message: "Error creating story", error });
+        res.json({ status: 500, message: "Error creating story", error });
       }
     });
   },
 
   getStories: async (req, res) => {
     const limit = parseInt(req.query._limit) || 4;
-    const page = parseInt(req.query._page) || 1; 
+    const page = parseInt(req.query._page) || 1;
     const pathStory = "storyImage/";
     const pathAccount = "accountImage/";
-    
+
     try {
       const stories = await Story.find()
-        .skip((page - 1) * limit) 
-        .limit(limit) 
+        .skip((page - 1) * limit)
+        .limit(limit)
         .populate({
           path: "account",
           select: "fullname avatar",
         });
-  
+
       const updatedStory = stories.map((story) => {
         if (story.image) {
           story.image = addPathIfNeeded(pathStory, story.image);
         }
-  
+
         if (story.account && story.account.avatar) {
-          story.account.avatar = addPathIfNeeded(pathAccount, story.account.avatar);
+          story.account.avatar = addPathIfNeeded(
+            pathAccount,
+            story.account.avatar
+          );
         }
         return story;
       });
-  
-      return res.status(200).json(updatedStory);
+
+      return res.json({ status: 200, updatedStory });
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
-  
   },
 };
 

@@ -31,13 +31,17 @@ const PaperFirst = React.memo(() => {
   const accessToken = account?.accessToken;
   const avatar = account?.avatar;
 
+  const navigate = useNavigate();
+
   const [img, setImg] = useState();
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
         const result = await getImageBlob(accessToken, avatar);
-        setImg(result);
+        if (result.status == 200) {
+          setImg(result.url);
+        }
       } catch (error) {
         console.log({ error });
       }
@@ -47,9 +51,18 @@ const PaperFirst = React.memo(() => {
     }
   }, [avatar, accessToken]);
 
+  const handleLinkProfile = () => {
+    navigate("/profile/" + account._id);
+  };
+
   return (
     <Paper>
-      <Grid container rowSpacing={1}>
+      <Grid
+        container
+        rowSpacing={1}
+        onClick={handleLinkProfile}
+        sx={{ cursor: "pointer" }}
+      >
         <Grid item xs={3}>
           <Avatar
             sx={{ width: "48px", height: "48px", borderRadius: 2 }}

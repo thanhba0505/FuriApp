@@ -38,7 +38,11 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
       try {
         setIsLoading(true);
         const result = await getImageBlob(accessToken, src);
-        setImg(result);
+
+        if (result.status == 200) {
+          setImg(result);
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.log({ error });
@@ -55,7 +59,9 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
       try {
         setIsAvatarLoading(true);
         const result = await getImageBlob(accessToken, avatar);
-        setImgAvatar(result);
+        if (result.status == 200) {
+          setImgAvatar(result);
+        }
         setIsAvatarLoading(false);
       } catch (error) {
         console.log({ error });
@@ -201,7 +207,9 @@ const Story = () => {
       try {
         setIsLoadingAddStory(true);
         const result = await getImageBlob(accessToken, avatar);
-        setImg(result);
+        if (result.status == 200) {
+          setImg(result);
+        }
         setIsLoadingAddStory(false);
       } catch (error) {
         console.log({ error });
