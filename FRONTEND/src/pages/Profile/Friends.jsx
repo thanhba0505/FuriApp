@@ -42,7 +42,12 @@ const Friend = ({ friend }) => {
       >
         {img ? "" : getFirstLetterUpperCase(friend.fullname)}
       </Avatar>
-      <Typography textAlign="center" fontSize={14} sx={{ mt: "4px" }} lineHeight={1.1}>
+      <Typography
+        textAlign="center"
+        fontSize={14}
+        sx={{ mt: "4px" }}
+        lineHeight={1.1}
+      >
         {friend.fullname}
       </Typography>
     </Grid>
@@ -53,7 +58,7 @@ const Friends = ({ friends }) => {
   return (
     <Paper w="50%">
       <Typography fontSize={20} lineHeight={1} fontWeight={"500"}>
-        Friends ({friends ? friends.length : "0"})
+        Friends
       </Typography>
       <Grid container wrap="wrap" spacing={1} mt={1}>
         {friends && friends.length > 0 ? (

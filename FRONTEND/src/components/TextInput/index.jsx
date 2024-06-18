@@ -14,10 +14,12 @@ function TextInput({
   value,
   onChange,
   placement = "top-end",
+  onKeyPress,
 }) {
   return (
     <>
       <TextField
+        onKeyDown={onKeyPress}
         fullWidth
         error={textError ? true : false}
         label={label}

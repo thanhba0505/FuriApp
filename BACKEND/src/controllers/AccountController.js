@@ -319,9 +319,7 @@ const AccountController = {
         .populate("friends.account", "fullname avatar _id");
 
       if (!account) {
-        return res
-          .status(404)
-          .json({ status: 404, message: "Account not found" });
+        return res.json({ status: 404, message: "Account not found" });
       }
 
       if (account.avatar) {
@@ -342,13 +340,15 @@ const AccountController = {
         account.sentFriendRequests.includes(currentUserId);
       const isCurrentUser = accountId === currentUserId;
 
-      const friendsList = account.friends.map((friend) => ({
-        fullname: friend.account.fullname,
-        avatar: friend.account.avatar
-          ? pathAccount + friend.account.avatar
-          : null,
-        _id: friend.account._id,
-      }));
+      const friendsList = account.friends
+        .map((friend) => ({
+          fullname: friend.account.fullname,
+          avatar: friend.account.avatar
+            ? pathAccount + friend.account.avatar
+            : null,
+          _id: friend.account._id,
+        }))
+        .slice(0, 9);
 
       let conversationId = null;
       if (!isCurrentUser && isFriend) {

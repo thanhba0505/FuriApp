@@ -39,6 +39,13 @@ const Login = () => {
     }
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter" && !disabled) {
+      console.log("ádfsa");
+      handleLogin();
+    }
+  };
+
   return (
     <Box>
       <TextInput
@@ -47,6 +54,7 @@ const Login = () => {
         placeholder="furiapp123"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        onKeyPress={handleKeyPress}
       />
       <TextInput
         label="Password"
@@ -54,6 +62,7 @@ const Login = () => {
         placeholder="furi123#$%^&"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        onKeyPress={handleKeyPress}
       />
 
       <FormGroup sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}>

@@ -13,6 +13,7 @@ import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
 import PersonAddAltTwoToneIcon from "@mui/icons-material/PersonAddAltTwoTone";
 import ReplayTwoToneIcon from "@mui/icons-material/ReplayTwoTone";
 import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import {
   Avatar,
   Badge,
@@ -40,6 +41,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { getImageBlob } from "~/api/imageApi";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 
 // First
 const ItemFirst = ({ index, item }) => {
@@ -125,6 +127,7 @@ const PaperFirst = React.memo(() => {
   const navigate = useNavigate();
 
   const [listItems, setListItems] = useState([]);
+  const [maxHeight, setMaxHeight] = useState("200px");
 
   useEffect(() => {
     const loadRequest = async () => {
@@ -144,6 +147,14 @@ const PaperFirst = React.memo(() => {
 
   const handleLinkFriends = () => {
     navigate("/everyone/friends");
+  };
+
+  const handleMaxHeight = () => {
+    if (maxHeight == "200px") {
+      setMaxHeight("460px");
+    } else {
+      setMaxHeight("200px");
+    }
   };
 
   return (
@@ -185,7 +196,7 @@ const PaperFirst = React.memo(() => {
           >
             <List
               sx={{
-                maxHeight: "400px",
+                maxHeight: { maxHeight },
                 overflowY: "auto",
                 pr: "4px",
                 py: 0,
@@ -207,8 +218,17 @@ const PaperFirst = React.memo(() => {
             </List>
           </Box>
           <Box mt={1} display={"flex"} gap={1}>
-            <Button variant="outlined" color="secondary" sx={{ width: "30%" }}>
-              <ReplayTwoToneIcon fontSize="small" />
+            <Button
+              onClick={handleMaxHeight}
+              variant="outlined"
+              color="secondary"
+              sx={{ width: "30%" }}
+            >
+              {maxHeight == "200px" ? (
+                <ArrowDropDownIcon />
+              ) : (
+                <ArrowDropUpIcon />
+              )}
             </Button>
             <Button
               onClick={handleLinkFriends}
