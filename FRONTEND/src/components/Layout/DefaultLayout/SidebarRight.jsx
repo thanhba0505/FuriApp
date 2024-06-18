@@ -12,8 +12,6 @@ import CheckCircleTwoToneIcon from "@mui/icons-material/CheckCircleTwoTone";
 import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
 import PersonAddAltTwoToneIcon from "@mui/icons-material/PersonAddAltTwoTone";
 import ReplayTwoToneIcon from "@mui/icons-material/ReplayTwoTone";
-import PeopleTwoToneIcon from "@mui/icons-material/PeopleTwoTone";
-import CheckBoxTwoToneIcon from "@mui/icons-material/CheckBoxTwoTone";
 import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
 import {
   Avatar,

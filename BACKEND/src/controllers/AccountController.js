@@ -310,7 +310,7 @@ const AccountController = {
 
     try {
       const { accountId } = req.params;
-      const currentUserId = req.account.id; // Giả sử bạn có middleware để thêm id của người dùng hiện tại vào req
+      const currentUserId = req.account.id;
 
       const account = await Account.findById(accountId)
         .select(
@@ -350,6 +350,17 @@ const AccountController = {
         _id: friend.account._id,
       }));
 
+      let conversationId = null;
+      if (!isCurrentUser && isFriend) {
+        const conversation = await Conversation.findOne({
+          participants: { $all: [accountId, currentUserId] },
+        }).select("_id");
+
+        if (conversation) {
+          conversationId = conversation._id;
+        }
+      }
+
       const newAccount = {
         username: account.username,
         fullname: account.fullname,
@@ -361,6 +372,7 @@ const AccountController = {
         hasReceivedFriendRequest: hasReceivedFriendRequest,
         isCurrentUser: isCurrentUser,
         friends: friendsList,
+        conversationId: conversationId,
       };
 
       return res.json({
@@ -369,9 +381,7 @@ const AccountController = {
         account: newAccount,
       });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ status: 500, message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 

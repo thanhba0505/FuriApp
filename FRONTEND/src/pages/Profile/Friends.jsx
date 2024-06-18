@@ -38,11 +38,13 @@ const Friend = ({ friend }) => {
       <Avatar
         onClick={handleLinkAccount}
         src={img ? img : " "}
-        sx={{ height: 70, width: 70, margin: "auto", cursor: "pointer" }}
+        sx={{ height: 60, width: 60, margin: "auto", cursor: "pointer" }}
       >
         {img ? "" : getFirstLetterUpperCase(friend.fullname)}
       </Avatar>
-      <Typography textAlign="center">{friend.fullname}</Typography>
+      <Typography textAlign="center" fontSize={14} sx={{ mt: "4px" }} lineHeight={1.1}>
+        {friend.fullname}
+      </Typography>
     </Grid>
   );
 };
@@ -51,13 +53,11 @@ const Friends = ({ friends }) => {
   return (
     <Paper w="50%">
       <Typography fontSize={20} lineHeight={1} fontWeight={"500"}>
-        Friends
+        Friends ({friends ? friends.length : "0"})
       </Typography>
-      <Grid container wrap="wrap" columnSpacing={1}>
+      <Grid container wrap="wrap" spacing={1} mt={1}>
         {friends && friends.length > 0 ? (
-          friends.map((friend) => (
-            <Friend key={friend._id} friend={friend} />
-          ))
+          friends.map((friend) => <Friend key={friend._id} friend={friend} />)
         ) : (
           <Grid item xs textAlign={"center"}>
             No friends

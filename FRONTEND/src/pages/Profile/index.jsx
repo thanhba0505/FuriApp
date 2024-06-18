@@ -1,21 +1,28 @@
-import { Avatar, Box, Grid, Typography } from "@mui/material";
+import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getInfo } from "~/api/accountApi";
 import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import PeopleAltTwoToneIcon from "@mui/icons-material/PeopleAltTwoTone";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import MessageIcon from "@mui/icons-material/Message";
+import CancelIcon from "@mui/icons-material/Cancel";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import ScheduleSendTwoToneIcon from "@mui/icons-material/ScheduleSendTwoTone";
 import Friends from "./Friends";
 
-const fetchInfo = async (accessToken, accountId, setInfo) => {
+const fetchInfo = async (accessToken, accountId, setInfo, navigate) => {
   try {
     const result = await getInfo(accessToken, accountId);
     if (result.status === 200) {
       setInfo(result.account);
     } else {
-      console.log({ result });
+      navigate("/");
     }
+    return result;
   } catch (error) {
     console.log({ error });
   }
@@ -32,10 +39,95 @@ const fetchImage = async (accessToken, imagePath, setImageState) => {
   }
 };
 
+const BtnFriend = ({ info }) => {
+  const navigate = useNavigate();
+
+  const handleMessage = () => {
+    navigate("/message/" + info.conversationId);
+  };
+
+  if (info?.isCurrentUser) {
+    return <></>;
+  } else if (info?.isFriend) {
+    return (
+      <>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          sx={{ mr: 1 }}
+          endIcon={<MessageIcon />}
+          onClick={handleMessage}
+        >
+          Message
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          size="small"
+          endIcon={<PeopleAltTwoToneIcon />}
+        >
+          Already friends
+        </Button>
+      </>
+    );
+  } else if (info?.hasSentFriendRequest) {
+    return (
+      <>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          sx={{ mr: 1 }}
+          endIcon={<ScheduleSendTwoToneIcon />}
+        >
+          Sent
+        </Button>
+      </>
+    );
+  } else if (info?.hasReceivedFriendRequest) {
+    return (
+      <>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          sx={{ mr: 1 }}
+          endIcon={<CancelIcon />}
+        >
+          Reject
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          size="small"
+          endIcon={<CheckCircleIcon />}
+        >
+          Accept
+        </Button>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Button
+          variant="contained"
+          color="secondary"
+          size="small"
+          endIcon={<PersonAddIcon />}
+        >
+          Add friend
+        </Button>
+      </>
+    );
+  }
+};
+
 const Profile = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const { accountId } = useParams();
+  const navigate = useNavigate();
 
   const [info, setInfo] = useState(null);
   const [avatarImg, setAvatarImg] = useState(null);
@@ -43,11 +135,11 @@ const Profile = () => {
 
   useEffect(() => {
     if (accessToken) {
-      fetchInfo(accessToken, accountId, setInfo);
-      setAvatarImg(null); // Reset avatar image state
-      setBackgroundImg(null); // Reset background image state
+      fetchInfo(accessToken, accountId, setInfo, navigate);
+      setAvatarImg(null);
+      setBackgroundImg(null);
     }
-  }, [accessToken, accountId]);
+  }, [accessToken, accountId, navigate]);
 
   useEffect(() => {
     if (info?.avatar && accessToken) {
@@ -97,10 +189,19 @@ const Profile = () => {
           <Typography variant="h5" fontWeight={600}>
             {info?.fullname}
           </Typography>
-          <Typography variant="body1" mb={1}>
-            @{info?.username}
-          </Typography>
-          <Typography variant="body2">{info?.friendCount} friends</Typography>
+          <Grid container>
+            <Grid item xs>
+              <Typography variant="body1" mb={1}>
+                @{info?.username}
+              </Typography>
+              <Typography variant="body2">
+                {info?.friendCount} friends
+              </Typography>
+            </Grid>
+            <Grid item alignSelf={"end"}>
+              <BtnFriend info={info} />
+            </Grid>
+          </Grid>
         </Box>
       </Paper>
 
