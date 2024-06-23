@@ -40,11 +40,15 @@ const Conversation = ({ item }) => {
     }
   }, [item.account.avatar, accessToken]);
 
+  const handleLinkMessage = () => {
+    navigate("/message/" + item.conversation);
+  };
+
   return (
     <>
       <ListItem disablePadding>
         <ListItemButton
-          // onClick={handleLinkProfile}
+          onClick={handleLinkMessage}
           sx={{
             pl: "16px !important",
             py: "8px !important",
@@ -89,7 +93,6 @@ const ListConversation = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const limit = 100;
-  const navigate = useNavigate();
 
   const [listItems, setListItems] = useState([]);
 
@@ -104,7 +107,7 @@ const ListConversation = () => {
       loadRequest();
     }
   }, [accessToken]);
-  console.log(listItems);
+  
   return (
     <Paper>
       <Typography fontSize={18} fontWeight={700} lineHeight={1}>

@@ -18,7 +18,8 @@ const theme = extendTheme({
         custom: {
           background: "#ffffff",
           backgroundApp: "#ffffff",
-          backgroundAppContent: "##eef0f599",
+          backgroundAppContent: "#eef0f599",
+          backgroundMessage: "#eef0f5af",
         },
         primary: {
           main: blue["A700"],
@@ -40,6 +41,7 @@ const theme = extendTheme({
           background: "#1e1e1e",
           backgroundApp: "#272727",
           backgroundAppContent: "#121212",
+          backgroundMessage: "#121212af",
         },
       },
       shadows: {

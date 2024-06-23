@@ -1,12 +1,12 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import ListConversation from "./ListConversation";
-import MainMessage from "./MainMessage";
+import MessageChatBox from "./MessageChatBox";
 
 function Message() {
   const { conversationId } = useParams();
 
-  return <>{conversationId ? <MainMessage /> : <ListConversation />}</>;
+  return <>{conversationId ? <MessageChatBox /> : <ListConversation />}</>;
 }
 
 const MessageMemo = React.memo(Message);

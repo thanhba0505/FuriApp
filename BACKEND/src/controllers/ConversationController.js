@@ -66,12 +66,13 @@ const ConversationController = {
     const pathAccount = "accountImage/";
 
     try {
-      const senderId = req.account.id;
+      const accountId = req.account.id;
       const { conversationId } = req.params;
 
-      const conversation = await Conversation.findById(conversationId).populate(
-        {
+      const conversation = await Conversation.findById(conversationId)
+        .populate({
           path: "messages",
+          select: "_id sender content read createAt",
           populate: {
             path: "sender",
             select: "fullname avatar",
@@ -81,8 +82,11 @@ const ConversationController = {
             limit: limit,
             skip: skip,
           },
-        }
-      );
+        })
+        .populate({
+          path: "participants",
+          select: "_id username fullname avatar",
+        });
 
       if (!conversation) {
         return res.json({
@@ -91,7 +95,11 @@ const ConversationController = {
         });
       }
 
-      if (!conversation.participants.includes(senderId)) {
+      const exists = conversation.participants.some(
+        (account) => account._id.toString() === accountId
+      );
+
+      if (!exists) {
         return res.json({
           status: 403,
           message: "You are not part of this conversation",
@@ -110,10 +118,28 @@ const ConversationController = {
         });
       }
 
+      if (conversation.participants) {
+        conversation.participants.forEach((account) => {
+          if (
+            account &&
+            account.avatar &&
+            !account.avatar.startsWith(pathAccount)
+          ) {
+            account.avatar = pathAccount + account.avatar;
+          }
+        });
+
+        conversation.participants.sort((a, b) => {
+          if (a._id.toString() === accountId) return -1;
+          if (b._id.toString() === accountId) return 1;
+          return 0;
+        });
+      }
+
       return res.json({
         status: 200,
         message: "Get messages successfully",
-        messages: conversation.messages,
+        conversation: conversation,
       });
     } catch (error) {
       console.log(error);
