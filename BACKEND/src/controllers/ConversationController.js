@@ -72,13 +72,13 @@ const ConversationController = {
       const conversation = await Conversation.findById(conversationId)
         .populate({
           path: "messages",
-          select: "_id sender content read createAt",
+          select: "_id sender content read updatedAt",
           populate: {
             path: "sender",
             select: "fullname avatar",
           },
           options: {
-            sort: { createdAt: -1 },
+            sort: { updatedAt: -1 },
             limit: limit,
             skip: skip,
           },
