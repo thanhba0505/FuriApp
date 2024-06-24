@@ -3,7 +3,7 @@ const socketIO = require("socket.io");
 const setupSocket = (server) => {
   const io = socketIO(server, {
     cors: {
-      origin: process.env.FURI_DB_LOCAL_URL,
+      origin: process.env.FURI_UI_URL,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       credentials: true,
     },

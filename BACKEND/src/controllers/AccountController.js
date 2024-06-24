@@ -560,11 +560,13 @@ const AccountController = {
 
           const lastMessage = conversation.messages[0];
 
-          const unreadMessagesCount = await Message.countDocuments({
-            conversation: friend.conversation,
-            sender: { $ne: accountId },
-            read: false,
-          });
+          let hasRead;
+
+          if (conversation.read.length > 0) {
+            hasRead = conversation.read.includes(accountId);
+          } else {
+            hasRead = true;
+          }
 
           return {
             ...friend.toObject(),
@@ -575,7 +577,7 @@ const AccountController = {
                   createdAt: lastMessage.createdAt,
                 }
               : null,
-            unreadMessagesCount,
+            hasRead,
           };
         })
       );

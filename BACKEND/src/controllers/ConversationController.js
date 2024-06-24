@@ -25,6 +25,13 @@ const ConversationController = {
           message: "You are not part of this conversation",
         });
       }
+      
+      if (!content || content.trim() === "") {
+        return res.json({
+          status: 400,
+          message: "Message content cannot be empty",
+        });
+      }
 
       const newMessage = new Message({
         conversation: conversationId,
@@ -35,24 +42,29 @@ const ConversationController = {
       await newMessage.save();
 
       conversation.messages.push(newMessage._id);
+
+      conversation.read = [senderId];
+
       await conversation.save();
 
-      const populatedMessage = await Message.findById(newMessage._id).populate(
-        "sender",
-        "fullname avatar"
-      );
+      const populatedMessage = await Message.findById(newMessage._id)
+        .select("_id sender content updatedAt")
+        .populate("sender", "fullname avatar");
 
       if (populatedMessage.sender.avatar) {
         populatedMessage.sender.avatar =
           pathAccount + populatedMessage.sender.avatar;
       }
 
-      io.to(conversationId).emit("newMessage", populatedMessage);
+      io.emit("newMessage" + conversationId, { newMessage: populatedMessage });
+      io.emit("hasRead" + conversationId, {
+        read: [senderId],
+        newMessage: populatedMessage,
+      });
 
       return res.json({
         status: 200,
         message: "Message sent successfully",
-        newMessage: populatedMessage,
       });
     } catch (error) {
       console.log(error);
@@ -60,7 +72,7 @@ const ConversationController = {
     }
   },
 
-  getMessages: async (req, res) => {
+  getMessages: async (req, res, io) => {
     const limit = parseInt(req.query._limit) || 10;
     const skip = parseInt(req.query._skip) || 0;
     const pathAccount = "accountImage/";
@@ -72,7 +84,7 @@ const ConversationController = {
       const conversation = await Conversation.findById(conversationId)
         .populate({
           path: "messages",
-          select: "_id sender content read updatedAt",
+          select: "_id sender content updatedAt",
           populate: {
             path: "sender",
             select: "fullname avatar",
@@ -106,6 +118,11 @@ const ConversationController = {
         });
       }
 
+      if (!conversation.read.includes(accountId)) {
+        conversation.read.push(accountId);
+        await conversation.save();
+      }
+
       if (conversation.messages) {
         conversation.messages.forEach((message) => {
           if (
@@ -136,10 +153,52 @@ const ConversationController = {
         });
       }
 
+      io.emit("hasRead" + conversationId, { read: conversation.read });
+
       return res.json({
         status: 200,
         message: "Get messages successfully",
         conversation: conversation,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.json({ status: 500, message: "Internal Server Error", error });
+    }
+  },
+
+  readMessage: async (req, res, io) => {
+    try {
+      const accountId = req.account.id;
+      const { conversationId } = req.body;
+
+      const conversation = await Conversation.findById(conversationId);
+
+      if (!conversation) {
+        return res.json({
+          status: 404,
+          message: "Conversation does not exist",
+        });
+      }
+
+      const isParticipant = conversation.participants.includes(accountId);
+      if (!isParticipant) {
+        return res.json({
+          status: 403,
+          message: "You are not part of this conversation",
+        });
+      }
+
+      if (!conversation.read.includes(accountId)) {
+        conversation.read.push(accountId);
+      }
+
+      await conversation.save();
+
+      io.emit("hasRead" + conversationId, { read: conversation.read });
+
+      return res.json({
+        status: 200,
+        message: "Message marked as read",
       });
     } catch (error) {
       console.log(error);

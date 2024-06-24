@@ -9,6 +9,8 @@ export default function PaperCustom({
   br = "8px",
   mh = null,
   w = "100%",
+  maxW = null,
+  minW = null,
 }) {
   return (
     <Paper
@@ -20,6 +22,8 @@ export default function PaperCustom({
         width: w,
         height: h,
         maxHeight: mh,
+        minWidth: minW,
+        maxWidth: maxW,
         borderRadius: br,
         backgroundColor: (theme) => theme.palette.background.default,
         padding: p,

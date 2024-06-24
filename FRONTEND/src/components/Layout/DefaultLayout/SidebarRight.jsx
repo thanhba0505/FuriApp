@@ -42,13 +42,16 @@ import { useNavigate } from "react-router-dom";
 import { getImageBlob } from "~/api/imageApi";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import { io } from "socket.io-client";
 
 // First
 const ItemFirst = ({ index, item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const accountId = account?._id;
   const navigate = useNavigate();
   const [img, setImg] = useState();
+  const [read, setRead] = useState(item?.hasRead);
 
   const handleLinkProfile = () => {
     navigate("/profile/" + item.account._id);
@@ -74,6 +77,24 @@ const ItemFirst = ({ index, item }) => {
     }
   }, [item.account.avatar, accessToken]);
 
+  useEffect(() => {
+    if (item?.conversation) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      socket.on("hasRead" + item?.conversation, ({ read }) => {
+        if (!read.includes(accountId)) {
+          setRead(false);
+        } else {
+          setRead(true);
+        }
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [item?.conversation, accountId]);
+
   return (
     <>
       <ListItem
@@ -85,11 +106,7 @@ const ItemFirst = ({ index, item }) => {
               sx={{ width: "40px", height: "40px" }}
               onClick={handleLinkMessage}
             >
-              <Badge
-                color="secondary"
-                badgeContent={item.unreadMessagesCount}
-                max={10}
-              >
+              <Badge color="secondary" variant={read ? "" : "dot"} max={10}>
                 <MessageIcon />
               </Badge>
             </IconButton>

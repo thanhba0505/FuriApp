@@ -5,9 +5,11 @@
         "clickaway",
         "deletecomment",
         "fullname",
+        "FURI",
         "jfif",
         "maxlength",
         "nonfriends",
-        "pjpeg"
+        "pjpeg",
+        "socketio"
     ]
 }

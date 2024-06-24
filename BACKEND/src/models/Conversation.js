@@ -16,6 +16,13 @@ const schema = new mongoose.Schema(
         ref: "Message",
       },
     ],
+
+    read: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Account",
+      },
+    ],
   },
   { timestamps: true }
 );

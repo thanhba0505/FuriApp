@@ -11,10 +11,13 @@ const ConversationRoutes = (io) => {
   );
 
   // get message
-  router.get(
-    "/messages/:conversationId",
-    middleware.verifyToken,
-    Conversation.getMessages
+  router.get("/messages/:conversationId", middleware.verifyToken, (req, res) =>
+    Conversation.getMessages(req, res, io)
+  );
+
+  // read message
+  router.put("/message/read", middleware.verifyToken, (req, res) =>
+    Conversation.readMessage(req, res, io)
   );
 
   return router;

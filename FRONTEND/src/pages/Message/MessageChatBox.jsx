@@ -9,7 +9,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { getConversation } from "~/api/conversationApi";
+import { getConversation, sendMessage } from "~/api/conversationApi";
 import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
@@ -17,6 +17,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { red } from "@mui/material/colors";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import formatDate from "~/config/formatDate";
+import { io } from "socket.io-client";
 
 const TotalAvatars = ({ participants }) => {
   return (
@@ -65,22 +66,28 @@ const BoxMessage = ({ message }) => {
         src={message?.sender.avatarBlob ? message.sender.avatarBlob : ""}
         sx={{ cursor: "pointer" }}
       >
-        {!message.sender.avatarBlob ? message.sender.fullname : ""}
+        {!message.sender.avatarBlob
+          ? getFirstLetterUpperCase(message.sender.fullname)
+          : ""}
       </Avatar>
 
       <Box ml={!isCurrentAccount && 2} mr={isCurrentAccount && 2}>
-        <Paper mt={0} p={1.6} mh>
+        <Paper mt={0} p={1.6} minW={100} maxW={400}>
           <Typography
             lineHeight={1}
             variant="body2"
             fontSize={10}
             fontWeight={400}
-            minWidth={150}
+            textAlign={isCurrentAccount ? "right" : "left"}
           >
             {message?.sender.fullname}
           </Typography>
 
-          <Typography lineHeight={1} mt={1}>
+          <Typography
+            lineHeight={1}
+            mt={1}
+            textAlign={isCurrentAccount ? "right" : "left"}
+          >
             {message?.content}
           </Typography>
         </Paper>
@@ -89,11 +96,11 @@ const BoxMessage = ({ message }) => {
           lineHeight={1}
           mt={1}
           px={1}
-          textAlign={"end"}
+          textAlign={isCurrentAccount ? "right" : "left"}
           variant="body2"
           fontSize={10}
         >
-          {formatDate(message.updatedAt)}
+          {formatTimeDifference(message.updatedAt)}
         </Typography>
       </Box>
     </Box>
@@ -111,8 +118,6 @@ const ListMessages = ({ messages, participants }) => {
       }
     });
   }
-
-  console.log(messages);
 
   return (
     <Box
@@ -163,6 +168,7 @@ const MessageChatBox = () => {
   const accessToken = account?.accessToken;
   const { conversationId } = useParams();
   const [conversation, setConversation] = useState();
+  const [textMessage, setTextMessage] = useState("");
 
   const fetchImage = useCallback(
     async (avatar) => {
@@ -197,10 +203,6 @@ const MessageChatBox = () => {
           ...res.conversation,
           participants: participantsWithAvatars,
         });
-        console.log({
-          ...res.conversation,
-          participants: participantsWithAvatars,
-        });
       } else {
         console.log({ res });
       }
@@ -211,22 +213,43 @@ const MessageChatBox = () => {
     }
   }, [accessToken, conversationId, fetchImage]);
 
-  const test = () => {
-    const newMessage = {
-      content: Date.now().toString(),
-      sender: {
-        fullname: "test",
-        _id: "66619618a5fada55fe35daa6",
-      },
-      _id: Date.now().toString(), // Use timestamp as a unique key
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+    socket.on("newMessage" + conversationId, ({ newMessage }) => {
+      setConversation((prev) => ({
+        ...prev,
+        messages: [newMessage, ...prev.messages],
+      }));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [conversationId]);
+
+  const handleSendMessage = () => {
+    const fetchApi = async () => {
+      const content = textMessage;
+      const res = await sendMessage(accessToken, conversationId, content);
+
+      if (res.status == 200) {
+        setTextMessage("");
+      } else {
+        console.log({ res });
+      }
     };
 
-    const newConversation = {
-      ...conversation,
-      messages: [newMessage, ...conversation.messages],
-    };
-
-    setConversation(newConversation);
+    if (
+      accessToken &&
+      conversationId &&
+      textMessage &&
+      textMessage.trim() !== ""
+    ) {
+      fetchApi();
+    } else {
+      setTextMessage("");
+    }
   };
 
   return (
@@ -260,11 +283,13 @@ const MessageChatBox = () => {
             maxRows={4}
             size="small"
             sx={{ width: "80%", mr: 2 }}
+            onChange={(e) => setTextMessage(e.target.value)}
+            value={textMessage}
           />
           <Button
-            onClick={test}
+            onClick={handleSendMessage}
             variant="contained"
-            sx={{ px: 4, maxHeight: 40 }}
+            sx={{ px: 4, maxHeight: 40, height: 40 }}
             endIcon={<SendIcon />}
           >
             Send

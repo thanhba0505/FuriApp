@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import { getFriends } from "~/api/accountApi";
 import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
@@ -21,8 +22,37 @@ import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 const Conversation = ({ item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const accountId = account?._id;
   const navigate = useNavigate();
   const [img, setImg] = useState();
+  const [read, setRead] = useState(item?.hasRead);
+
+  const [newLastMessage, setNewLastMessage] = useState({
+    send: item?.lastMessage?.senderName ? item.lastMessage.senderName : null,
+    mess: item?.lastMessage?.content ? item.lastMessage.content : null,
+  });
+
+  useEffect(() => {
+    if (item?.conversation) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      socket.on("hasRead" + item?.conversation, ({ read, newMessage }) => {
+        if (!read.includes(accountId)) {
+          setRead(false);
+          setNewLastMessage({
+            send: newMessage?.sender?.fullname,
+            mess: newMessage?.content,
+          });
+        } else {
+          setRead(true);
+        }
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [item?.conversation, accountId]);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -65,18 +95,14 @@ const Conversation = ({ item }) => {
           <ListItemText
             primary={item?.account?.fullname}
             secondary={
-              item?.lastMessage
-                ? item.lastMessage.senderName + ": " + item.lastMessage.content
+              newLastMessage?.mess && newLastMessage?.send
+                ? newLastMessage.send + ": " + newLastMessage.mess
                 : "@" + item.account.username
             }
           />
           <ListItemText
             sx={{ textAlign: "end" }}
-            primary={
-              item?.unreadMessagesCount
-                ? item?.unreadMessagesCount + " new message"
-                : ""
-            }
+            primary={read ? "" : "New message"}
             secondary={
               item?.lastMessage &&
               formatTimeDifference(item.lastMessage.createdAt)
@@ -107,7 +133,7 @@ const ListConversation = () => {
       loadRequest();
     }
   }, [accessToken]);
-  
+
   return (
     <Paper>
       <Typography fontSize={18} fontWeight={700} lineHeight={1}>
