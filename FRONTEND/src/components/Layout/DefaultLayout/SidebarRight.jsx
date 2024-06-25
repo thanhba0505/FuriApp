@@ -58,7 +58,7 @@ const ItemFirst = React.memo(({ index, item, setListItems }) => {
   };
 
   const handleLinkMessage = () => {
-    navigate("/message/" + item.conversation);
+    navigate("/message/" + item?.conversation);
   };
 
   useEffect(() => {
@@ -90,29 +90,30 @@ const ItemFirst = React.memo(({ index, item, setListItems }) => {
       });
 
       socket.on("newMess" + item?.conversation, ({ newMessage }) => {
+        console.log(newMessage);
         if (newMessage?.sender?._id != accountId) {
           setRead(false);
         } else {
           setRead(true);
         }
-          setListItems((prevItems) => {
-            const updatedItems = [...prevItems];
-            const index = updatedItems.findIndex(
-              (i) => i.conversation === item.conversation
-            );
-            if (index !== -1) {
-              const movedItem = updatedItems.splice(index, 1)[0];
-              return [movedItem, ...updatedItems];
-            }
-            return updatedItems;
-          });
+        setListItems((prevItems) => {
+          const updatedItems = [...prevItems];
+          const index = updatedItems.findIndex(
+            (i) => i.conversation === item?.conversation
+          );
+          if (index !== -1) {
+            const movedItem = updatedItems.splice(index, 1)[0];
+            return [movedItem, ...updatedItems];
+          }
+          return updatedItems;
+        });
       });
 
       return () => {
         socket.disconnect();
       };
     }
-  }, [item.conversation, accountId, setListItems]);
+  }, [item?.conversation, accountId, setListItems]);
 
   return (
     <>
@@ -159,11 +160,29 @@ const ItemFirst = React.memo(({ index, item, setListItems }) => {
 const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const accountId = account?._id;
   const limit = 100;
   const navigate = useNavigate();
 
   const [listItems, setListItems] = useState([]);
   const [maxHeight, setMaxHeight] = useState("200px");
+
+  useEffect(() => {
+    if (accessToken) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      socket.on("newFriendReceiver" + accountId, ({ newFriendReceiver }) => {
+        setListItems((prev) => [newFriendReceiver, ...prev]);
+      });
+      socket.on("newFriendSender" + accountId, ({ newFriendSender }) => {
+        setListItems((prev) => [newFriendSender, ...prev]);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accountId, setListItems, accessToken]);
 
   useEffect(() => {
     const loadRequest = async () => {
@@ -249,7 +268,7 @@ const PaperFirst = React.memo(() => {
               {listItems && listItems.length > 0
                 ? listItems.map((item) => (
                     <ItemFirst
-                      key={item.conversation}
+                      key={item?.conversation}
                       item={item}
                       setListItems={setListItems}
                     ></ItemFirst>
@@ -294,47 +313,42 @@ const PaperFirst = React.memo(() => {
 });
 
 // Second
-const ItemSecond = React.memo(({ index, item }) => {
+const ItemSecond = React.memo(({ index, item, setListItems }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
   const navigate = useNavigate();
 
-  const [check, setCheck] = useState(false);
   const [img, setImg] = useState();
-
-  useEffect(() => {
-    if (check) {
-      setCheck(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item]);
 
   const handleLinkProfile = () => {
     navigate("/profile/" + item._id);
   };
 
+  const removeItem = () => {
+    setListItems((prev) => {
+      const newArray = prev.filter((prevItem) => prevItem._id !== item._id);
+      return newArray;
+    });
+  };
+
   const handleAccept = async () => {
-    if (!check) {
-      const senderId = item._id;
-      const res = await acceptFriendRequest(accessToken, senderId);
-      if (res.status == 200) {
-        setCheck("yes");
-      } else {
-        console.log(res);
-      }
+    const senderId = item._id;
+    const res = await acceptFriendRequest(accessToken, senderId);
+    if (res.status == 200) {
+      removeItem();
+    } else {
+      console.log({ res });
     }
   };
 
   const handleReject = async () => {
-    if (!check) {
-      const senderId = item._id;
-      const res = await rejectFriendRequest(accessToken, senderId);
-      if (res.status == 200) {
-        setCheck("no");
-      } else {
-        console.log(res);
-      }
+    const senderId = item._id;
+    const res = await rejectFriendRequest(accessToken, senderId);
+    if (res.status == 200) {
+      removeItem();
+    } else {
+      console.log({ res });
     }
   };
 
@@ -362,7 +376,6 @@ const ItemSecond = React.memo(({ index, item }) => {
         secondaryAction={
           <>
             <IconButton
-              disabled={check == "yes" ? true : false}
               onClick={handleReject}
               sx={{ width: "40px", height: "40px" }}
               edge="end"
@@ -371,7 +384,6 @@ const ItemSecond = React.memo(({ index, item }) => {
             </IconButton>
 
             <IconButton
-              disabled={check == "no" ? true : false}
               onClick={handleAccept}
               sx={{ width: "40px", height: "40px" }}
               edge="end"
@@ -425,16 +437,6 @@ const PaperSecond = React.memo(() => {
     }
   }, [accessToken]);
 
-  const handleReload = () => {
-    const loadRequest = async () => {
-      const res = await getReceivedFriendRequests(accessToken, limit);
-      if (res.status == 200) {
-        setListItems(res.receivedFriendRequests);
-      }
-    };
-    loadRequest();
-  };
-
   const handleLinkReceived = () => {
     navigate("/everyone/received");
   };
@@ -471,29 +473,44 @@ const PaperSecond = React.memo(() => {
         </AccordionSummary>
 
         <AccordionDetails sx={{ p: 0 }}>
-          <List>
-            {listItems && listItems.length > 0
-              ? listItems.map((item, index) => (
-                  <ItemSecond key={index} item={item}></ItemSecond>
-                ))
-              : "No requirements"}
+          <List
+            sx={{
+              maxHeight: 350,
+              overflowY: "auto",
+              pr: "4px",
+              py: 1,
+              "::-webkit-scrollbar": {
+                width: "4px",
+                height: "8px",
+                backgroundColor: "action.hover",
+              },
+              "::-webkit-scrollbar-thumb": {
+                backgroundColor: "action.hover",
+              },
+            }}
+          >
+            {listItems && listItems.length > 0 ? (
+              listItems.map((item) => (
+                <ItemSecond
+                  key={item?._id}
+                  item={item}
+                  setListItems={setListItems}
+                />
+              ))
+            ) : (
+              <Typography py={2} textAlign={"center"}>
+                No friend request
+              </Typography>
+            )}
           </List>
           <Box mt={1} display={"flex"} gap={1}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              sx={{ width: "30%" }}
-              onClick={handleReload}
-            >
-              <ReplayTwoToneIcon fontSize="small" />
-            </Button>
             <Button
               onClick={handleLinkReceived}
               variant="outlined"
               color="secondary"
-              sx={{ width: "70%" }}
+              sx={{ width: "100%" }}
             >
-              See all
+              See all friend request
             </Button>
           </Box>
         </AccordionDetails>

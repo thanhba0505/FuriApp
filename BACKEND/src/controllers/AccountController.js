@@ -485,7 +485,30 @@ const AccountController = {
       await receiver.save();
       await sender.save();
 
-      io.to(senderId).emit("acceptFriendRequest", { receiverId });
+      const newFriendReceiver = {
+        account: {
+          _id: receiver._id,
+          username: receiver.username,
+          fullname: receiver.fullname,
+        },
+        hasRead: true,
+        lastMessage: null,
+        conversation: newConversation._id,
+      };
+
+      const newFriendSender = {
+        account: {
+          _id: sender._id,
+          username: sender.username,
+          fullname: sender.fullname,
+        },
+        hasRead: true,
+        lastMessage: null,
+        conversation: newConversation._id,
+      };
+
+      io.emit("newFriendReceiver" + senderId, { newFriendReceiver });
+      io.emit("newFriendSender" + receiverId, { newFriendSender });
 
       return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {
@@ -530,9 +553,6 @@ const AccountController = {
   },
 
   getFriends: async (req, res) => {
-    const limit = parseInt(req.query._limit) || 10;
-    const skip = parseInt(req.query._skip) || 0;
-
     const pathAccount = "accountImage/";
 
     try {
@@ -591,7 +611,7 @@ const AccountController = {
         );
       });
 
-      const paginatedFriends = friendsWithDetails.slice(skip, skip + limit);
+      const paginatedFriends = friendsWithDetails;
 
       paginatedFriends.forEach((friend) => {
         if (friend.account.avatar) {
@@ -697,8 +717,6 @@ const AccountController = {
   },
 
   getReceivedFriendRequests: async (req, res) => {
-    const limit = parseInt(req.query._limit) || 10;
-    const skip = parseInt(req.query._skip) || 0;
     const pathAccount = "accountImage/";
 
     try {
@@ -712,14 +730,12 @@ const AccountController = {
       let receivedFriendRequests = account.receivedFriendRequests;
 
       if (receivedFriendRequests.length > 0) {
-        receivedFriendRequests = receivedFriendRequests
-          .map((request) => {
-            if (request.avatar) {
-              request.avatar = pathAccount + request.avatar;
-            }
-            return request;
-          })
-          .slice(skip, skip + limit);
+        receivedFriendRequests = receivedFriendRequests.map((request) => {
+          if (request.avatar) {
+            request.avatar = pathAccount + request.avatar;
+          }
+          return request;
+        });
       }
 
       return res.json({

@@ -56,18 +56,10 @@ const ConversationController = {
           pathAccount + populatedMessage.sender.avatar;
       }
 
-      io.emit("newMessage" + conversationId, { newMessage: populatedMessage });
-      io.emit("hasRead" + conversationId, {
-        read: [senderId],
-        newMessage: populatedMessage,
-      });
-
       io.emit("newMess" + conversationId, {
         senderId,
         newMessage: populatedMessage,
       });
-
-      io.emit("sendMess" + senderId, {});
 
       return res.json({
         status: 200,

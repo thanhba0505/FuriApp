@@ -139,9 +139,27 @@ const Conversation = React.memo(({ item, setListItems }) => {
 const ListConversation = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const accountId = account?._id;
   const limit = 100;
 
   const [listItems, setListItems] = useState([]);
+
+  useEffect(() => {
+    if (accessToken) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      socket.on("newFriendReceiver" + accountId, ({ newFriendReceiver }) => {
+        setListItems((prev) => [newFriendReceiver, ...prev]);
+      });
+      socket.on("newFriendSender" + accountId, ({ newFriendSender }) => {
+        setListItems((prev) => [newFriendSender, ...prev]);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accountId, setListItems, accessToken]);
 
   useEffect(() => {
     const loadRequest = async () => {
@@ -166,7 +184,7 @@ const ListConversation = () => {
           listItems.length > 0 &&
           listItems.map((item) => (
             <Conversation
-              key={item.conversation}
+              key={item?.conversation}
               item={item}
               setListItems={setListItems}
             />

@@ -41,7 +41,6 @@ const Login = () => {
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter" && !disabled) {
-      console.log("ádfsa");
       handleLogin();
     }
   };
