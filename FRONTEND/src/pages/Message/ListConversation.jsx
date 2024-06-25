@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import {
   Avatar,
   Box,
@@ -9,7 +10,7 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -19,7 +20,7 @@ import Paper from "~/components/Paper";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
-const Conversation = ({ item }) => {
+const Conversation = React.memo(({ item, setListItems }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
@@ -30,18 +31,39 @@ const Conversation = ({ item }) => {
   const [newLastMessage, setNewLastMessage] = useState({
     send: item?.lastMessage?.senderName ? item.lastMessage.senderName : null,
     mess: item?.lastMessage?.content ? item.lastMessage.content : null,
+    date: item?.lastMessage?.createdAt ? item.lastMessage.createdAt : null,
   });
 
   useEffect(() => {
     if (item?.conversation) {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-      socket.on("hasRead" + item?.conversation, ({ read, newMessage }) => {
-        if (!read.includes(accountId)) {
+      socket.on("newMess" + item?.conversation + accountId, ({ read }) => {
+        if (!read) {
+          setRead(false);
+        } else {
+          setRead(true);
+        }
+      });
+
+      socket.on("newMess" + item?.conversation, ({ newMessage }) => {
+        if (newMessage?.sender?._id != accountId) {
           setRead(false);
           setNewLastMessage({
             send: newMessage?.sender?.fullname,
             mess: newMessage?.content,
+            date: newMessage?.updatedAt,
+          });
+          setListItems((prevItems) => {
+            const updatedItems = [...prevItems];
+            const index = updatedItems.findIndex(
+              (i) => i.conversation === item.conversation
+            );
+            if (index !== -1) {
+              const movedItem = updatedItems.splice(index, 1)[0];
+              return [movedItem, ...updatedItems];
+            }
+            return updatedItems;
           });
         } else {
           setRead(true);
@@ -52,7 +74,7 @@ const Conversation = ({ item }) => {
         socket.disconnect();
       };
     }
-  }, [item?.conversation, accountId]);
+  }, [item.conversation, accountId, setListItems]);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -104,8 +126,7 @@ const Conversation = ({ item }) => {
             sx={{ textAlign: "end" }}
             primary={read ? "" : "New message"}
             secondary={
-              item?.lastMessage &&
-              formatTimeDifference(item.lastMessage.createdAt)
+              newLastMessage?.date && formatTimeDifference(newLastMessage.date)
             }
           />
         </ListItemButton>
@@ -113,7 +134,7 @@ const Conversation = ({ item }) => {
       <Divider />
     </>
   );
-};
+});
 
 const ListConversation = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -144,11 +165,17 @@ const ListConversation = () => {
         {listItems &&
           listItems.length > 0 &&
           listItems.map((item) => (
-            <Conversation key={item.conversation} item={item} />
+            <Conversation
+              key={item.conversation}
+              item={item}
+              setListItems={setListItems}
+            />
           ))}
       </Box>
     </Paper>
   );
 };
 
-export default ListConversation;
+const ListConversationMemo = React.memo(ListConversation);
+
+export default ListConversationMemo;

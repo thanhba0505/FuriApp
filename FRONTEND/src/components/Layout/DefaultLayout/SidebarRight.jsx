@@ -45,7 +45,7 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { io } from "socket.io-client";
 
 // First
-const ItemFirst = ({ index, item }) => {
+const ItemFirst = React.memo(({ index, item, setListItems }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
@@ -81,19 +81,38 @@ const ItemFirst = ({ index, item }) => {
     if (item?.conversation) {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-      socket.on("hasRead" + item?.conversation, ({ read }) => {
-        if (!read.includes(accountId)) {
+      socket.on("newMess" + item?.conversation + accountId, ({ read }) => {
+        if (!read) {
           setRead(false);
         } else {
           setRead(true);
         }
       });
 
+      socket.on("newMess" + item?.conversation, ({ newMessage }) => {
+        if (newMessage?.sender?._id != accountId) {
+          setRead(false);
+        } else {
+          setRead(true);
+        }
+          setListItems((prevItems) => {
+            const updatedItems = [...prevItems];
+            const index = updatedItems.findIndex(
+              (i) => i.conversation === item.conversation
+            );
+            if (index !== -1) {
+              const movedItem = updatedItems.splice(index, 1)[0];
+              return [movedItem, ...updatedItems];
+            }
+            return updatedItems;
+          });
+      });
+
       return () => {
         socket.disconnect();
       };
     }
-  }, [item?.conversation, accountId]);
+  }, [item.conversation, accountId, setListItems]);
 
   return (
     <>
@@ -135,7 +154,7 @@ const ItemFirst = ({ index, item }) => {
       <Divider />
     </>
   );
-};
+});
 
 const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -228,8 +247,12 @@ const PaperFirst = React.memo(() => {
               }}
             >
               {listItems && listItems.length > 0
-                ? listItems.map((item, index) => (
-                    <ItemFirst key={index} item={item}></ItemFirst>
+                ? listItems.map((item) => (
+                    <ItemFirst
+                      key={item.conversation}
+                      item={item}
+                      setListItems={setListItems}
+                    ></ItemFirst>
                   ))
                 : "No requirements"}
             </List>
@@ -271,7 +294,7 @@ const PaperFirst = React.memo(() => {
 });
 
 // Second
-const ItemSecond = ({ index, item }) => {
+const ItemSecond = React.memo(({ index, item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
@@ -380,7 +403,7 @@ const ItemSecond = ({ index, item }) => {
       <Divider />
     </>
   );
-};
+});
 
 const PaperSecond = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -480,7 +503,7 @@ const PaperSecond = React.memo(() => {
 });
 
 // Third
-const ItemThird = ({ index, item }) => {
+const ItemThird = React.memo(({ index, item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
 
@@ -570,7 +593,7 @@ const ItemThird = ({ index, item }) => {
       <Divider />
     </>
   );
-};
+});
 
 const PaperThird = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -669,7 +692,7 @@ const PaperThird = React.memo(() => {
   );
 });
 
-function SidebarRight({ xs = {} }) {
+const SidebarRight = ({ xs = {} }) => {
   return (
     <Sidebar xs={xs}>
       <PaperFirst />
@@ -677,8 +700,8 @@ function SidebarRight({ xs = {} }) {
       <PaperThird />
     </Sidebar>
   );
-}
+};
 
 const SidebarRightMemo = React.memo(SidebarRight);
 
-export default SidebarRight;
+export default SidebarRightMemo;

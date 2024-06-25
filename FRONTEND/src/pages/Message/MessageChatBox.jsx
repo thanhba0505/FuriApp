@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import {
   Avatar,
   AvatarGroup,
@@ -6,7 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getConversation, sendMessage } from "~/api/conversationApi";
@@ -14,12 +15,10 @@ import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import SendIcon from "@mui/icons-material/Send";
-import { red } from "@mui/material/colors";
 import formatTimeDifference from "~/config/formatTimeDifference";
-import formatDate from "~/config/formatDate";
 import { io } from "socket.io-client";
 
-const TotalAvatars = ({ participants }) => {
+const TotalAvatars = React.memo(({ participants }) => {
   return (
     <Box>
       <AvatarGroup
@@ -42,9 +41,9 @@ const TotalAvatars = ({ participants }) => {
       </AvatarGroup>
     </Box>
   );
-};
+});
 
-const BoxMessage = ({ message }) => {
+const BoxMessage = React.memo(({ message }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accountId = account?._id;
   const navigate = useNavigate();
@@ -105,9 +104,9 @@ const BoxMessage = ({ message }) => {
       </Box>
     </Box>
   );
-};
+});
 
-const ListMessages = ({ messages, participants }) => {
+const ListMessages = React.memo(({ messages, participants }) => {
   if (messages) {
     messages.forEach((message) => {
       const sender = participants.find(
@@ -161,7 +160,7 @@ const ListMessages = ({ messages, participants }) => {
       </Box>
     </Box>
   );
-};
+});
 
 const MessageChatBox = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -300,4 +299,6 @@ const MessageChatBox = () => {
   );
 };
 
-export default MessageChatBox;
+const MessageChatBoxMemo = React.memo(MessageChatBox);
+
+export default MessageChatBoxMemo;

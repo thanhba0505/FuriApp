@@ -25,7 +25,7 @@ const ConversationController = {
           message: "You are not part of this conversation",
         });
       }
-      
+
       if (!content || content.trim() === "") {
         return res.json({
           status: 400,
@@ -61,6 +61,13 @@ const ConversationController = {
         read: [senderId],
         newMessage: populatedMessage,
       });
+
+      io.emit("newMess" + conversationId, {
+        senderId,
+        newMessage: populatedMessage,
+      });
+
+      io.emit("sendMess" + senderId, {});
 
       return res.json({
         status: 200,
@@ -153,7 +160,7 @@ const ConversationController = {
         });
       }
 
-      io.emit("hasRead" + conversationId, { read: conversation.read });
+      io.emit("newMess" + conversationId + accountId, { read: true });
 
       return res.json({
         status: 200,
@@ -194,7 +201,7 @@ const ConversationController = {
 
       await conversation.save();
 
-      io.emit("hasRead" + conversationId, { read: conversation.read });
+      io.emit("newMess" + conversationId + accountId, { read: true });
 
       return res.json({
         status: 200,
