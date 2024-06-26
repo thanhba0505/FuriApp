@@ -3,3 +3,14 @@ import.meta.env.VITE_FURI_API_BASE_URL
 
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+
+
+  overflowY: "auto",
+          "::-webkit-scrollbar": {
+            width: "4px",
+            height: "8px",
+            backgroundColor: "action.hover",
+          },
+          "::-webkit-scrollbar-thumb": {
+            backgroundColor: "action.hover",
+          },

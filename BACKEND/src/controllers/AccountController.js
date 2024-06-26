@@ -658,7 +658,7 @@ const AccountController = {
       const nonFriends = await Account.aggregate([
         { $match: { _id: { $nin: excludedIds } } },
         { $sample: { size: limit } },
-        { $project: { fullname: 1, avatar: 1, username: 1 } },
+        { $project: { fullname: 1, avatar: 1, username: 1, background: 1 } },
       ]);
 
       if (nonFriends.length > 0) {
@@ -673,7 +673,6 @@ const AccountController = {
         status: 200,
         message: "Get non friends successful",
         nonFriends,
-        excludedIds,
       });
     } catch (error) {
       return res.json({ status: 500, message: "Internal Server Error", error });

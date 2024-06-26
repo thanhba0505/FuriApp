@@ -46,6 +46,9 @@ const Everyone = () => {
       <Paper>
         <Box
           display={"flex"}
+          alignItems={"center"}
+
+          height={40}
           gap={2}
           sx={{
             "& > .active": {

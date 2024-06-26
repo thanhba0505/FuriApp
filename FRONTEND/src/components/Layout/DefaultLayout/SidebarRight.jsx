@@ -265,15 +265,19 @@ const PaperFirst = React.memo(() => {
                 },
               }}
             >
-              {listItems && listItems.length > 0
-                ? listItems.map((item) => (
-                    <ItemFirst
-                      key={item?.conversation}
-                      item={item}
-                      setListItems={setListItems}
-                    ></ItemFirst>
-                  ))
-                : "No requirements"}
+              {listItems && listItems.length > 0 ? (
+                listItems.map((item) => (
+                  <ItemFirst
+                    key={item?.conversation}
+                    item={item}
+                    setListItems={setListItems}
+                  ></ItemFirst>
+                ))
+              ) : (
+                <Typography py={2} textAlign={"center"}>
+                  No friend
+                </Typography>
+              )}
             </List>
           </Box>
           <Box mt={1} display={"flex"} gap={1}>
@@ -540,7 +544,7 @@ const ItemThird = React.memo(({ index, item }) => {
     navigate("/profile/" + item._id);
   };
 
-  const handleAccept = async () => {
+  const handleSendRequest = async () => {
     if (!check) {
       const receiverId = item._id;
       const res = await sendFriendRequest(accessToken, receiverId);
@@ -576,7 +580,7 @@ const ItemThird = React.memo(({ index, item }) => {
         secondaryAction={
           <>
             <IconButton
-              onClick={handleAccept}
+              onClick={handleSendRequest}
               sx={{ width: "40px", height: "40px" }}
             >
               {check ? (
