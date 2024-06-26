@@ -472,7 +472,7 @@ const PaperSecond = React.memo(() => {
           sx={{ minHeight: "30px !important" }}
         >
           <Typography variant="body1" fontSize={18} fontWeight={700}>
-            New friend request
+            Request received
           </Typography>
         </AccordionSummary>
 
@@ -503,7 +503,7 @@ const PaperSecond = React.memo(() => {
               ))
             ) : (
               <Typography py={2} textAlign={"center"}>
-                No friend request
+                No request received
               </Typography>
             )}
           </List>
@@ -677,15 +677,15 @@ const PaperThird = React.memo(() => {
           sx={{ minHeight: "30px !important" }}
         >
           <Typography variant="body1" fontSize={18} fontWeight={700}>
-            Suggest friends
+            Everyone
           </Typography>
         </AccordionSummary>
 
         <AccordionDetails sx={{ p: 0 }}>
           <List>
             {listItems && listItems.length > 0
-              ? listItems.map((item, index) => (
-                  <ItemThird key={index} item={item}></ItemThird>
+              ? listItems.map((item) => (
+                  <ItemThird key={item?._id} item={item}></ItemThird>
                 ))
               : "Nobody"}
           </List>
