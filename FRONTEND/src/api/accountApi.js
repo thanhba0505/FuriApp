@@ -119,12 +119,9 @@ export const uploadBackground = async (accessToken, formData) => {
 };
 
 // FRIENDS
-export const getFriends = async (accessToken, limit) => {
+export const getFriends = async (accessToken) => {
   try {
     const res = await axios.get("/api/account/friends", {
-      params: {
-        _limit: limit,
-      },
       headers: {
         token: `Bearer ${accessToken}`,
       },

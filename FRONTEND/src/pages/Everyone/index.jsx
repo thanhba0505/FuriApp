@@ -5,39 +5,30 @@ import PersonSearchTwoToneIcon from "@mui/icons-material/PersonSearchTwoTone";
 import Diversity3TwoToneIcon from "@mui/icons-material/Diversity3TwoTone";
 import PersonAddTwoToneIcon from "@mui/icons-material/PersonAddTwoTone";
 import ScheduleSendTwoToneIcon from "@mui/icons-material/ScheduleSendTwoTone";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, Navigate, useNavigate, useParams } from "react-router-dom";
 import All from "./All";
 import Friends from "./Friends";
 import Received from "./Received";
 import Sent from "./Sent";
 
-const CustomNav = ({ children, icon, to, exact }) => {
-  return (
-    <NavLink
-      to={"/everyone" + to}
-      className={({ isActive }) => (isActive ? "active" : "")}
-      end={exact}
-    >
-      <Button endIcon={icon} variant="outlined" color="secondary">
-        {children}
-      </Button>
-    </NavLink>
-  );
-};
-
 const Everyone = () => {
   const { tabName } = useParams();
+  const navigate = useNavigate();
+
+  const tabNameCurrent = tabName ? tabName : "";
 
   const renderContent = () => {
-    switch (tabName?.toLowerCase()) {
+    switch (tabNameCurrent?.toLowerCase()) {
       case "friends":
         return <Friends />;
       case "received":
         return <Received />;
       case "sent":
         return <Sent />;
-      default:
+      case "":
         return <All />;
+      default:
+        return <Navigate to={"/everyone"} />;
     }
   };
 
@@ -47,7 +38,6 @@ const Everyone = () => {
         <Box
           display={"flex"}
           alignItems={"center"}
-
           height={40}
           gap={2}
           sx={{
@@ -56,18 +46,30 @@ const Everyone = () => {
             },
           }}
         >
-          <CustomNav to={""} icon={<PersonSearchTwoToneIcon />} exact>
+          <Button
+            variant={!tabNameCurrent ? "contained" : "outlined"}
+            onClick={() => navigate("/everyone")}
+          >
             All
-          </CustomNav>
-          <CustomNav to={"/friends"} icon={<Diversity3TwoToneIcon />}>
+          </Button>
+          <Button
+            variant={tabNameCurrent == "friends" ? "contained" : "outlined"}
+            onClick={() => navigate("/everyone/friends")}
+          >
             Friends
-          </CustomNav>
-          <CustomNav to={"/received"} icon={<PersonAddTwoToneIcon />}>
+          </Button>
+          <Button
+            variant={tabNameCurrent == "received" ? "contained" : "outlined"}
+            onClick={() => navigate("/everyone/received")}
+          >
             Received
-          </CustomNav>
-          <CustomNav to={"/sent"} icon={<ScheduleSendTwoToneIcon />}>
+          </Button>
+          <Button
+            variant={tabNameCurrent == "sent" ? "contained" : "outlined"}
+            onClick={() => navigate("/everyone/sent")}
+          >
             Sent
-          </CustomNav>
+          </Button>
         </Box>
       </Paper>
       {renderContent()}
