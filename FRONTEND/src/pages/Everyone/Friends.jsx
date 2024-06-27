@@ -30,14 +30,6 @@ const Friends = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
-  const handleClick1 = () => {
-    console.log("1");
-  };
-
-  const handleClick2 = () => {
-    console.log("2");
-  };
-
   return (
     <Box mt={3} height={"calc(100% - 128px)"}>
       <Box
@@ -56,8 +48,7 @@ const Friends = () => {
                   fullname={item?.account?.fullname}
                   username={item?.account?.username}
                   accId={item?.account?._id}
-                  handleClick1={handleClick1}
-                  handleClick2={handleClick2}
+                  conversationId={item?.conversation}
                   type="friends"
                 />
               ))

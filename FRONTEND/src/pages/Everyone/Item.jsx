@@ -11,17 +11,19 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import { sendFriendRequest } from "~/api/accountApi";
+import { io } from "socket.io-client";
 
 const Btn = ({
   children,
   fullWidth = false,
   variant = "contained",
   icon = <PeopleIcon />,
-  handleClick,
+  onClick,
 }) => {
   return (
     <Button
-      onClick={handleClick}
+      onClick={onClick}
       sx={{
         width: () => (fullWidth ? "100%" : "50%"),
       }}
@@ -35,67 +37,117 @@ const Btn = ({
   );
 };
 
-const RenderButton = ({ type, handleClick1, handleClick2 }) => {
-  if (type == "all") {
+const RenderButton = ({ type, accId, conversationId }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const navigate = useNavigate();
+  const accountId = account?._id;
+
+  const [typeBtn, setTypeBtn] = useState(type);
+
+  useEffect(() => {
+    if (accessToken) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      const senderId = accountId;
+      const receiverId = accId;
+
+      socket.on(
+        "emitEveryoneRequest" + senderId + receiverId,
+        ({ type, receiver }) => {
+          console.log({ emit: { type, receiver } });
+
+          switch (type) {
+            case "sent":
+              setTypeBtn("sent");
+              break;
+
+            default:
+              break;
+          }
+        }
+      );
+
+      socket.on(
+        "emitEveryoneRequest" + receiverId + senderId,
+        ({ type, receiver }) => {
+          console.log({ emit: { type, receiver } });
+
+          switch (type) {
+            case "sent":
+              setTypeBtn("received");
+              break;
+
+            default:
+              break;
+          }
+        }
+      );
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accountId, accessToken, accId]);
+
+  const handleClickAll = () => {
+    const loadRequest = async () => {
+      const res = await sendFriendRequest(accessToken, accId);
+      if (res.status == 200) {
+        console.log(res);
+      } else {
+        console.log(res);
+      }
+    };
+
+    if (accessToken && accId && typeBtn == "all") {
+      loadRequest();
+    }
+  };
+
+  if (typeBtn == "all") {
     return (
       <>
         <Btn
-          handleClick={handleClick1}
           icon={<PersonAddIcon />}
           fullWidth
           variant="contained"
+          onClick={handleClickAll}
         >
           Add friend
         </Btn>
       </>
     );
-  } else if (type == "friends") {
+  } else if (typeBtn == "friends") {
     return (
       <>
         <Btn
-          handleClick={handleClick1}
           icon={<MessageIcon />}
           variant="outlined"
+          onClick={() => navigate("/message/" + conversationId)}
         >
           Mess
         </Btn>
-        <Btn
-          handleClick={handleClick2}
-          icon={<PeopleIcon />}
-          variant="contained"
-        >
+        <Btn icon={<PeopleIcon />} variant="contained">
           Friends
         </Btn>
       </>
     );
-  } else if (type == "received") {
+  } else if (typeBtn == "received") {
     return (
       <>
-        <Btn
-          handleClick={handleClick1}
-          icon={<CancelIcon />}
-          variant="outlined"
-        >
+        <Btn icon={<CancelIcon />} variant="outlined">
           Reject
         </Btn>
-        <Btn
-          handleClick={handleClick2}
-          icon={<CheckCircleIcon />}
-          variant="contained"
-        >
+        <Btn icon={<CheckCircleIcon />} variant="contained">
           Accept
         </Btn>
       </>
     );
-  } else if (type == "sent") {
+  } else if (typeBtn == "sent") {
     return (
       <>
-        <Btn
-          handleClick={handleClick1}
-          icon={<TaskAltIcon />}
-          fullWidth
-          variant="outlined"
-        >
+        <Btn icon={<TaskAltIcon />} fullWidth variant="outlined">
           Sent request
         </Btn>
       </>
@@ -109,9 +161,8 @@ const Item = ({
   username = "",
   fullname = "",
   type = "all",
+  conversationId,
   lastItemRef,
-  handleClick1,
-  handleClick2,
 }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
@@ -178,8 +229,8 @@ const Item = ({
           <Box mt={2} width={"100%"} columnGap={1} display={"flex"}>
             <RenderButton
               type={type}
-              handleClick1={handleClick1}
-              handleClick2={handleClick2}
+              accId={accId}
+              conversationId={conversationId}
             />
           </Box>
         </Box>

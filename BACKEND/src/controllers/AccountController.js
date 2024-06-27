@@ -386,6 +386,8 @@ const AccountController = {
   },
 
   sendFriendRequest: async (req, res, io) => {
+    const pathAccount = "accountImage/";
+
     try {
       const senderId = req.account.id;
       const { receiverId } = req.body;
@@ -432,10 +434,21 @@ const AccountController = {
       await sender.save();
       await receiver.save();
 
-      io.to(receiverId).emit("sendFriendRequest", { senderId });
+      const receiverInfo = {
+        _id: receiverId,
+        fullname: receiver?.fullname,
+        avatar: receiver?.avatar ? pathAccount + receiver.avatar : null,
+        username: receiver?.username,
+      };
+
+      io.emit(`emitEveryoneRequest${senderId}${receiverId}`, {
+        type: "sent",
+        receiver: receiverInfo,
+      });
 
       return res.json({ status: 200, message: "Send invitation successfully" });
     } catch (error) {
+      console.log({ error });
       return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
@@ -509,6 +522,18 @@ const AccountController = {
 
       io.emit("newFriendReceiver" + senderId, { newFriendReceiver });
       io.emit("newFriendSender" + receiverId, { newFriendSender });
+
+      // const receiverInfo = {
+      //   _id: receiverId,
+      //   fullname: receiver?.fullname,
+      //   avatar: receiver?.avatar ? pathAccount + receiver.avatar : null,
+      //   username: receiver?.username,
+      // };
+
+      // io.emit(`emitEveryoneRequest${receiverId}${senderId}`, {
+      //   type: "sent",
+      //   receiver: receiverInfo,
+      // });
 
       return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {

@@ -30,10 +30,6 @@ const Sent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
-  const handleClick1 = () => {
-    console.log("1");
-  };
-
   return (
     <Box mt={3} height={"calc(100% - 128px)"}>
       <Box
@@ -52,7 +48,6 @@ const Sent = () => {
                   fullname={item?.fullname}
                   username={item?.username}
                   accId={item?._id}
-                  handleClick1={handleClick1}
                   type="sent"
                 />
               ))
