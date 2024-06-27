@@ -59,14 +59,14 @@ const RenderButton = ({ type, accId, conversationId }) => {
 
       socket.on(
         "emitEveryoneRequest" + senderId + receiverId,
-        ({ type, sender }) => {
+        ({ type, conversationId }) => {
           switch (type) {
             case "sent":
               setTypeBtn("sent");
               break;
             case "accept":
               setTypeBtn("friends");
-              setConversationIdBtn(sender.conversation);
+              setConversationIdBtn(conversationId);
               break;
             case "reject":
               setTypeBtn("all");
@@ -250,10 +250,10 @@ const Item = ({
               },
             }}
           >
-            {!img ? getFirstLetterUpperCase(username) : ""}
+            {!img ? getFirstLetterUpperCase(fullname) : ""}
           </Avatar>
 
-          <Typography fontSize={20} fontWeight={500} mt={1}>
+          <Typography fontSize={18} fontWeight={500} mt={1}>
             {accId && fullname}
           </Typography>
 

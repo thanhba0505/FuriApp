@@ -30,8 +30,6 @@ const schema = new mongoose.Schema(
       type: String,
     },
 
-    
-
     sentFriendRequests: [
       {
         type: mongoose.Schema.ObjectId,

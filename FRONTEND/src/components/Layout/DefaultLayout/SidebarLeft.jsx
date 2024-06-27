@@ -24,6 +24,7 @@ import { useEffect } from "react";
 import { getImageBlob } from "~/api/imageApi";
 import { useMemo } from "react";
 import { Box } from "@mui/material";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 // PaperFirst
 const PaperFirst = React.memo(() => {
@@ -65,9 +66,11 @@ const PaperFirst = React.memo(() => {
       >
         <Grid item xs={3}>
           <Avatar
-            sx={{ width: "48px", height: "48px", borderRadius: 2 }}
+            sx={{ width: "48px", height: "48px", borderRadius: 2, fontSize: 24 }}
             src={img ? img : ""}
-          ></Avatar>
+          >
+            {!img && getFirstLetterUpperCase(account?.fullname)}
+          </Avatar>
         </Grid>
 
         <Grid item xs={9}>

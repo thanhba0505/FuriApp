@@ -18,6 +18,7 @@ import Avatar from "@mui/material/Avatar";
 import { getImageBlob } from "~/api/imageApi";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 function AccountMenu() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ function AccountMenu() {
 
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const fullname = account?.fullname;
   const avatar = account?.avatar;
   const dispatch = useDispatch();
 
@@ -75,7 +77,9 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          <Avatar src={img ? img : ""} />
+          <Avatar src={img ? img : ""}>
+            {!img && getFirstLetterUpperCase(fullname)}
+          </Avatar>
         </IconButton>
       </Box>
 

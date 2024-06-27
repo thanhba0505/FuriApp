@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Sidebar from "../components/SidebarRight";
 import Paper from "~/components/Paper";
 import { useSelector } from "react-redux";
@@ -29,28 +29,20 @@ import { getImageBlob } from "~/api/imageApi";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { io } from "socket.io-client";
+import EllipsisTypography from "~/components/EllipsisTypography";
 
 // First
-const ItemFirst = React.memo(({ index, item, setListItems }) => {
+const ItemFirst = React.memo(({ item, fetchApi }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
   const navigate = useNavigate();
   const [img, setImg] = useState();
-  const [read, setRead] = useState(item?.hasRead);
-
-  const handleLinkProfile = () => {
-    navigate("/profile/" + item.account._id);
-  };
-
-  const handleLinkMessage = () => {
-    navigate("/message/" + item?.conversation);
-  };
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const result = await getImageBlob(accessToken, item.account.avatar);
+        const result = await getImageBlob(accessToken, item?.account?.avatar);
         if (result.status == 200) {
           setImg(result.url);
         }
@@ -58,61 +50,46 @@ const ItemFirst = React.memo(({ index, item, setListItems }) => {
         console.log({ error });
       }
     };
-    if (item.account.avatar && accessToken) {
+    if (item?.account?.avatar && accessToken) {
       fetchImage();
     }
-  }, [item.account.avatar, accessToken]);
+  }, [item?.account?.avatar, accessToken]);
 
   useEffect(() => {
-    if (item?.conversation) {
+    if (accessToken) {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-      socket.on("newMess" + item?.conversation + accountId, ({ read }) => {
-        if (!read) {
-          setRead(false);
-        } else {
-          setRead(true);
-        }
-      });
-
-      socket.on("newMess" + item?.conversation, ({ newMessage }) => {
-        console.log(newMessage);
-        if (newMessage?.sender?._id != accountId) {
-          setRead(false);
-        } else {
-          setRead(true);
-        }
-        setListItems((prevItems) => {
-          const updatedItems = [...prevItems];
-          const index = updatedItems.findIndex(
-            (i) => i.conversation === item?.conversation
-          );
-          if (index !== -1) {
-            const movedItem = updatedItems.splice(index, 1)[0];
-            return [movedItem, ...updatedItems];
-          }
-          return updatedItems;
-        });
-      });
+      socket.on("newMess" + item?.conversation, fetchApi);
 
       return () => {
+        socket.off("newFriend" + accountId, fetchApi);
         socket.disconnect();
       };
     }
-  }, [item?.conversation, accountId, setListItems]);
+  }, [accessToken, accountId, fetchApi, item?.conversation]);
 
   return (
     <>
       <ListItem
-        key={index}
         disablePadding
         secondaryAction={
           <>
             <IconButton
               sx={{ width: "40px", height: "40px" }}
-              onClick={handleLinkMessage}
+              onClick={() => navigate("/message/" + item?.conversation)}
             >
-              <Badge color="secondary" variant={read ? "" : "dot"} max={10}>
+              <Badge
+                color="secondary"
+                variant={item && item.hasRead ? "" : "dot"}
+                max={10}
+                sx={{
+                  "& .MuiBadge-dot": {
+                    minHeight: 12,
+                    minWidth: 12,
+                    backgroundColor: "info.dark",
+                  },
+                }}
+              >
                 <MessageIcon />
               </Badge>
             </IconButton>
@@ -120,7 +97,7 @@ const ItemFirst = React.memo(({ index, item, setListItems }) => {
         }
       >
         <ListItemButton
-          onClick={handleLinkProfile}
+          onClick={() => navigate("/profile/" + item?.account._id)}
           sx={{
             pl: "8px !important",
             pr: "60px !important",
@@ -129,13 +106,22 @@ const ItemFirst = React.memo(({ index, item, setListItems }) => {
         >
           <ListItemAvatar sx={{ minWidth: "44px" }}>
             <Avatar src={img ? img : ""} sx={{ width: "32px", height: "32px" }}>
-              {img ? "" : getFirstLetterUpperCase(item.account.fullname)}
+              {img ? "" : getFirstLetterUpperCase(item?.account?.fullname)}
             </Avatar>
           </ListItemAvatar>
-          <ListItemText
-            primary={item.account.fullname}
-            secondary={"@" + item.account.username}
-          />
+
+          <Box>
+            <Typography fontWeight={500}>{item?.account?.fullname}</Typography>
+            <EllipsisTypography
+              color={"text.secondary"}
+              fontSize={14}
+              width={"unset"}
+            >
+              {item && item.lastMessage
+                ? item.lastMessage.senderName + ": " + item.lastMessage.content
+                : "No message"}
+            </EllipsisTypography>
+          </Box>
         </ListItemButton>
       </ListItem>
       <Divider />
@@ -147,40 +133,41 @@ const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
-  const limit = 100;
   const navigate = useNavigate();
 
   const [listItems, setListItems] = useState([]);
   const [maxHeight, setMaxHeight] = useState("200px");
 
+  const fetchApi = useCallback(async () => {
+    if (accessToken) {
+      const res = await getFriends(accessToken);
+      if (res.status == 200) {
+        setListItems(() => res.friends);
+      } else {
+        console.log({ res });
+      }
+    }
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (accessToken) {
+      fetchApi();
+    }
+  }, [accessToken, fetchApi]);
+
   useEffect(() => {
     if (accessToken) {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-      socket.on("newFriendReceiver" + accountId, ({ newFriendReceiver }) => {
-        setListItems((prev) => [newFriendReceiver, ...prev]);
-      });
-      socket.on("newFriendSender" + accountId, ({ newFriendSender }) => {
-        setListItems((prev) => [newFriendSender, ...prev]);
-      });
+      socket.on("newFriend" + accountId, fetchApi);
+      socket.on("seenMess" + accountId, fetchApi);
 
       return () => {
+        socket.off("newFriend" + accountId, fetchApi);
         socket.disconnect();
       };
     }
-  }, [accountId, setListItems, accessToken]);
-
-  useEffect(() => {
-    const loadRequest = async () => {
-      const res = await getFriends(accessToken, limit);
-      if (res.status == 200) {
-        setListItems(res.friends);
-      }
-    };
-    if (accessToken) {
-      loadRequest();
-    }
-  }, [accessToken]);
+  }, [accountId, accessToken, fetchApi]);
 
   const handleLinkMessage = () => {
     navigate("/message");
@@ -256,7 +243,7 @@ const PaperFirst = React.memo(() => {
                   <ItemFirst
                     key={item?.conversation}
                     item={item}
-                    setListItems={setListItems}
+                    fetchApi={fetchApi}
                   ></ItemFirst>
                 ))
               ) : (

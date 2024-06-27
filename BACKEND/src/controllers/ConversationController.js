@@ -152,6 +152,8 @@ const ConversationController = {
         });
       }
 
+      io.emit("seenMess" + accountId);
+
       return res.json({
         status: 200,
         message: "Get messages successfully",

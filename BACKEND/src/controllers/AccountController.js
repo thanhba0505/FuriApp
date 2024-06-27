@@ -498,33 +498,13 @@ const AccountController = {
       await receiver.save();
       await sender.save();
 
-      const newFriendReceiver = {
-        account: {
-          _id: receiver._id,
-          username: receiver.username,
-          fullname: receiver.fullname,
-        },
-        hasRead: true,
-        lastMessage: null,
-        conversation: newConversation._id,
-      };
-
-      const newFriendSender = {
-        account: {
-          _id: sender._id,
-          username: sender.username,
-          fullname: sender.fullname,
-        },
-        hasRead: true,
-        lastMessage: null,
-        conversation: newConversation._id,
-      };
-
       io.emit(`emitEveryoneRequest${receiverId}${senderId}`, {
         type: "accept",
-        receiver: newFriendReceiver, // receiver friends request
-        sender: newFriendSender, // sender friends request
+        conversationId: newConversation._id,
       });
+
+      io.emit("newFriend" + senderId);
+      io.emit("newFriend" + receiverId);
 
       return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {
@@ -617,18 +597,20 @@ const AccountController = {
                   createdAt: lastMessage.createdAt,
                 }
               : null,
+            conversationCreatedAt: conversation.createdAt,
             hasRead,
           };
         })
       );
 
       friendsWithDetails.sort((a, b) => {
-        if (!a.lastMessage || !b.lastMessage) {
-          return !a.lastMessage ? 1 : -1;
-        }
-        return (
-          new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt)
-        );
+        const dateA = a.lastMessage
+          ? new Date(a.lastMessage.createdAt)
+          : new Date(a.conversationCreatedAt);
+        const dateB = b.lastMessage
+          ? new Date(b.lastMessage.createdAt)
+          : new Date(b.conversationCreatedAt);
+        return dateB - dateA;
       });
 
       const paginatedFriends = friendsWithDetails;

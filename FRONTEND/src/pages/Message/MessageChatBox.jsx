@@ -215,7 +215,7 @@ const MessageChatBox = () => {
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-    socket.on("newMessage" + conversationId, ({ newMessage }) => {
+    socket.on("newMess" + conversationId, ({ newMessage }) => {
       setConversation((prev) => ({
         ...prev,
         messages: [newMessage, ...prev.messages],
