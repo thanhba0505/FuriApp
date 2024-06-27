@@ -520,20 +520,11 @@ const AccountController = {
         conversation: newConversation._id,
       };
 
-      io.emit("newFriendReceiver" + senderId, { newFriendReceiver });
-      io.emit("newFriendSender" + receiverId, { newFriendSender });
-
-      // const receiverInfo = {
-      //   _id: receiverId,
-      //   fullname: receiver?.fullname,
-      //   avatar: receiver?.avatar ? pathAccount + receiver.avatar : null,
-      //   username: receiver?.username,
-      // };
-
-      // io.emit(`emitEveryoneRequest${receiverId}${senderId}`, {
-      //   type: "sent",
-      //   receiver: receiverInfo,
-      // });
+      io.emit(`emitEveryoneRequest${receiverId}${senderId}`, {
+        type: "accept",
+        receiver: newFriendReceiver, // receiver friends request
+        sender: newFriendSender, // sender friends request
+      });
 
       return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {
@@ -570,6 +561,10 @@ const AccountController = {
 
       await receiver.save();
       await sender.save();
+
+      io.emit(`emitEveryoneRequest${receiverId}${senderId}`, {
+        type: "reject",
+      });
 
       return res.json({ status: 200, message: "Friend request rejected" });
     } catch (error) {

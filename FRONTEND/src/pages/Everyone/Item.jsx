@@ -11,7 +11,11 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import { sendFriendRequest } from "~/api/accountApi";
+import {
+  acceptFriendRequest,
+  rejectFriendRequest,
+  sendFriendRequest,
+} from "~/api/accountApi";
 import { io } from "socket.io-client";
 
 const Btn = ({
@@ -44,6 +48,7 @@ const RenderButton = ({ type, accId, conversationId }) => {
   const accountId = account?._id;
 
   const [typeBtn, setTypeBtn] = useState(type);
+  const [conversationIdBtn, setConversationIdBtn] = useState(conversationId);
 
   useEffect(() => {
     if (accessToken) {
@@ -54,28 +59,17 @@ const RenderButton = ({ type, accId, conversationId }) => {
 
       socket.on(
         "emitEveryoneRequest" + senderId + receiverId,
-        ({ type, receiver }) => {
-          console.log({ emit: { type, receiver } });
-
+        ({ type, sender }) => {
           switch (type) {
             case "sent":
               setTypeBtn("sent");
               break;
-
-            default:
+            case "accept":
+              setTypeBtn("friends");
+              setConversationIdBtn(sender.conversation);
               break;
-          }
-        }
-      );
-
-      socket.on(
-        "emitEveryoneRequest" + receiverId + senderId,
-        ({ type, receiver }) => {
-          console.log({ emit: { type, receiver } });
-
-          switch (type) {
-            case "sent":
-              setTypeBtn("received");
+            case "reject":
+              setTypeBtn("all");
               break;
 
             default:
@@ -83,6 +77,17 @@ const RenderButton = ({ type, accId, conversationId }) => {
           }
         }
       );
+
+      socket.on("emitEveryoneRequest" + receiverId + senderId, ({ type }) => {
+        switch (type) {
+          case "sent":
+            setTypeBtn("received");
+            break;
+
+          default:
+            break;
+        }
+      });
 
       return () => {
         socket.disconnect();
@@ -93,14 +98,38 @@ const RenderButton = ({ type, accId, conversationId }) => {
   const handleClickAll = () => {
     const loadRequest = async () => {
       const res = await sendFriendRequest(accessToken, accId);
-      if (res.status == 200) {
-        console.log(res);
-      } else {
+      if (!res.status == 200) {
         console.log(res);
       }
     };
 
     if (accessToken && accId && typeBtn == "all") {
+      loadRequest();
+    }
+  };
+
+  const handleClickAccept = () => {
+    const loadRequest = async () => {
+      const res = await acceptFriendRequest(accessToken, accId);
+      if (!res.status == 200) {
+        console.log(res);
+      }
+    };
+
+    if (accessToken && accId && typeBtn == "received") {
+      loadRequest();
+    }
+  };
+
+  const handleClickReject = () => {
+    const loadRequest = async () => {
+      const res = await rejectFriendRequest(accessToken, accId);
+      if (!res.status == 200) {
+        console.log(res);
+      }
+    };
+
+    if (accessToken && accId && typeBtn == "received") {
       loadRequest();
     }
   };
@@ -124,22 +153,28 @@ const RenderButton = ({ type, accId, conversationId }) => {
         <Btn
           icon={<MessageIcon />}
           variant="outlined"
-          onClick={() => navigate("/message/" + conversationId)}
+          fullWidth
+          onClick={() => navigate("/message/" + conversationIdBtn)}
         >
-          Mess
-        </Btn>
-        <Btn icon={<PeopleIcon />} variant="contained">
-          Friends
+          Message
         </Btn>
       </>
     );
   } else if (typeBtn == "received") {
     return (
       <>
-        <Btn icon={<CancelIcon />} variant="outlined">
+        <Btn
+          icon={<CancelIcon />}
+          variant="outlined"
+          onClick={handleClickReject}
+        >
           Reject
         </Btn>
-        <Btn icon={<CheckCircleIcon />} variant="contained">
+        <Btn
+          icon={<CheckCircleIcon />}
+          variant="contained"
+          onClick={handleClickAccept}
+        >
           Accept
         </Btn>
       </>

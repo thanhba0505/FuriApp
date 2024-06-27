@@ -2,6 +2,7 @@
 import {
   Avatar,
   Box,
+  Button,
   Divider,
   IconButton,
   ListItem,
@@ -140,6 +141,7 @@ const ListConversation = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
+  const navigate = useNavigate();
   const limit = 100;
 
   const [listItems, setListItems] = useState([]);
@@ -174,23 +176,38 @@ const ListConversation = () => {
   }, [accessToken]);
 
   return (
-    <Paper>
-      <Typography fontSize={18} fontWeight={700} lineHeight={1}>
-        Message
-      </Typography>
+    <>
+      <Paper>
+        <Typography fontSize={18} fontWeight={700} lineHeight={1}>
+          Message
+        </Typography>
 
-      <Box mt={2}>
-        {listItems &&
-          listItems.length > 0 &&
-          listItems.map((item) => (
-            <Conversation
-              key={item?.conversation}
-              item={item}
-              setListItems={setListItems}
-            />
-          ))}
-      </Box>
-    </Paper>
+        <Box mt={listItems && listItems.length && 2}>
+          {listItems &&
+            listItems.length > 0 &&
+            listItems.map((item) => (
+              <Conversation
+                key={item?.conversation}
+                item={item}
+                setListItems={setListItems}
+              />
+            ))}
+        </Box>
+      </Paper>
+
+      {listItems && listItems.length == 0 && (
+        <Paper>
+          <Typography textAlign={"center"} mt={10}>
+            No messages, add new friends now!
+          </Typography>
+          <Box textAlign={"center"} mt={3} mb={10}>
+            <Button variant="contained" onClick={() => navigate("/everyone")}>
+              Find everyone
+            </Button>
+          </Box>
+        </Paper>
+      )}
+    </>
   );
 };
 

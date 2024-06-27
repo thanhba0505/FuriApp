@@ -1,7 +1,6 @@
-import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Box, Grid } from "@mui/material";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { getNonFriends } from "~/api/accountApi";
 import InfiniteScrollList from "~/components/InfiniteScrollList";
 import Item from "./Item";
@@ -10,12 +9,11 @@ const All = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const limit = 15;
-  const navigate = useNavigate();
 
   const [listItems, setListItems] = useState([]);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchApi = async () => {
+  const fetchApi = useCallback(async () => {
     if (accessToken) {
       const res = await getNonFriends(accessToken, limit);
       if (res.status == 200) {
@@ -28,14 +26,13 @@ const All = () => {
         setHasMore(false);
       }
     }
-  };
+  }, [accessToken]);
 
   useEffect(() => {
     if (accessToken) {
       fetchApi();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [accessToken, fetchApi]);
 
   return (
     <Box mt={3} height={"calc(100% - 128px)"}>

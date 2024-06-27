@@ -40,7 +40,7 @@ const InfiniteScrollList = ({ items, loadMore, hasMore, renderItem }) => {
         </Box>
       )}
       {!hasMore && (
-        <Typography textAlign={"center"} mt={2} width={"100%"}>
+        <Typography textAlign={"center"} py={2} width={"100%"}>
           No more items
         </Typography>
       )}
