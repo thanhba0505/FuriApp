@@ -3,6 +3,8 @@ import Grid from "@mui/material/Grid";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import PrevIcon from "@mui/icons-material/KeyboardDoubleArrowLeftTwoTone";
 import NextIcon from "@mui/icons-material/KeyboardDoubleArrowRightTwoTone";
+import ReplayIcon from "@mui/icons-material/Replay";
+import LoadingButton from "@mui/lab/LoadingButton";
 
 import Paper from "~/components/Paper";
 import {
@@ -20,27 +22,28 @@ import {
   Typography,
 } from "@mui/material";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getImageBlob } from "~/api/imageApi";
 import { addStory, getStories } from "~/api/storyApi";
+import { useSnackbar } from "notistack";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
-const StoryItem = React.memo(({ src, fullname, avatar }) => {
+const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const [img, setImg] = useState("");
   const [imgAvatar, setImgAvatar] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
         setIsLoading(true);
-        const result = await getImageBlob(accessToken, src);
+        const result = await getImageBlob(accessToken, imgStory);
 
         if (result.status == 200) {
-          setImg(result);
+          setImg(result.url);
         }
 
         setIsLoading(false);
@@ -49,20 +52,18 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
       }
     };
 
-    if (src && accessToken) {
+    if (imgStory && accessToken) {
       fetchImage();
     }
-  }, [src, accessToken]);
+  }, [imgStory, accessToken]);
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        setIsAvatarLoading(true);
         const result = await getImageBlob(accessToken, avatar);
         if (result.status == 200) {
-          setImgAvatar(result);
+          setImgAvatar(result.url);
         }
-        setIsAvatarLoading(false);
       } catch (error) {
         console.log({ error });
       }
@@ -104,7 +105,7 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
             right: 0,
             bottom: 0,
             backgroundColor: isLoading ? "rgba(0, 0, 0, 0.1)" : "",
-            backgroundImage: `url("${img}")`,
+            backgroundImage: img ? "url(" + img + ")" : null,
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -141,21 +142,21 @@ const StoryItem = React.memo(({ src, fullname, avatar }) => {
               </Typography>
 
               <Box
-                p={0.4}
                 sx={{
-                  border: "2px solid white",
-                  borderRadius: "8px",
+                  border: "4px solid",
+                  borderColor: "primary.light",
+                  borderRadius: 2,
                   position: "absolute",
                   top: 4,
                   left: 4,
                 }}
               >
                 <Avatar
-                  sx={{ p: "2px", width: "30px", height: "30px" }}
-                  src={!isAvatarLoading ? imgAvatar : ""}
+                  sx={{ width: "30px", height: "30px" }}
+                  src={imgAvatar ? imgAvatar : ""}
                   variant="rounded"
                 >
-                  {isAvatarLoading && account.fullname.charAt(0).toUpperCase()}
+                  {!imgAvatar && getFirstLetterUpperCase(fullname)}
                 </Avatar>
               </Box>
             </>
@@ -171,31 +172,16 @@ const Story = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const avatar = account?.avatar;
+  const fullname = account?.fullname;
+  const { enqueueSnackbar } = useSnackbar();
 
   const [img, setImg] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
-  const [message, setMessage] = useState("");
-  const [openNotify, setOpenNotify] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingAddStory, setIsLoadingAddStory] = useState(false);
-
-  const handleCloseNotify = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setOpenNotify(false);
-  };
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
 
   const handleClear = () => {
     setSelectedFile(null);
@@ -208,7 +194,7 @@ const Story = () => {
         setIsLoadingAddStory(true);
         const result = await getImageBlob(accessToken, avatar);
         if (result.status == 200) {
-          setImg(result);
+          setImg(result.url);
         }
         setIsLoadingAddStory(false);
       } catch (error) {
@@ -235,8 +221,9 @@ const Story = () => {
     const formData = new FormData();
 
     if (!selectedFile) {
-      setMessage("There is no selected file");
-      setOpenNotify(true);
+      enqueueSnackbar("There is no selected file", {
+        variant: "error",
+      });
       return;
     }
 
@@ -245,46 +232,55 @@ const Story = () => {
     try {
       const res = await addStory(accessToken, formData);
 
-      if (res) {
+      if (res.status == 201) {
+        enqueueSnackbar(res.message, {
+          variant: "success",
+        });
         setSelectedFile(null);
         setPreviewImage(null);
+        setOpen(false);
+      } else {
+        enqueueSnackbar(res.message, {
+          variant: "error",
+        });
+        console.log({ res });
       }
-
-      setMessage("Post the story successfully");
-      setOpenNotify(true);
     } catch (error) {
-      setMessage("Error posting the story");
-      setOpenNotify(true);
+      console.log({ error });
     }
   };
 
   const limit = 4;
 
   const [stories, setStories] = useState([]);
-  const [page, setPage] = useState(1);
+
+  const fetchApi = useCallback(async () => {
+    if (accessToken) {
+      try {
+        setIsLoading(true);
+        const res = await getStories(accessToken, limit);
+
+        if (res.status == 200) {
+          setStories(res.stories);
+        } else {
+          console.log({ res });
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.log({ error });
+      }
+    }
+  }, [accessToken]);
 
   useEffect(() => {
-    const loadPosts = async () => {
-      setIsLoading(true);
-      const res = await getStories(accessToken, page, limit);
-      setStories(res.data);
-      setIsLoading(false);
-    };
-
-    if (page && accessToken) {
-      loadPosts();
+    if (accessToken) {
+      fetchApi();
     }
-  }, [page, accessToken]);
+  }, [accessToken, fetchApi]);
 
-  const handleNext = () => {
-    if (stories.length == 4) {
-      setPage((prevPage) => prevPage + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (page > 1) {
-      setPage((prevPage) => prevPage - 1);
+  const handleReload = () => {
+    if (accessToken) {
+      fetchApi();
     }
   };
 
@@ -311,7 +307,7 @@ const Story = () => {
                   },
                 },
               }}
-              onClick={handleClickOpen}
+              onClick={() => setOpen(true)}
             >
               {/* Background Image */}
               <Box
@@ -322,7 +318,7 @@ const Story = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: isLoadingAddStory ? "black" : "",
+                  backgroundColor: img ? "secondary.dark" : "",
                   backgroundImage: `url("${img}")`,
                   backgroundRepeat: "no-repeat",
                   backgroundSize: "cover",
@@ -349,8 +345,16 @@ const Story = () => {
                   right: 0,
                   bottom: 0,
                   backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  textAlign: "center",
+                  alignContent: "center",
                 }}
-              />
+              >
+                {!img && (
+                  <Typography color={"common.white"} fontSize={30} pb={3}>
+                    {getFirstLetterUpperCase(fullname)}
+                  </Typography>
+                )}
+              </Box>
 
               {/* Content */}
               <Box
@@ -363,7 +367,7 @@ const Story = () => {
                   textAlign: "center",
                 }}
               >
-                <AddCircleIcon color="primary" fontSize="large" />
+                <AddCircleIcon color="warning" fontSize="large" />
 
                 <Typography variant="body1" fontSize={14} color="white" mb={1}>
                   Add story
@@ -408,17 +412,18 @@ const Story = () => {
               </Grid>
             </>
           ) : (
-            stories?.map((story, index) => (
+            stories &&
+            stories?.map((story) => (
               <StoryItem
-                key={index}
-                fullname={story.account.fullname}
-                avatar={story.account.avatar}
-                src={story.image}
+                key={story?._id}
+                fullname={story?.account?.fullname}
+                avatar={story?.account?.avatar}
+                imgStory={story?.image}
               />
             ))
           )}
 
-          {stories?.length < 4 && (
+          {!isLoading && stories?.length < 4 && (
             <Grid
               item
               width={(4 - stories.length) * 20 + "%"}
@@ -432,7 +437,12 @@ const Story = () => {
         </Grid>
       </Box>
 
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth={"sm"}>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullWidth
+        maxWidth={"sm"}
+      >
         <DialogTitle>
           Add story
           <Typography mt={1}>A memorable photo of you today?</Typography>
@@ -479,7 +489,7 @@ const Story = () => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={handleClear} variant="outlined">
             Clear image
           </Button>
@@ -489,49 +499,17 @@ const Story = () => {
         </DialogActions>
       </Dialog>
 
-      <span>
-        <Snackbar
-          open={openNotify}
-          autoHideDuration={3000}
-          onClose={handleCloseNotify}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          sx={{
-            bottom: "30px!important",
-            right: "30px!important",
-            maxHeight: "30vw",
-          }}
-        >
-          <Alert
-            onClose={handleCloseNotify}
-            severity={
-              message == "Post the story successfully" ? "info" : "error"
-            }
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {message}
-          </Alert>
-        </Snackbar>
-      </span>
-
       <Box textAlign={"center"} mt={2}>
-        <Button
-          size="small"
-          onClick={handlePrevious}
+        <LoadingButton
+          loading={isLoading}
           variant="outlined"
-          startIcon={<PrevIcon />}
-        >
-          Prev
-        </Button>
-        <Button
           size="small"
-          sx={{ ml: 1 }}
-          onClick={handleNext}
-          variant="outlined"
-          endIcon={<NextIcon />}
+          endIcon={<ReplayIcon />}
+          onClick={handleReload}
+          color="primary"
         >
-          Next
-        </Button>
+          Reload
+        </LoadingButton>
       </Box>
     </Paper>
   );

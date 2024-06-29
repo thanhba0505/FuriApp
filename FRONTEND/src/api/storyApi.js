@@ -15,10 +15,10 @@ export const addStory = async (accessToken, formData) => {
   }
 };
 
-export const getStories = async (accessToken, page, limit) => {
+export const getStories = async (accessToken, limit) => {
   try {
     const res = await axios.get(
-      `/api/story/stories?_page=${page}&_limit=${limit}`,
+      `/api/story/stories?_limit=${limit}`,
       {
         headers: {
           token: `Bearer ${accessToken}`,
@@ -26,7 +26,7 @@ export const getStories = async (accessToken, page, limit) => {
       }
     );
 
-    return res;
+    return res.data;
   } catch (error) {
     console.log({ error });
   }

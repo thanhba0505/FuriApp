@@ -20,7 +20,6 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemButton,
-  ListItemText,
   Typography,
 } from "@mui/material";
 import { getFriends } from "~/api/accountApi";
