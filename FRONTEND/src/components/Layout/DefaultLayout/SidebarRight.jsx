@@ -97,11 +97,12 @@ const ItemFirst = React.memo(({ item, fetchApi }) => {
         }
       >
         <ListItemButton
+          // selected={item?.account._id ===}
           onClick={() => navigate("/profile/" + item?.account._id)}
           sx={{
             pl: "8px !important",
             pr: "60px !important",
-            py: "4px !important",
+            py: "10px !important",
           }}
         >
           <ListItemAvatar sx={{ minWidth: "44px" }}>
