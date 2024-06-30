@@ -22,7 +22,7 @@ function PostList() {
         console.log({ res });
       }
 
-      if (res.posts.length < limit) {
+      if (res?.posts?.length < limit) {
         setHasMore(false);
       }
     }
