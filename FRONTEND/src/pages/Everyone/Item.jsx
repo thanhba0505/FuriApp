@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -18,30 +19,32 @@ import {
 } from "~/api/accountApi";
 import { io } from "socket.io-client";
 
-const Btn = ({
-  children,
-  fullWidth = false,
-  variant = "contained",
-  icon = <PeopleIcon />,
-  onClick,
-}) => {
-  return (
-    <Button
-      onClick={onClick}
-      sx={{
-        width: () => (fullWidth ? "100%" : "50%"),
-      }}
-      variant={variant}
-      size="small"
-      color="primary"
-      endIcon={icon}
-    >
-      {children}
-    </Button>
-  );
-};
+const Btn = React.memo(
+  ({
+    children,
+    fullWidth = false,
+    variant = "contained",
+    icon = <PeopleIcon />,
+    onClick,
+  }) => {
+    return (
+      <Button
+        onClick={onClick}
+        sx={{
+          width: () => (fullWidth ? "100%" : "50%"),
+        }}
+        variant={variant}
+        size="small"
+        color="primary"
+        endIcon={icon}
+      >
+        {children}
+      </Button>
+    );
+  }
+);
 
-const RenderButton = ({ type, accId, conversationId }) => {
+const RenderButton = React.memo(({ type, accId, conversationId }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const navigate = useNavigate();
@@ -188,7 +191,7 @@ const RenderButton = ({ type, accId, conversationId }) => {
       </>
     );
   }
-};
+});
 
 const Item = ({
   accId,
@@ -274,4 +277,6 @@ const Item = ({
   );
 };
 
-export default Item;
+const ItemMemo = React.memo(Item);
+
+export default ItemMemo;

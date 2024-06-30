@@ -1,11 +1,7 @@
 import { Box, Button } from "@mui/material";
 import React from "react";
 import Paper from "~/components/Paper";
-import PersonSearchTwoToneIcon from "@mui/icons-material/PersonSearchTwoTone";
-import Diversity3TwoToneIcon from "@mui/icons-material/Diversity3TwoTone";
-import PersonAddTwoToneIcon from "@mui/icons-material/PersonAddTwoTone";
-import ScheduleSendTwoToneIcon from "@mui/icons-material/ScheduleSendTwoTone";
-import { NavLink, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import All from "./All";
 import Friends from "./Friends";
 import Received from "./Received";

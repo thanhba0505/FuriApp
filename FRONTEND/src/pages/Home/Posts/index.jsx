@@ -6,7 +6,7 @@ function Posts() {
   
   return (
     <>
-      {/* <AddPost /> */}
+      <AddPost />
 
       <PostList />
     </>
