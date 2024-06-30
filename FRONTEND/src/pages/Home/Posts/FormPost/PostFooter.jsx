@@ -27,6 +27,7 @@ import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVery
 import { getImageBlob } from "~/api/imageApi";
 import { addComment, getInteract } from "~/api/postApi";
 import formatTimeDifference from "~/config/formatTimeDifference";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -216,26 +217,26 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const result = await getImageBlob(accessToken, cmt.account.avatar);
+        const result = await getImageBlob(accessToken, cmt?.account?.avatar);
         setImg(result);
       } catch (error) {
         console.log({ error });
       }
     };
 
-    if (cmt.account.avatar && accessToken) {
+    if (cmt?.account?.avatar && accessToken) {
       fetchImage();
     }
-  }, [cmt.account.avatar, accessToken]);
+  }, [cmt?.account?.avatar, accessToken]);
 
   return (
     <Grid key={index} container wrap="nowrap" mt={mt ? 1.4 : ""}>
       <Grid item>
         <Avatar
-          src={img}
+          src={img ? img : ""}
           alt={cmt?.account?.fullname}
           sx={{ width: 32, height: 32, mr: 1.2 }}
-        />
+        >{!img && getFirstLetterUpperCase(cmt?.account?.fullname)}</Avatar>
       </Grid>
       <Grid item>
         <Box
@@ -347,7 +348,9 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
                 />
               ))}
 
-              {listComment.length == 0 && <Typography textAlign={"center"}>No comment</Typography>}
+              {listComment.length == 0 && (
+                <Typography textAlign={"center"}>No comment</Typography>
+              )}
             </Box>
           )}
         </AccordionDetails>

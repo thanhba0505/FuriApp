@@ -1,80 +1,49 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getPosts } from "~/api/postApi";
 import PostItem from "./PostItem";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import InfiniteScrollList from "~/components/InfiniteScrollList";
 
 function PostList() {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const limit = 6;
 
   const [posts, setPosts] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const observer = useRef();
-  const limit = 6;
+  const fetchApi = useCallback(async () => {
+    if (accessToken) {
+      const res = await getPosts(accessToken, limit);
+      if (res.status == 200) {
+        setPosts((prev) => [...prev, ...res.posts]);
+      } else {
+        console.log({ res });
+      }
+
+      if (res.posts.length < limit) {
+        setHasMore(false);
+      }
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     if (accessToken) {
-      const loadPosts = async () => {
-        setLoading(true);
-
-        const res = await getPosts(accessToken, page, limit);
-        const newPosts = res.data;
-
-        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-        setLoading(false);
-
-        if (newPosts.length < limit) {
-          setHasMore(false);
-        }
-      };
-      if (hasMore) {
-        loadPosts();
-      }
+      fetchApi();
     }
-  }, [page, hasMore, accessToken]);
-
-  const lastPostRef = useCallback(
-    (node) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          setPage((prevPage) => prevPage + 1);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore]
-  );
+  }, [accessToken, fetchApi]);
 
   return (
     <Box>
-      {posts.map((post, index) => {
-        if (posts.length === index + 1) {
-          return (
-            <div ref={lastPostRef} key={index}>
-              <PostItem post={post} accessToken={accessToken} />
-            </div>
-          );
-        } else {
-          return <PostItem key={index} post={post} />;
-        }
-      })}
-
-      {loading && (
-        <Box textAlign={"center"}  mt={2}>
-          <CircularProgress />
-        </Box>
-      )}
-      {!hasMore && (
-        <Typography textAlign={"center"} mt={2}>
-          No more posts
-        </Typography>
-      )}
+      <InfiniteScrollList
+        items={posts}
+        loadMore={fetchApi}
+        hasMore={hasMore}
+        renderItem={(post, lastItemRef) => (
+          <PostItem lastItemRef={lastItemRef} post={post} />
+        )}
+      />
     </Box>
   );
 }

@@ -10,6 +10,7 @@ function FormPost({ post, children }) {
         fullName={post.account?.fullname}
         date={post?.updatedAt}
         avatar={post?.account?.avatar}
+        accountId={post?.account?._id}
       />
 
       {children}

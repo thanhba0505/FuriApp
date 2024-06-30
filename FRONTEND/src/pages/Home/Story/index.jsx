@@ -1,14 +1,11 @@
 /* eslint-disable react/display-name */
 import Grid from "@mui/material/Grid";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import PrevIcon from "@mui/icons-material/KeyboardDoubleArrowLeftTwoTone";
-import NextIcon from "@mui/icons-material/KeyboardDoubleArrowRightTwoTone";
 import ReplayIcon from "@mui/icons-material/Replay";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 import Paper from "~/components/Paper";
 import {
-  Alert,
   Avatar,
   Box,
   Button,
@@ -18,7 +15,6 @@ import {
   DialogContent,
   DialogTitle,
   Skeleton,
-  Snackbar,
   Typography,
 } from "@mui/material";
 
@@ -181,7 +177,6 @@ const Story = () => {
   const [previewImage, setPreviewImage] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingAddStory, setIsLoadingAddStory] = useState(false);
 
   const handleClear = () => {
     setSelectedFile(null);
@@ -191,12 +186,10 @@ const Story = () => {
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        setIsLoadingAddStory(true);
         const result = await getImageBlob(accessToken, avatar);
         if (result.status == 200) {
           setImg(result.url);
         }
-        setIsLoadingAddStory(false);
       } catch (error) {
         console.log({ error });
       }

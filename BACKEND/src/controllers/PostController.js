@@ -24,15 +24,17 @@ const PostController = {
       const images = req.files?.map((file) => file.filename);
 
       if (!content && (!images || images.length === 0)) {
-        return res
-          .status(400)
-          .json({ message: "Content or images must be provided" });
+        return res.json({
+          status: 400,
+          message: "Content or images must be provided",
+        });
       }
 
       if (images.length > 10) {
-        return res
-          .status(400)
-          .json({ message: "The number of photos must be less than 10" });
+        return res.json({
+          status: 400,
+          message: "The number of photos must be less than 10",
+        });
       }
 
       try {
@@ -43,16 +45,16 @@ const PostController = {
         });
 
         await newPost.save();
-        res.status(201).json({ message: "Success creating post" });
+        res.json({ status: 201, message: "Success creating post" });
       } catch (error) {
-        res.status(500).json({ message: "Error creating post", error });
+        console.log({ error });
+        res.json({ status: 500, message: "Error creating post" });
       }
     });
   },
 
   getPosts: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
-    const page = parseInt(req.query._page) || 1;
     const pathAccount = "accountImage/";
     const pathPost = "postImage/";
 
@@ -65,8 +67,6 @@ const PostController = {
 
     try {
       const posts = await Post.find()
-        .skip((page - 1) * limit)
-        .limit(limit)
         .populate({
           path: "account",
           select: "fullname avatar background",
@@ -106,9 +106,16 @@ const PostController = {
         return post;
       });
 
-      return res.status(200).json(updatedPosts);
+      const shuffledPosts = updatedPosts.sort(() => 0.5 - Math.random());
+      const limitedPosts = shuffledPosts.slice(0, limit);
+
+      return res.json({
+        status: 200,
+        message: "Get post successful",
+        posts: limitedPosts,
+      });
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.json({ status: 500, message: "Internal Server Error", error });
     }
   },
 

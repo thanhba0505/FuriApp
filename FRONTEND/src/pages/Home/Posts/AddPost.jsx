@@ -17,19 +17,16 @@ import { useSelector } from "react-redux";
 import Avatar from "@mui/material/Avatar";
 import { getImageBlob } from "~/api/imageApi";
 import { addPost } from "~/api/postApi";
-import { Alert, IconButton, Snackbar } from "@mui/material";
+import { IconButton } from "@mui/material";
+import { useSnackbar } from "notistack";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 const AddPost = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const avatar = account?.avatar;
   const fullname = account?.fullname;
-
-  const [img, setImg] = useState(null);
-  const [content, setContent] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
-  const [message, setMessage] = useState("");
+  const maxImageSize = 10 * 1024 * 1024; // 10MB
   const validImageTypes = [
     "image/jpeg",
     "image/png",
@@ -38,13 +35,18 @@ const AddPost = () => {
     "image/pjpeg",
     "image/pjp",
   ];
-  const maxImageSize = 10 * 1024 * 1024; // 10MB
+  const { enqueueSnackbar } = useSnackbar();
+
+  const [img, setImg] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [content, setContent] = useState("");
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
         const result = await getImageBlob(accessToken, avatar);
-        setImg(result);
+        setImg(result.url);
       } catch (error) {
         console.log({ error });
       }
@@ -62,14 +64,16 @@ const AddPost = () => {
 
     for (const file of files) {
       if (!validImageTypes.includes(file.type)) {
-        setMessage(`File ${file.name} is not a valid image type`);
-        setOpen(true);
+        enqueueSnackbar("File ${file.name} is not a valid image type", {
+          variant: "error",
+        });
         continue;
       }
 
       if (file.size > maxImageSize) {
-        setMessage(`File ${file.name} exceeds the maximum size of 10MB`);
-        setOpen(true);
+        enqueueSnackbar("File ${file.name} exceeds the maximum size of 10MB", {
+          variant: "error",
+        });
         continue;
       }
 
@@ -82,9 +86,9 @@ const AddPost = () => {
         newFiles.push(file);
         newPreviews.push(URL.createObjectURL(file));
       } else {
-        console.log("SDFsd");
-        setMessage(`File ${file.name} is already selected`);
-        setOpen(true);
+        enqueueSnackbar("File ${file.name} is already selected", {
+          variant: "error",
+        });
       }
     }
 
@@ -101,14 +105,16 @@ const AddPost = () => {
     const formData = new FormData();
 
     if (content.trim() === "" && selectedFiles.length === 0) {
-      setMessage("Content or images must be provided");
-      setOpen(true);
+      enqueueSnackbar("Content or images must be provided", {
+        variant: "error",
+      });
       return;
     }
 
     if (selectedFiles.length > 10) {
-      setMessage("The number of photos must be less than 10");
-      setOpen(true);
+      enqueueSnackbar("The number of photos must be less than 10", {
+        variant: "error",
+      });
       return;
     }
 
@@ -121,28 +127,18 @@ const AddPost = () => {
     try {
       const res = await addPost(accessToken, formData);
 
-      if (res) {
+      if (res.status === 201) {
         setContent("");
         setSelectedFiles([]);
         setPreviewImages([]);
       }
 
-      setMessage("Post the article successfully");
-      setOpen(true);
+      enqueueSnackbar("Post the article successfully", {
+        variant: "success",
+      });
     } catch (error) {
-      setMessage("Error posting the article");
-      setOpen(true);
+      console.log({ error });
     }
-  };
-
-  const [open, setOpen] = useState(false);
-
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setOpen(false);
   };
 
   return (
@@ -170,14 +166,14 @@ const AddPost = () => {
           aria-controls="panel1-content"
           sx={{ minHeight: "48px !important" }}
         >
-          {img && (
-            <Avatar
-              src={img}
-              alt={account?.fullname}
-              sx={{ width: 40, height: 40 }}
-              variant="rounded"
-            />
-          )}
+          <Avatar
+            src={img ? img : ""}
+            alt={account?.fullname}
+            sx={{ width: 40, height: 40 }}
+            variant="rounded"
+          >
+            {!img && getFirstLetterUpperCase(account?.fullname)}
+          </Avatar>
 
           <Box>
             <Typography variant="body1" fontWeight={700}>
@@ -277,7 +273,7 @@ const AddPost = () => {
               alignSelf={"stretch"}
             >
               <Button
-                color="secondary"
+                color="primary"
                 component="label"
                 sx={{ height: "100%", px: "16px !important", ml: "8px" }}
                 variant="outlined"
@@ -294,7 +290,7 @@ const AddPost = () => {
               </Button>
 
               <Button
-                color="secondary"
+                color="primary"
                 sx={{
                   height: "100%",
                   px: "16px !important",
@@ -311,31 +307,6 @@ const AddPost = () => {
           </Grid>
         </AccordionDetails>
       </Accordion>
-
-      <span>
-        <Snackbar
-          open={open}
-          autoHideDuration={3000}
-          onClose={handleClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          sx={{
-            bottom: "30px!important",
-            right: "30px!important",
-            maxHeight: "30vw",
-          }}
-        >
-          <Alert
-            onClose={handleClose}
-            severity={
-              message == "Post the article successfully" ? "info" : "error"
-            }
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {message}
-          </Alert>
-        </Snackbar>
-      </span>
     </Paper>
   );
 };

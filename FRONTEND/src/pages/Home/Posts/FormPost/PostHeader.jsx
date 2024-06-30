@@ -15,11 +15,14 @@ import { useEffect, useState } from "react";
 import { getImageBlob } from "~/api/imageApi";
 import { useSelector } from "react-redux";
 import Avatar from "@mui/material/Avatar";
-import formatDate from "~/config/formatDate";
+import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import formatTimeDifference from "~/config/formatTimeDifference";
+import { useNavigate } from "react-router-dom";
 
-function PostHeader({ fullName, date, avatar }) {
+function PostHeader({ fullName, date, avatar, accountId }) {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -30,13 +33,17 @@ function PostHeader({ fullName, date, avatar }) {
     setAnchorEl(null);
   };
 
-  const [img, setImg] = useState("");
+  const [img, setImg] = useState();
 
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const result = await getImageBlob(accessToken, avatar);
-        setImg(result);
+        const res = await getImageBlob(accessToken, avatar);
+        if (res.status === 200) {
+          setImg(res.url);
+        } else {
+          console.log({ res });
+        }
       } catch (error) {
         console.log({ error });
       }
@@ -50,7 +57,14 @@ function PostHeader({ fullName, date, avatar }) {
   return (
     <Grid container columnSpacing={"16px"} alignItems={"center"}>
       <Grid item xs={"auto"}>
-        <Avatar src={img} variant="rounded" sx={{ width: 40, height: 40 }} />
+        <Avatar
+          onClick={() => navigate("/profile/" + accountId)}
+          src={img ? img : ""}
+          variant="rounded"
+          sx={{ width: 40, height: 40, cursor: "pointer" }}
+        >
+          {!img && getFirstLetterUpperCase(fullName)}
+        </Avatar>
       </Grid>
 
       <Grid item xs>
@@ -58,7 +72,7 @@ function PostHeader({ fullName, date, avatar }) {
           <Typography variant="body1" fontWeight={700}>
             {fullName}
           </Typography>
-          <Typography variant="body2">{formatDate(date)}</Typography>
+          <Typography variant="body2">{formatTimeDifference(date)}</Typography>
         </Box>
       </Grid>
 
@@ -122,19 +136,21 @@ function PostHeader({ fullName, date, avatar }) {
             <ListItemIcon>
               <PersonAdd fontSize="small" />
             </ListItemIcon>
-            Add another account
+            Coming soon
           </MenuItem>
+
           <MenuItem onClick={handleClose}>
             <ListItemIcon>
               <Settings fontSize="small" />
             </ListItemIcon>
-            Settings
+            Coming soon
           </MenuItem>
+
           <MenuItem onClick={handleClose}>
             <ListItemIcon>
               <Logout fontSize="small" />
             </ListItemIcon>
-            Logout
+            Coming soon
           </MenuItem>
           <Divider />
         </Menu>

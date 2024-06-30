@@ -1,9 +1,9 @@
 import axios from "~/utils/axios";
 
-export const getPosts = async (accessToken, page, limit) => {
+export const getPosts = async (accessToken, limit) => {
   try {
     const res = await axios.get(
-      `/api/post/posts?_page=${page}&_limit=${limit}`,
+      `/api/post/posts?_limit=${limit}`,
       {
         headers: {
           token: `Bearer ${accessToken}`,
@@ -11,7 +11,7 @@ export const getPosts = async (accessToken, page, limit) => {
       }
     );
 
-    return res;
+    return res.data;
   } catch (error) {
     console.log({ error });
   }

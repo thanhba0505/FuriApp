@@ -14,7 +14,6 @@ const AccountController = {
   registerAccount: async (req, res) => {
     try {
       const { username, password, fullname } = req.body;
-      console.log({ username, password, fullname });
 
       if (!username || username.length < 8 || username.length > 30) {
         return res.json({
@@ -58,6 +57,7 @@ const AccountController = {
 
       return res.json({ message: "Registration successful", status: 200 });
     } catch (error) {
+      console.log({ error });
       return res.json({ message: "Internal Server Error", status: 500 });
     }
   },

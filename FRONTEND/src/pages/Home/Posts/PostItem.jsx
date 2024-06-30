@@ -32,7 +32,7 @@ const ImageWithSize = React.memo(({ image, onLoad }) => {
   );
 });
 
-const PostItem = ({ post }) => {
+const PostItem = ({ post, lastItemRef }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const [layouts, setLayouts] = useState(Array(post.images?.length).fill(null));
@@ -264,10 +264,14 @@ const PostItem = ({ post }) => {
       if (post.images) {
         const promises = post.images.map(async (image) => {
           try {
-            const blobUrl = await getImageBlob(accessToken, image);
-            return blobUrl;
+            const res = await getImageBlob(accessToken, image);
+            if (res.status) {
+              return res.url;
+            } else {
+              console.log({ res });
+            }
           } catch (error) {
-            console.log(error);
+            console.log({ error });
             return null;
           }
         });
@@ -279,90 +283,94 @@ const PostItem = ({ post }) => {
 
     fetchImageBlobs();
   }, [post, accessToken]);
-
+  
   return (
-    <FormPost post={post}>
-      <Typography variant="body1" sx={{ mt: 2 }}>
-        {post?.content}
-      </Typography>
-      {imageBlobs && imageBlobs.length > 0 && (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateAreas: getGridTemplate(),
-            gap: 2,
-            mt: 2,
-          }}
-        >
-          {imageBlobs
-            .slice(0, imageBlobs.length >= 5 ? 3 : imageBlobs.length)
-            .map((image, index) => (
-              <Box
-                key={index}
-                sx={{
-                  gridArea:
-                    index === 0
-                      ? "a"
-                      : index === 1
-                      ? "b"
-                      : index === 2
-                      ? "c"
-                      : "d",
-                }}
-              >
-                <ImageWithSize
-                  image={image}
-                  onLoad={(isLandscape) => handleImageLoad(index, isLandscape)}
-                />
-              </Box>
-            ))}
+    <Box ref={lastItemRef ? lastItemRef : null}>
+      <FormPost post={post}>
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          {post?.content}
+        </Typography>
+        {imageBlobs && imageBlobs.length > 0 && (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateAreas: getGridTemplate(),
+              gap: 2,
+              mt: 2,
+            }}
+          >
+            {imageBlobs
+              .slice(0, imageBlobs.length >= 5 ? 3 : imageBlobs.length)
+              .map((image, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    gridArea:
+                      index === 0
+                        ? "a"
+                        : index === 1
+                        ? "b"
+                        : index === 2
+                        ? "c"
+                        : "d",
+                  }}
+                >
+                  <ImageWithSize
+                    image={image}
+                    onLoad={(isLandscape) =>
+                      handleImageLoad(index, isLandscape)
+                    }
+                  />
+                </Box>
+              ))}
 
-          {imageBlobs.length >= 5 && (
-            <Box
-              sx={{
-                gridArea: "d",
-                paddingBottom: "100%",
-                position: "relative",
-              }}
-            >
-              <img
-                src={imageBlobs[4]}
-                alt="Post"
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: blur("5px"),
-                  borderRadius: 8,
-                }}
-              />
-              <div
-                style={{
-                  borderRadius: 8,
-                  userSelect: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  color: "white",
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+            {imageBlobs.length >= 5 && (
+              <Box
+                sx={{
+                  gridArea: "d",
+                  paddingBottom: "100%",
+                  position: "relative",
                 }}
               >
-                +{imageBlobs.length - 3}
-              </div>
-            </Box>
-          )}
-        </Box>
-      )}
-    </FormPost>
+                <img
+                  src={imageBlobs[4]}
+                  alt="Post"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    filter: blur("5px"),
+                    borderRadius: 8,
+                  }}
+                />
+                <div
+                  style={{
+                    borderRadius: 8,
+                    userSelect: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 36,
+                    color: "white",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  }}
+                >
+                  +{imageBlobs.length - 3}
+                </div>
+              </Box>
+            )}
+          </Box>
+        )}
+      </FormPost>
+    </Box>
   );
 };
 
