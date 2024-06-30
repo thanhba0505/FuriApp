@@ -1,14 +1,12 @@
-import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { getSentFriendRequests } from "~/api/accountApi";
 import Item from "./Item";
 
 const Sent = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
-  const navigate = useNavigate();
 
   const [listItems, setListItems] = useState([]);
 
