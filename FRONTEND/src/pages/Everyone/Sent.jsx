@@ -1,4 +1,4 @@
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getSentFriendRequests } from "~/api/accountApi";
@@ -38,18 +38,22 @@ const Sent = () => {
         }}
       >
         <Grid container spacing={3}>
-          {listItems && listItems.length > 0
-            ? listItems.map((item) => (
-                <Item
-                  key={item._id}
-                  avatar={item?.avatar}
-                  fullname={item?.fullname}
-                  username={item?.username}
-                  accId={item?._id}
-                  type="sent"
-                />
-              ))
-            : ""}
+          {listItems && listItems.length > 0 ? (
+            listItems.map((item) => (
+              <Item
+                key={item._id}
+                avatar={item?.avatar}
+                fullname={item?.fullname}
+                username={item?.username}
+                accId={item?._id}
+                type="sent"
+              />
+            ))
+          ) : (
+            <Grid item xs>
+              <Typography textAlign={"center"}>No request sent</Typography>
+            </Grid>
+          )}
         </Grid>
       </Box>
     </Box>

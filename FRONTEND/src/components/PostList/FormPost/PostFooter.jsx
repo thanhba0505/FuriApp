@@ -213,12 +213,16 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
     formatTimeDifference(cmt?.createdAt) != "0 minutes ago"
       ? formatTimeDifference(cmt?.createdAt)
       : "Just now";
-
+      
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const result = await getImageBlob(accessToken, cmt?.account?.avatar);
-        setImg(result);
+        const res = await getImageBlob(accessToken, cmt?.account?.avatar);
+        if (res.status == 200) {
+          setImg(res.url);
+        } else {
+          console.log({ res });
+        }
       } catch (error) {
         console.log({ error });
       }
@@ -236,7 +240,9 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
           src={img ? img : ""}
           alt={cmt?.account?.fullname}
           sx={{ width: 32, height: 32, mr: 1.2 }}
-        >{!img && getFirstLetterUpperCase(cmt?.account?.fullname)}</Avatar>
+        >
+          {!img && getFirstLetterUpperCase(cmt?.account?.fullname)}
+        </Avatar>
       </Grid>
       <Grid item>
         <Box

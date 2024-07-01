@@ -6,6 +6,7 @@ const Message = require("../models/Message");
 const RefreshToken = require("../models/RefreshToken");
 const BlackListToken = require("../models/BlackListToken");
 const Conversation = require("../models/Conversation");
+const Notification = require("../models/Notification");
 
 const multer = require("multer");
 const { uploadAccountImage, deleteFile } = require("../config/uploads/multer");
@@ -433,6 +434,29 @@ const AccountController = {
 
       await sender.save();
       await receiver.save();
+
+      const notification = new Notification({
+        userId: receiverId,
+        type: "friend_request",
+        message: `${sender.fullname} has sent you a friend request`,
+        data: {
+          senderId: senderId,
+        },
+      });
+
+      await notification.save();
+
+      const notificationData = {
+        ...notification._doc,
+        sender: {
+          _id: sender._id,
+          fullname: sender.fullname,
+          avatar: sender.avatar ? pathAccount + sender.avatar : null,
+          username: sender.username,
+        },
+      };
+
+      io.emit("newNotify" + receiverId, { notification: notificationData });
 
       const receiverInfo = {
         _id: receiverId,

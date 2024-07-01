@@ -99,7 +99,7 @@ const All = () => {
                 type="all"
               />
             )}
-            noMore="No one"
+            noMore="No more one"
           />
         </Grid>
       </Box>

@@ -60,6 +60,7 @@ const Friends = () => {
       <Box
         sx={{
           mt: 3,
+          pb: 3,
           overflowY: "auto",
           "::-webkit-scrollbar": { display: "none" },
           height: "100%",
@@ -79,9 +80,9 @@ const Friends = () => {
               />
             ))
           ) : (
-            <Typography textAlign={"center"} py={2} mt={1} width={"100%"}>
-              No friend
-            </Typography>
+            <Grid item xs>
+              <Typography textAlign={"center"}>No request received</Typography>
+            </Grid>
           )}
         </Grid>
       </Box>

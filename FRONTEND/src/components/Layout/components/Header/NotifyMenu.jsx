@@ -10,22 +10,19 @@ import Logout from "@mui/icons-material/Logout";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
-import NotiIcon from "@mui/icons-material/NotificationsNone";
+import NotifyIcon from "@mui/icons-material/NotificationsNone";
 
 function NotifyMenu() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+
+  
+
   return (
-    <React.Fragment>
+    <>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
         <IconButton
-          onClick={handleClick}
+          onClick={(e) => setAnchorEl(e.currentTarget)}
           size="small"
           sx={{ ml: 2 }}
           aria-controls={open ? "account-menu" : undefined}
@@ -36,16 +33,19 @@ function NotifyMenu() {
             sx={{ width: 39, height: 39, backgroundColor: "primary.main" }}
             // variant="rounded"
           >
-            <NotiIcon fontSize="small" />
+            <NotifyIcon fontSize="small" />
           </Avatar>
         </IconButton>
       </Box>
       <Menu
         anchorEl={anchorEl}
-        id="account-menu"
         open={open}
-        onClose={handleClose}
-        onClick={handleClose}
+        onClose={() => {
+          setAnchorEl(null);
+        }}
+        onClick={() => {
+          setAnchorEl(null);
+        }}
         PaperProps={{
           elevation: 0,
           sx: {
@@ -70,6 +70,7 @@ function NotifyMenu() {
               transform: "translateY(-50%) rotate(45deg)",
               zIndex: 0,
             },
+            minWidth: 320,
           },
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
@@ -78,36 +79,21 @@ function NotifyMenu() {
         <MenuItem>
           <Avatar /> Profile
         </MenuItem>
+
         <MenuItem>
           <Avatar /> My account
         </MenuItem>
+
         <Divider />
+
         <MenuItem>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
-          Add another account
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          <ModeSelect />
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Logout
+          See more
         </MenuItem>
       </Menu>
-    </React.Fragment>
+    </>
   );
 }
 

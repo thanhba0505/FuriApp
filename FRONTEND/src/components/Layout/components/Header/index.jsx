@@ -54,7 +54,7 @@ const Header = () => {
 
           {/* <SearchField /> */}
 
-          {/* <NotifyMenu /> */}
+          <NotifyMenu />
           {/* <MessMenu /> */}
           <AccountMenu />
         </Toolbar>
