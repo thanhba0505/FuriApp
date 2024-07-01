@@ -36,8 +36,8 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173", 
-    credentials: true, 
+    origin: process.env.FURI_FRONTEND_BASE_URL,
+    credentials: true,
   })
 );
 app.use(morgan("common"));

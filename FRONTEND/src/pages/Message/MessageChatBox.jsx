@@ -168,6 +168,7 @@ const MessageChatBox = () => {
   const { conversationId } = useParams();
   const [conversation, setConversation] = useState();
   const [textMessage, setTextMessage] = useState("");
+  const navigate = useNavigate();
 
   const fetchImage = useCallback(
     async (avatar) => {
@@ -204,13 +205,14 @@ const MessageChatBox = () => {
         });
       } else {
         console.log({ res });
+        navigate("/message");
       }
     };
 
     if (accessToken && conversationId) {
       loadRequest();
     }
-  }, [accessToken, conversationId, fetchImage]);
+  }, [accessToken, conversationId, fetchImage, navigate]);
 
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);

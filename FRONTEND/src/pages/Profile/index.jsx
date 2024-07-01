@@ -12,7 +12,9 @@ import MessageIcon from "@mui/icons-material/Message";
 import CancelIcon from "@mui/icons-material/Cancel";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ScheduleSendTwoToneIcon from "@mui/icons-material/ScheduleSendTwoTone";
+import FaceIcon from '@mui/icons-material/Face';
 import Friends from "./Friends";
+import WallpaperIcon from '@mui/icons-material/Wallpaper';
 
 const fetchInfo = async (accessToken, accountId, setInfo, navigate) => {
   try {
@@ -47,7 +49,27 @@ const BtnFriend = ({ info }) => {
   };
 
   if (info?.isCurrentUser) {
-    return <></>;
+    return (
+      <>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          sx={{ mr: 1 }}
+          endIcon={<FaceIcon />}
+        >
+          Set avatar
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          size="small"
+          endIcon={<WallpaperIcon />}
+        >
+          Set background
+        </Button>
+      </>
+    );
   } else if (info?.isFriend) {
     return (
       <>
@@ -189,6 +211,7 @@ const Profile = () => {
           <Typography variant="h5" fontWeight={600}>
             {info?.fullname}
           </Typography>
+
           <Grid container>
             <Grid item xs>
               <Typography variant="body1" mb={1}>
@@ -198,6 +221,7 @@ const Profile = () => {
                 {info?.friendCount} friends
               </Typography>
             </Grid>
+
             <Grid item alignSelf={"end"}>
               <BtnFriend info={info} />
             </Grid>

@@ -161,7 +161,7 @@ const ConversationController = {
       });
     } catch (error) {
       console.log(error);
-      return res.json({ status: 500, message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error" });
     }
   },
 

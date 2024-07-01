@@ -24,6 +24,7 @@ import { getImageBlob } from "~/api/imageApi";
 import { addStory, getStories } from "~/api/storyApi";
 import { useSnackbar } from "notistack";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import ImageUploadDialog from "~/components/ImageUploadDialog";
 
 const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -171,17 +172,10 @@ const Story = () => {
   const fullname = account?.fullname;
   const { enqueueSnackbar } = useSnackbar();
 
-  const [img, setImg] = useState("");
-  const [open, setOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [img, setImg] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleClear = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
-  };
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -200,46 +194,24 @@ const Story = () => {
     }
   }, [avatar, accessToken]);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-
-      const filePreviews = URL.createObjectURL(file);
-      setPreviewImage(filePreviews);
-    }
-  };
-
-  const handlePostSubmit = async () => {
-    const formData = new FormData();
-
-    if (!selectedFile) {
-      enqueueSnackbar("There is no selected file", {
-        variant: "error",
-      });
-      return;
-    }
-
-    formData.append("image", selectedFile);
-
+  const handleUpload = async (selectedFile) => {
     try {
+      const formData = new FormData();
+      formData.append("image", selectedFile);
+
       const res = await addStory(accessToken, formData);
 
-      if (res.status == 201) {
+      if (res.status === 201) {
         enqueueSnackbar(res.message, {
           variant: "success",
         });
-        setSelectedFile(null);
-        setPreviewImage(null);
-        setOpen(false);
       } else {
         enqueueSnackbar(res.message, {
           variant: "error",
         });
-        console.log({ res });
       }
     } catch (error) {
-      console.log({ error });
+      console.error({ error });
     }
   };
 
@@ -300,7 +272,7 @@ const Story = () => {
                   },
                 },
               }}
-              onClick={() => setOpen(true)}
+              onClick={() => setOpenDialog(true)}
             >
               {/* Background Image */}
               <Box
@@ -430,67 +402,12 @@ const Story = () => {
         </Grid>
       </Box>
 
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        fullWidth
-        maxWidth={"sm"}
-      >
-        <DialogTitle>
-          Add story
-          <Typography mt={1}>A memorable photo of you today?</Typography>
-        </DialogTitle>
-
-        <DialogContent
-          sx={{
-            pb: 1,
-            pr: 1,
-            mr: 2,
-            "::-webkit-scrollbar": {
-              width: "4px",
-              height: "6px",
-              backgroundColor: "action.hover",
-            },
-            "::-webkit-scrollbar-thumb": {
-              backgroundColor: "action.hover",
-            },
-          }}
-        >
-          {previewImage && (
-            <Box>
-              <img
-                src={previewImage}
-                alt="Preview"
-                style={{ width: "100%", height: "auto", borderRadius: 8 }}
-              />
-            </Box>
-          )}
-
-          <Button
-            sx={{
-              width: "100%",
-              height: 60,
-              borderStyle: "dashed",
-              mt: selectedFile ? 2 : 0,
-            }}
-            variant="outlined"
-            component="label"
-          >
-            Selected file
-            <input type="file" hidden onChange={handleFileChange} />
-          </Button>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleClear} variant="outlined">
-            Clear image
-          </Button>
-          <Button onClick={handlePostSubmit} type="submit" variant="contained">
-            Post the story
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ImageUploadDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onUpload={handleUpload}
+        title="Upload story"
+      />
 
       <Box textAlign={"center"} mt={2}>
         <LoadingButton
