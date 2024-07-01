@@ -28,7 +28,7 @@ function Video() {
         });
       }
     } catch (error) {
-      console.error("Lỗi khi upload:", error);
+      console.log({ error });
     }
   };
 

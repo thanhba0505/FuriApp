@@ -1,8 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react/display-name */
 import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { getInfo } from "~/api/accountApi";
+import { getInfo, uploadAvatar, uploadBackground } from "~/api/accountApi";
 import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
@@ -12,9 +14,11 @@ import MessageIcon from "@mui/icons-material/Message";
 import CancelIcon from "@mui/icons-material/Cancel";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ScheduleSendTwoToneIcon from "@mui/icons-material/ScheduleSendTwoTone";
-import FaceIcon from '@mui/icons-material/Face';
+import FaceIcon from "@mui/icons-material/Face";
 import Friends from "./Friends";
-import WallpaperIcon from '@mui/icons-material/Wallpaper';
+import WallpaperIcon from "@mui/icons-material/Wallpaper";
+import { enqueueSnackbar } from "notistack";
+import ImageUploadDialog from "~/components/ImageUploadDialog";
 
 const fetchInfo = async (accessToken, accountId, setInfo, navigate) => {
   try {
@@ -41,7 +45,88 @@ const fetchImage = async (accessToken, imagePath, setImageState) => {
   }
 };
 
-const BtnFriend = ({ info }) => {
+const BtnCurrentUser = memo(({ setAvatarImg, setBackgroundImg }) => {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [imageType, setImageType] = useState(null);
+
+  const handleUpload = async (selectedFile) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", selectedFile);
+
+      let res;
+      if (imageType === "avatar") {
+        res = await uploadAvatar(accessToken, formData);
+        if (res.status === 201) {
+          fetchImage(accessToken, res.avatar, setAvatarImg);
+        }
+      } else if (imageType === "background") {
+        res = await uploadBackground(accessToken, formData);
+        if (res.status === 201) {
+          fetchImage(accessToken, res.background, setBackgroundImg);
+        }
+      }
+
+      if (res.status === 201) {
+        enqueueSnackbar(res.message, {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar(res.message, {
+          variant: "error",
+        });
+      }
+    } catch (error) {
+      console.log({ error });
+      enqueueSnackbar("Upload failed", {
+        variant: "error",
+      });
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant="outlined"
+        color="primary"
+        size="small"
+        sx={{ mr: 1 }}
+        endIcon={<FaceIcon />}
+        onClick={() => {
+          setImageType("avatar");
+          setOpenDialog(true);
+        }}
+      >
+        Set avatar
+      </Button>
+
+      <Button
+        variant="contained"
+        color="primary"
+        size="small"
+        endIcon={<WallpaperIcon />}
+        onClick={() => {
+          setImageType("background");
+          setOpenDialog(true);
+        }}
+      >
+        Set background
+      </Button>
+
+      <ImageUploadDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onUpload={handleUpload}
+        title={imageType === "avatar" ? "Set avatar" : "Set background"}
+      />
+    </>
+  );
+});
+
+const BtnFriend = memo(({ info, setAvatarImg, setBackgroundImg }) => {
   const navigate = useNavigate();
 
   const handleMessage = () => {
@@ -50,32 +135,17 @@ const BtnFriend = ({ info }) => {
 
   if (info?.isCurrentUser) {
     return (
-      <>
-        <Button
-          variant="outlined"
-          color="secondary"
-          size="small"
-          sx={{ mr: 1 }}
-          endIcon={<FaceIcon />}
-        >
-          Set avatar
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          size="small"
-          endIcon={<WallpaperIcon />}
-        >
-          Set background
-        </Button>
-      </>
+      <BtnCurrentUser
+        setAvatarImg={setAvatarImg}
+        setBackgroundImg={setBackgroundImg}
+      />
     );
   } else if (info?.isFriend) {
     return (
       <>
         <Button
           variant="outlined"
-          color="secondary"
+          color="primary"
           size="small"
           sx={{ mr: 1 }}
           endIcon={<MessageIcon />}
@@ -85,7 +155,7 @@ const BtnFriend = ({ info }) => {
         </Button>
         <Button
           variant="contained"
-          color="secondary"
+          color="primary"
           size="small"
           endIcon={<PeopleAltTwoToneIcon />}
         >
@@ -98,7 +168,7 @@ const BtnFriend = ({ info }) => {
       <>
         <Button
           variant="outlined"
-          color="secondary"
+          color="primary"
           size="small"
           sx={{ mr: 1 }}
           endIcon={<ScheduleSendTwoToneIcon />}
@@ -112,7 +182,7 @@ const BtnFriend = ({ info }) => {
       <>
         <Button
           variant="outlined"
-          color="secondary"
+          color="primary"
           size="small"
           sx={{ mr: 1 }}
           endIcon={<CancelIcon />}
@@ -121,7 +191,7 @@ const BtnFriend = ({ info }) => {
         </Button>
         <Button
           variant="contained"
-          color="secondary"
+          color="primary"
           size="small"
           endIcon={<CheckCircleIcon />}
         >
@@ -134,7 +204,7 @@ const BtnFriend = ({ info }) => {
       <>
         <Button
           variant="contained"
-          color="secondary"
+          color="primary"
           size="small"
           endIcon={<PersonAddIcon />}
         >
@@ -143,7 +213,7 @@ const BtnFriend = ({ info }) => {
       </>
     );
   }
-};
+});
 
 const Profile = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -223,7 +293,11 @@ const Profile = () => {
             </Grid>
 
             <Grid item alignSelf={"end"}>
-              <BtnFriend info={info} />
+              <BtnFriend
+                info={info}
+                setAvatarImg={setAvatarImg}
+                setBackgroundImg={setBackgroundImg}
+              />
             </Grid>
           </Grid>
         </Box>
@@ -235,11 +309,10 @@ const Profile = () => {
         </Paper>
         <Friends friends={info?.friends} />
       </Box>
+
       <Paper></Paper>
     </>
   );
 };
 
-const ProfileMemo = React.memo(Profile);
-
-export default ProfileMemo;
+export default memo(Profile);

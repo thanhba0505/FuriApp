@@ -16,6 +16,7 @@ const ImageUploadDialog = ({
   onClose,
   onUpload,
   title = "Upload image",
+  titleBtnUpload = "Upload",
 }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
@@ -112,7 +113,7 @@ const ImageUploadDialog = ({
           variant="contained"
           disabled={isLoading}
         >
-          {isLoading ? <CircularProgress size={24} /> : "Post the story"}
+          {isLoading ? <CircularProgress size={24} /> : titleBtnUpload}
         </Button>
       </DialogActions>
     </Dialog>

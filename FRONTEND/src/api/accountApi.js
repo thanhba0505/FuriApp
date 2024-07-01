@@ -100,7 +100,6 @@ export const uploadAvatar = async (accessToken, formData) => {
     return res.data;
   } catch (error) {
     console.log({ error });
-    return { status: 500, message: "Internal Server Error" };
   }
 };
 
@@ -114,7 +113,6 @@ export const uploadBackground = async (accessToken, formData) => {
     return res.data;
   } catch (error) {
     console.log({ error });
-    return { status: 500, message: "Internal Server Error" };
   }
 };
 

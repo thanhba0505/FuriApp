@@ -299,7 +299,6 @@ const AccountController = {
         return res.json({
           status: 500,
           message: "Internal Server Error",
-          error,
         });
       }
     });
