@@ -2,49 +2,24 @@
 import { Button } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { memo, useState } from "react";
+import { useSelector } from "react-redux";
+import { getPosts, getPostsByAccountId } from "~/api/postApi";
 import ImageUploadDialog from "~/components/ImageUploadDialog";
 import Paper from "~/components/Paper";
+import PostListMemo from "~/components/PostList";
 
 function Video() {
-  const [openDialog, setOpenDialog] = useState(false);
-
-  const handleUpload = async (selectedFile) => {
-    try {
-      const formData = new FormData();
-      formData.append("image", selectedFile);
-
-      const res = {
-        status: 201,
-        message: "kkk kkk kkk",
-      };
-
-      if (res.status === 201) {
-        enqueueSnackbar(res.message, {
-          variant: "success",
-        });
-      } else {
-        enqueueSnackbar(res.message, {
-          variant: "error",
-        });
-      }
-    } catch (error) {
-      console.log({ error });
-    }
-  };
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const limit = 6;
 
   return (
     <>
-      <Paper>
-        <Button variant="contained" onClick={() => setOpenDialog(true)}>
-          Open Upload Dialog
-        </Button>
-
-        <ImageUploadDialog
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-          onUpload={handleUpload}
-        />
-      </Paper>
+      <PostListMemo
+        accessToken={accessToken}
+        limit={limit}
+        // accountId={"66619618a5fada55fe35daa6"}
+      />
     </>
   );
 }

@@ -19,6 +19,7 @@ import Friends from "./Friends";
 import WallpaperIcon from "@mui/icons-material/Wallpaper";
 import { enqueueSnackbar } from "notistack";
 import ImageUploadDialog from "~/components/ImageUploadDialog";
+import PostListMemo from "~/components/PostList";
 
 const fetchInfo = async (accessToken, accountId, setInfo, navigate) => {
   try {
@@ -310,7 +311,15 @@ const Profile = () => {
         <Friends friends={info?.friends} />
       </Box>
 
-      <Paper></Paper>
+      <Box>
+        {info?._id && (
+          <PostListMemo
+            limit={10}
+            accessToken={accessToken}
+            accountId={info?._id}
+          />
+        )}
+      </Box>
     </>
   );
 };

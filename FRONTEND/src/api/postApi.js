@@ -2,14 +2,28 @@ import axios from "~/utils/axios";
 
 export const getPosts = async (accessToken, limit) => {
   try {
-    const res = await axios.get(
-      `/api/post/posts?_limit=${limit}`,
-      {
-        headers: {
-          token: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const res = await axios.get(`/api/post/posts?_limit=${limit}`, {
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
+export const getPostsByAccountId = async (accessToken, limit, accountId) => {
+  try {
+    const res = await axios.get("/api/post/postsbyid/" + accountId, {
+      params: {
+        _limit: limit,
+      },
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
 
     return res.data;
   } catch (error) {

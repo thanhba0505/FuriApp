@@ -12,7 +12,7 @@ const PostRoutes = (io) => {
   );
 
   router.get(
-    "/posts/:accountId",
+    "/postsbyid/:accountId",
     middlewareController.verifyToken,
     PostController.getPostByAccountId
   );

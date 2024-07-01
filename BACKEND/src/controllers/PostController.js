@@ -120,9 +120,8 @@ const PostController = {
   },
 
   getPostByAccountId: async (req, res) => {
-    const { accountId } = req.params;
+    const { accountId } = req.params || "";
     const limit = parseInt(req.query._limit) || 10;
-    const page = parseInt(req.query._page) || 1;
     const pathAccount = "accountImage/";
     const pathPost = "postImage/";
 
@@ -132,10 +131,13 @@ const PostController = {
       }
       return image;
     };
-
+    
     try {
+      if (accountId == "") {
+        return res.json({ status: 404, message: "Account not found" });
+      } else console.log("-------------------------------------");
+
       const posts = await Post.find({ account: accountId })
-        .skip((page - 1) * limit)
         .limit(limit)
         .populate({
           path: "account",
@@ -176,9 +178,9 @@ const PostController = {
         return post;
       });
 
-      return res.status(200).json(updatedPosts);
+      return res.json({ status: 200, posts: updatedPosts });
     } catch (error) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.json({ status: 500, message: "Internal Server Error" });
     }
   },
 

@@ -12,6 +12,7 @@
         "notistack",
         "persistor",
         "pjpeg",
+        "postsbyid",
         "socketio"
     ]
 }

@@ -117,9 +117,10 @@ export const uploadBackground = async (accessToken, formData) => {
 };
 
 // FRIENDS
-export const getFriends = async (accessToken) => {
+export const getFriends = async (accessToken, search) => {
   try {
     const res = await axios.get("/api/account/friends", {
+      params: { search },
       headers: {
         token: `Bearer ${accessToken}`,
       },
@@ -131,11 +132,12 @@ export const getFriends = async (accessToken) => {
   }
 };
 
-export const getNonFriends = async (accessToken, limit) => {
+export const getNonFriends = async (accessToken, limit, search) => {
   try {
     const res = await axios.get("/api/account/nonfriends", {
       params: {
         _limit: limit,
+        search,
       },
       headers: {
         token: `Bearer ${accessToken}`,

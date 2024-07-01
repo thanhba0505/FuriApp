@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { CircularProgress, Box, Typography } from "@mui/material";
 
-const InfiniteScrollList = ({ items, loadMore, hasMore, renderItem }) => {
+const InfiniteScrollList = ({
+  items,
+  loadMore,
+  hasMore,
+  renderItem,
+  noMore = "No more items",
+}) => {
   const observer = useRef();
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +36,11 @@ const InfiniteScrollList = ({ items, loadMore, hasMore, renderItem }) => {
             </React.Fragment>
           );
         } else {
-          return <React.Fragment key={item._id + index}>{renderItem(item)}</React.Fragment>;
+          return (
+            <React.Fragment key={item._id + index}>
+              {renderItem(item)}
+            </React.Fragment>
+          );
         }
       })}
 
@@ -40,8 +50,8 @@ const InfiniteScrollList = ({ items, loadMore, hasMore, renderItem }) => {
         </Box>
       )}
       {!hasMore && (
-        <Typography textAlign={"center"} py={2} width={"100%"}>
-          No more items
+        <Typography textAlign={"center"} py={2} mt={1} width={"100%"}>
+          {noMore}
         </Typography>
       )}
     </>

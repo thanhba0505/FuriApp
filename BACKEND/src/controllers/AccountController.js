@@ -313,7 +313,7 @@ const AccountController = {
 
       const account = await Account.findById(accountId)
         .select(
-          "username fullname avatar background friends sentFriendRequests receivedFriendRequests"
+          "_id username fullname avatar background friends sentFriendRequests receivedFriendRequests"
         )
         .populate("friends.account", "fullname avatar _id");
 
@@ -361,6 +361,7 @@ const AccountController = {
       }
 
       const newAccount = {
+        _id: account._id,
         username: account.username,
         fullname: account.fullname,
         avatar: account.avatar,
@@ -553,6 +554,7 @@ const AccountController = {
 
   getFriends: async (req, res) => {
     const pathAccount = "accountImage/";
+    const searchTerm = req.query.search || "";
 
     try {
       const accountId = req.account.id;
@@ -563,6 +565,23 @@ const AccountController = {
       });
 
       let friends = account.friends;
+
+      // Filter friends based on search term
+      if (searchTerm) {
+        if (searchTerm.startsWith("@")) {
+          friends = friends.filter((friend) =>
+            friend.account.username
+              .toLowerCase()
+              .includes(searchTerm.substring(1).toLowerCase())
+          );
+        } else {
+          friends = friends.filter((friend) =>
+            friend.account.fullname
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+        }
+      }
 
       const friendsWithDetails = await Promise.all(
         friends.map(async (friend) => {
@@ -631,7 +650,8 @@ const AccountController = {
   },
 
   getNonFriends: async (req, res) => {
-    const limit = parseInt(req.query._limit) || 10;
+    const limit = parseInt(req.query._limit) || 1;
+    const searchTerm = req.query.search || "";
     const pathAccount = "accountImage/";
 
     try {
@@ -656,8 +676,15 @@ const AccountController = {
         account._id
       );
 
+      let searchCriteria = {};
+      if (searchTerm.startsWith("@")) {
+        searchCriteria.username = searchTerm.substring(1); // Remove '@' and search by username
+      } else {
+        searchCriteria.fullname = { $regex: searchTerm, $options: "i" }; // Case-insensitive search by fullname
+      }
+
       const nonFriends = await Account.aggregate([
-        { $match: { _id: { $nin: excludedIds } } },
+        { $match: { _id: { $nin: excludedIds }, ...searchCriteria } },
         { $sample: { size: limit } },
         { $project: { fullname: 1, avatar: 1, username: 1, background: 1 } },
       ]);
