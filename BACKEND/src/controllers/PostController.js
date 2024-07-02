@@ -135,7 +135,7 @@ const PostController = {
     try {
       if (accountId == "") {
         return res.json({ status: 404, message: "Account not found" });
-      } else console.log("-------------------------------------");
+      }
 
       const posts = await Post.find({ account: accountId })
         .limit(limit)

@@ -436,27 +436,17 @@ const AccountController = {
       await receiver.save();
 
       const notification = new Notification({
-        userId: receiverId,
+        user: receiverId,
         type: "friend_request",
         message: `${sender.fullname} has sent you a friend request`,
         data: {
-          senderId: senderId,
+          sender: senderId,
         },
       });
 
       await notification.save();
 
-      const notificationData = {
-        ...notification._doc,
-        sender: {
-          _id: sender._id,
-          fullname: sender.fullname,
-          avatar: sender.avatar ? pathAccount + sender.avatar : null,
-          username: sender.username,
-        },
-      };
-
-      io.emit("newNotify" + receiverId, { notification: notificationData });
+      io.emit("newNotify" + receiverId, { message: notification.message });
 
       const receiverInfo = {
         _id: receiverId,
@@ -530,9 +520,23 @@ const AccountController = {
       io.emit("newFriend" + senderId);
       io.emit("newFriend" + receiverId);
 
+      const notification = new Notification({
+        user: senderId,
+        type: "friend_accept",
+        message: `${receiver.fullname} has accepted your friend request`,
+        data: {
+          sender: receiverId,
+        },
+      });
+
+      await notification.save();
+
+      io.emit("newNotify" + senderId, { message: notification.message });
+
       return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {
-      return res.json({ status: 500, message: "Internal Server Error", error });
+      console.log({ error });
+      return res.json({ status: 500, message: "Internal Server Error" });
     }
   },
 

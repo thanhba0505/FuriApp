@@ -17,7 +17,7 @@ export const getImageBlob = async (accessToken, path) => {
         return { status: 500, message: "Internal Server Error" };
       }
     }
-    return null;
+    return { status: 500, message: "Internal Server Error" };
   } catch (error) {
     console.log({ error });
   }

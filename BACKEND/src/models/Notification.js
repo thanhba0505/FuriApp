@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Account",
       required: true,
     },
 
@@ -30,13 +30,13 @@ const schema = new mongoose.Schema(
     },
 
     data: {
-      senderId: {
+      sender: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Account",
         required: true,
       },
 
-      postId: {
+      post: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Post",
       },
