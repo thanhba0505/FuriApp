@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import { Avatar, Button, Typography } from "@mui/material";
+import { Avatar, Typography } from "@mui/material";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
@@ -120,6 +120,8 @@ function NotifyMenu() {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
       socket.on("newNotify" + accountId, ({ message }) => {
+        console.log(message);
+
         enqueueSnackbar(message, {
           variant: "info",
           autoHideDuration: 5000,

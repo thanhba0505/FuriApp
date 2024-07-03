@@ -15,11 +15,6 @@ function Video() {
 
   return (
     <>
-      <PostListMemo
-        accessToken={accessToken}
-        limit={limit}
-        // accountId={"66619618a5fada55fe35daa6"}
-      />
     </>
   );
 }

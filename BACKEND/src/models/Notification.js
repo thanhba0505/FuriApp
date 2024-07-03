@@ -45,6 +45,12 @@ const schema = new mongoose.Schema(
         type: String,
       },
     },
+
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      index: { expires: "7d" },
+    },
   },
   { timestamps: true }
 );

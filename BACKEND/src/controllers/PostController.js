@@ -2,6 +2,8 @@ const multer = require("multer");
 const { uploadPostImage } = require("../config/uploads/multer");
 
 const Post = require("../models/Post");
+const Account = require("../models/Account");
+const Notification = require("../models/Notification");
 
 const addPathIfNeeded = (path, image) => {
   if (image && !image.startsWith(path)) {
@@ -11,7 +13,7 @@ const addPathIfNeeded = (path, image) => {
 };
 
 const PostController = {
-  addPost: (req, res) => {
+  addPost: (req, res, io) => {
     uploadPostImage(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({ message: err.message });
@@ -20,7 +22,7 @@ const PostController = {
       }
 
       const content = req.body.content;
-      const accountID = req.account.id;
+      const accountId = req.account.id;
       const images = req.files?.map((file) => file.filename);
 
       if (!content && (!images || images.length === 0)) {
@@ -39,12 +41,35 @@ const PostController = {
 
       try {
         const newPost = new Post({
-          account: accountID,
+          account: accountId,
           content: content,
           images: images || [],
         });
 
         await newPost.save();
+
+        const account = await Account.findById(accountId);
+
+        const friends = account.friends.map((friend) => friend.account);
+
+        const notifications = friends.map((friendId) => ({
+          user: friendId,
+          type: "post",
+          message: `${account.fullname} has created a new post`,
+          data: {
+            sender: accountId,
+            post: newPost._id,
+          },
+        }));
+
+        await Notification.insertMany(notifications);
+
+        friends.forEach((friendId) => {
+          io.emit("newNotify" + friendId, {
+            message: `${account.fullname} has created a new post`,
+          });
+        });
+
         res.json({ status: 201, message: "Success creating post" });
       } catch (error) {
         console.log({ error });
@@ -131,7 +156,7 @@ const PostController = {
       }
       return image;
     };
-    
+
     try {
       if (accountId == "") {
         return res.json({ status: 404, message: "Account not found" });
@@ -284,6 +309,25 @@ const PostController = {
       );
 
       io.emit("newComment_" + postId, { addedComment });
+
+      if (post.account.toString() !== accountID) {
+        const account = await Account.findById(accountID);
+
+        const notification = new Notification({
+          user: post.account,
+          type: "comment",
+          message: `${account.fullname} has commented on your post`,
+          data: {
+            sender: accountID,
+            post: postId,
+            commentContent: content,
+          },
+        });
+
+        await notification.save();
+
+        io.emit("newNotify" + post.account, { message: notification.message });
+      }
 
       return res.status(200).json({ message: "Add comment successfully" });
     } catch (error) {

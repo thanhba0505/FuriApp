@@ -5,8 +5,8 @@ import React from "react";
 function Home() {
   return (
     <>
-      {/* <Story />
-      <Posts /> */}
+      {/* <Story /> */}
+      <Posts />
     </>
   );
 }
