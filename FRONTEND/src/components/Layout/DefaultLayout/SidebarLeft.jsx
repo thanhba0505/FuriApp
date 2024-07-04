@@ -13,6 +13,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import ForumIcon from "@mui/icons-material/ForumTwoTone";
+import NotifyIcon from "@mui/icons-material/CircleNotificationsTwoTone";
 
 import Sidebar from "../components/SidebarLeft";
 
@@ -65,7 +66,12 @@ const PaperFirst = React.memo(() => {
       >
         <Grid item xs={3}>
           <Avatar
-            sx={{ width: "48px", height: "48px", borderRadius: 2, fontSize: 24 }}
+            sx={{
+              width: "48px",
+              height: "48px",
+              borderRadius: 2,
+              fontSize: 24,
+            }}
             src={img ? img : ""}
           >
             {!img && getFirstLetterUpperCase(account?.fullname)}
@@ -96,6 +102,12 @@ const PaperSecond = React.memo(() => {
         custom: false,
       },
       { label: "Message", path: "/message", icon: <ForumIcon />, custom: true },
+      {
+        label: "Notification",
+        path: "/notification",
+        icon: <NotifyIcon />,
+        custom: true,
+      },
     ],
     []
   );

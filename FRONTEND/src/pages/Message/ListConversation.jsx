@@ -3,6 +3,7 @@ import {
   Avatar,
   Box,
   Button,
+  CircularProgress,
   Divider,
   ListItem,
   ListItemAvatar,
@@ -110,18 +111,20 @@ const ListConversation = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
-  const navigate = useNavigate();
 
-  const [listItems, setListItems] = useState([]);
+  const [listItems, setListItems] = useState();
+  const [loading, setLoading] = useState(false);
 
   const fetchApi = useCallback(async () => {
     if (accessToken) {
+      setLoading(true);
       const res = await getFriends(accessToken);
       if (res.status == 200) {
         setListItems(() => res.friends);
       } else {
         console.log({ res });
       }
+      setLoading(false);
     }
   }, [accessToken]);
 
@@ -152,30 +155,28 @@ const ListConversation = () => {
         </Typography>
 
         <Box mt={listItems && listItems.length && 2}>
-          {listItems &&
-            listItems.length > 0 &&
+          {listItems && listItems.length > 0 ? (
             listItems.map((item) => (
               <Conversation
                 key={item?.conversation}
                 item={item}
                 fetchApi={fetchApi}
               />
-            ))}
+            ))
+          ) : (
+            <Typography
+              textAlign={"center"}
+              mt={3}
+              mb={4}
+              minHeight={300}
+              alignContent={"center"}
+            >
+              {loading && <CircularProgress />}
+              {!loading && listItems?.length == 0 && "No message"}
+            </Typography>
+          )}
         </Box>
       </Paper>
-
-      {listItems && listItems.length == 0 && (
-        <Paper>
-          <Typography textAlign={"center"} mt={10}>
-            No messages, add new friends now!
-          </Typography>
-          <Box textAlign={"center"} mt={3} mb={10}>
-            <Button variant="contained" onClick={() => navigate("/everyone")}>
-              Find everyone
-            </Button>
-          </Box>
-        </Paper>
-      )}
     </>
   );
 };
