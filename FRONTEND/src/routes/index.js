@@ -10,6 +10,7 @@ import Everyone from "~/pages/Everyone";
 import Message from "~/pages/Message";
 
 import Profile from "~/pages/Profile";
+import Post from "~/pages/Post";
 
 import Auth from "~/pages/Auth";
 
@@ -26,6 +27,7 @@ const loginRoutes = [
   { path: "/everyone", component: Everyone },
 
   { path: "/profile/:accountId", component: Profile },
+  { path: "/post/:postId", component: Post },
 ];
 
 // private routes

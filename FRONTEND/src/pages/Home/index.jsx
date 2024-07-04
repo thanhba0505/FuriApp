@@ -5,7 +5,7 @@ import React from "react";
 function Home() {
   return (
     <>
-      {/* <Story /> */}
+      <Story />
       <Posts />
     </>
   );

@@ -12,7 +12,7 @@ function Posts() {
     <>
       <AddPost />
 
-      {/* <PostList accessToken={accessToken} limit={limit} /> */}
+      <PostList accessToken={accessToken} limit={limit} />
     </>
   );
 }

@@ -5,6 +5,8 @@ import Typography from "@mui/material/Typography";
 import FormPost from "./FormPost";
 import { getImageBlob } from "~/api/imageApi";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import Slider from "react-slick";
 
 const ImageWithSize = React.memo(({ image, onLoad }) => {
   useEffect(() => {
@@ -35,7 +37,11 @@ const ImageWithSize = React.memo(({ image, onLoad }) => {
 const PostItem = ({ post, lastItemRef }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
-  const [layouts, setLayouts] = useState(Array(post.images?.length).fill(null));
+  const [layouts, setLayouts] = useState(
+    Array(post?.images?.length).fill(null)
+  );
+
+  const { postId } = useParams();
 
   const handleImageLoad = (index, isLandscape) => {
     if (layouts[index] !== isLandscape) {
@@ -283,14 +289,42 @@ const PostItem = ({ post, lastItemRef }) => {
 
     fetchImageBlobs();
   }, [post, accessToken]);
-  
+
+  const settings = {
+    customPaging: function (i) {
+      return (
+        <a>
+          <img
+            src={imageBlobs[i]}
+            style={{
+              width: 50,
+              height: 50,
+              objectFit: "cover",
+              borderRadius: 8,
+              transition: "scale .2s ease",
+            }}
+          />
+        </a>
+      );
+    },
+
+    dots: true,
+    dotsClass: "slick-dots slick-thumb",
+    infinite: false,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+  };
+
   return (
     <Box ref={lastItemRef ? lastItemRef : null}>
       <FormPost post={post}>
         <Typography variant="body1" sx={{ mt: 2 }}>
           {post?.content}
         </Typography>
-        {imageBlobs && imageBlobs.length > 0 && (
+
+        {!postId && imageBlobs && imageBlobs.length > 0 && (
           <Box
             sx={{
               display: "grid",
@@ -367,6 +401,54 @@ const PostItem = ({ post, lastItemRef }) => {
                 </div>
               </Box>
             )}
+          </Box>
+        )}
+
+        {postId && imageBlobs && (
+          <Box
+            mt={2}
+            sx={{
+              "& .slick-dots": {
+                mr: -3,
+                position: "relative",
+                "& li": {
+                  width: "50",
+                  ml: 1,
+                  mr: 5,
+                },
+                "& img": {
+                  "&:hover": {
+                    scale: "1.1",
+                  },
+                },
+              },
+              "& .slick-active": {
+                "& img": {
+                  scale: "1.1",
+                  border: "2px solid",
+                  borderColor: "primary.main",
+                },
+              },
+            }}
+          >
+            <Slider {...settings}>
+              {imageBlobs &&
+                imageBlobs.map((image) => (
+                  <Box key={image}>
+                    <img
+                      src={image}
+                      alt="image post"
+                      style={{
+                        width: "100%",
+                        height: 400,
+                        maxHeight: 400,
+                        objectFit: "contain",
+                        borderRadius: 8,
+                      }}
+                    />
+                  </Box>
+                ))}
+            </Slider>
           </Box>
         )}
       </FormPost>

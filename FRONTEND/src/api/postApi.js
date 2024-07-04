@@ -31,6 +31,20 @@ export const getPostsByAccountId = async (accessToken, limit, accountId) => {
   }
 };
 
+export const getPostById = async (accessToken, postId) => {
+  try {
+    const res = await axios.get("/api/post/postbyid/" + postId, {
+      headers: {
+        token: `Bearer ${accessToken}`,
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    console.log({ error });
+  }
+};
+
 export const getInteract = async (accessToken, postID, type) => {
   try {
     const res = await axios.post(

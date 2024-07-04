@@ -140,7 +140,68 @@ const PostController = {
         posts: limitedPosts,
       });
     } catch (error) {
-      return res.json({ status: 500, message: "Internal Server Error", error });
+      return res.json({ status: 500, message: "Internal Server Error" });
+    }
+  },
+
+  getPostById: async (req, res) => {
+    const postId = req.params.postId;
+    const pathAccount = "accountImage/";
+    const pathPost = "postImage/";
+
+    const addPathIfNeeded = (path, image) => {
+      if (image && !image.startsWith(path)) {
+        return path + image;
+      }
+      return image;
+    };
+
+    try {
+      const post = await Post.findById(postId)
+        .populate({
+          path: "account",
+          select: "fullname avatar background",
+        })
+        .populate({
+          path: "comment.account",
+          select: "fullname avatar",
+        });
+
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      if (post.account) {
+        post.account.avatar = addPathIfNeeded(pathAccount, post.account.avatar);
+        post.account.background = addPathIfNeeded(
+          pathAccount,
+          post.account.background
+        );
+      }
+      if (post.images && Array.isArray(post.images)) {
+        post.images = post.images.map((image) =>
+          addPathIfNeeded(pathPost, image)
+        );
+      }
+      if (post.comment && Array.isArray(post.comment)) {
+        post.comment = post.comment.map((comment) => {
+          if (comment.account) {
+            comment.account.avatar = addPathIfNeeded(
+              pathAccount,
+              comment.account.avatar
+            );
+          }
+          return comment;
+        });
+      }
+
+      return res.json({
+        status: 200,
+        message: "Get post successful",
+        post: post,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 

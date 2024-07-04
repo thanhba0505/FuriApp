@@ -17,13 +17,12 @@ import ForumIcon from "@mui/icons-material/ForumTwoTone";
 import Sidebar from "../components/SidebarLeft";
 
 import Paper from "~/components/Paper";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
 import { getImageBlob } from "~/api/imageApi";
 import { useMemo } from "react";
-import { Box } from "@mui/material";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 // PaperFirst

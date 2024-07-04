@@ -17,6 +17,12 @@ const PostRoutes = (io) => {
     PostController.getPostByAccountId
   );
 
+  router.get(
+    "/postbyid/:postId",
+    middlewareController.verifyToken,
+    PostController.getPostById
+  );
+
   router.post("/add", middlewareController.verifyToken, (req, res) =>
     PostController.addPost(req, res, io)
   );

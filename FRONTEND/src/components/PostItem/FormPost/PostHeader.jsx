@@ -18,8 +18,10 @@ import Avatar from "@mui/material/Avatar";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import { useNavigate } from "react-router-dom";
+import LinkIcon from "@mui/icons-material/Link";
+import PreviewIcon from "@mui/icons-material/Preview";
 
-function PostHeader({ fullName, date, avatar, accountId }) {
+function PostHeader({ fullName, date, avatar, accountId, postId }) {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const navigate = useNavigate();
@@ -132,27 +134,40 @@ function PostHeader({ fullName, date, avatar, accountId }) {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          <MenuItem onClick={handleClose}>
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
+              navigate("/post/" + postId);
+            }}
+          >
             <ListItemIcon>
-              <PersonAdd fontSize="small" />
+              <PreviewIcon fontSize="small" />
             </ListItemIcon>
-            Coming soon
+            See post
           </MenuItem>
 
-          <MenuItem onClick={handleClose}>
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
+            }}
+          >
             <ListItemIcon>
-              <Settings fontSize="small" />
+              <LinkIcon fontSize="small" />
             </ListItemIcon>
-            Coming soon
+            Copy link
           </MenuItem>
+          <Divider />
 
-          <MenuItem onClick={handleClose}>
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
+            }}
+          >
             <ListItemIcon>
               <Logout fontSize="small" />
             </ListItemIcon>
             Coming soon
           </MenuItem>
-          <Divider />
         </Menu>
       </Grid>
     </Grid>

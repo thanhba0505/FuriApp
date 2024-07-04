@@ -7,10 +7,11 @@ function FormPost({ post, children }) {
   return (
     <Paper>
       <PostHeader
-        fullName={post.account?.fullname}
-        date={post?.updatedAt}
+        fullName={post?.account?.fullname}
+        date={post?.createdAt}
         avatar={post?.account?.avatar}
         accountId={post?.account?._id}
+        postId={post?._id}
       />
 
       {children}

@@ -28,6 +28,7 @@ import { getImageBlob } from "~/api/imageApi";
 import { addComment, getInteract } from "~/api/postApi";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import { useParams } from "react-router-dom";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -132,12 +133,12 @@ const IconCustomNumInteract = React.memo(
 const NumInteract = React.memo(({ interact }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accountID = account?._id;
-  const isAccountInInteract = interact.find(
+  const isAccountInInteract = interact?.find(
     (item) => item.account === accountID
   );
 
   const countTypes = (arr) => {
-    return arr.reduce((acc, obj) => {
+    return arr?.reduce((acc, obj) => {
       const type = obj.type;
       acc[type] = (acc[type] || 0) + 1;
       return acc;
@@ -149,19 +150,19 @@ const NumInteract = React.memo(({ interact }) => {
   const interactTypes = [
     {
       type: "like",
-      count: count.like || 0,
+      count: count?.like || 0,
       Icon: FavoriteTwoToneIcon,
       color: "blue",
     },
     {
       type: "angry",
-      count: count.angry || 0,
+      count: count?.angry || 0,
       Icon: SentimentDissatisfiedTwoToneIcon,
       color: "red",
     },
     {
       type: "laugh",
-      count: count.laugh || 0,
+      count: count?.laugh || 0,
       Icon: SentimentVerySatisfiedTwoToneIcon,
       color: "orange",
     },
@@ -459,7 +460,7 @@ const PostFooter = ({ post }) => {
     const getTypeInteractCurrentAccount = async () => {
       if (accessToken) {
         try {
-          const res = await getInteract(accessToken, post._id, null);
+          const res = await getInteract(accessToken, post?._id, null);
           setTypeInteract(res);
         } catch (error) {
           console.log({ error });
@@ -468,24 +469,24 @@ const PostFooter = ({ post }) => {
     };
 
     getTypeInteractCurrentAccount();
-  }, [accessToken, post._id]);
+  }, [accessToken, post?._id]);
 
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-    socket.on("newComment_" + post._id, () => {
+    socket.on("newComment_" + post?._id, () => {
       setCount((prev) => prev + 1);
     });
 
     return () => {
       socket.disconnect();
     };
-  }, [post._id]);
+  }, [post?._id]);
 
   const getTypeInteractCurrentAccount = async ({ type = null }) => {
     if (accessToken) {
       try {
-        const res = await getInteract(accessToken, post._id, type);
+        const res = await getInteract(accessToken, post?._id, type);
         setTypeInteract(res);
       } catch (error) {
         console.log({ error });
@@ -577,7 +578,7 @@ const PostFooter = ({ post }) => {
           focused={focused}
           onFocusChange={handleFocusChange}
           isButtonClick={isButtonClick}
-          postID={post._id}
+          postID={post?._id}
         />
       </Box>
     </>
