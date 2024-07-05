@@ -89,8 +89,9 @@ const NotificationItem = ({ onClick, item }) => {
 const Notification = ({ setAnchorEl }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const accountId = account?._id;
 
-  const limit = 6;
+  const limit = 10;
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -118,6 +119,20 @@ const Notification = ({ setAnchorEl }) => {
       fetchApi();
     }
   }, [accessToken, fetchApi]);
+
+  useEffect(() => {
+    if (accessToken) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      socket.on("newNotification" + accountId, () => {
+        fetchApi();
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accessToken, accountId, fetchApi]);
 
   return (
     <>

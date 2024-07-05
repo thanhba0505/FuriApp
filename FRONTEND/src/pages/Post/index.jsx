@@ -17,7 +17,6 @@ const Post = () => {
     const fetchApi = async () => {
       try {
         const res = await getPostById(accessToken, postId);
-        console.log(res);
 
         if (res.status == 200) {
           setPost(res.post);

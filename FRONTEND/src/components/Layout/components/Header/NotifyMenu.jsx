@@ -9,12 +9,35 @@ import Divider from "@mui/material/Divider";
 import NotifyIcon from "@mui/icons-material/NotificationsNone";
 import { useNavigate } from "react-router-dom";
 import Notification from "~/components/Notification";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { enqueueSnackbar } from "notistack";
+import { io } from "socket.io-client";
 
 function NotifyMenu() {
+  const account = useSelector((state) => state.auth?.login?.currentAccount);
+  const accessToken = account?.accessToken;
+  const accountId = account?._id;
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    if (accessToken) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+
+      socket.on("newNotification" + accountId, (message) => {
+        enqueueSnackbar(message, {
+          variant: "info",
+        });
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accessToken, accountId]);
 
   return (
     <>
@@ -41,9 +64,6 @@ function NotifyMenu() {
         onClose={() => {
           setAnchorEl(null);
         }}
-        // onClick={() => {
-        //   setAnchorEl(null);
-        // }}
         PaperProps={{
           elevation: 0,
           sx: {
@@ -80,9 +100,22 @@ function NotifyMenu() {
           Notification
         </Typography>
 
-        <Notification />
-        <Divider />
-
+        <Box
+          sx={{
+            overflowY: "auto",
+            "::-webkit-scrollbar": {
+              width: "4px",
+              height: "8px",
+              backgroundColor: "action.hover",
+            },
+            "::-webkit-scrollbar-thumb": {
+              backgroundColor: "action.hover",
+            },
+            maxHeight: 400,
+          }}
+        >
+          <Notification />
+        </Box>
         <MenuItem
           onClick={() => {
             setAnchorEl(null);

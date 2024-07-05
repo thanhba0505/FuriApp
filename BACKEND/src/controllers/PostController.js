@@ -65,7 +65,7 @@ const PostController = {
         await Notification.insertMany(notifications);
 
         friends.forEach((friendId) => {
-          io.emit("newNotify" + friendId, {
+          io.emit("newNotification" + friendId, {
             message: `${account.fullname} has created a new post`,
           });
         });
@@ -387,7 +387,7 @@ const PostController = {
 
         await notification.save();
 
-        io.emit("newNotify" + post.account, { message: notification.message });
+        io.emit("newNotification" + post.account, { message: notification.message });
       }
 
       return res.status(200).json({ message: "Add comment successfully" });
