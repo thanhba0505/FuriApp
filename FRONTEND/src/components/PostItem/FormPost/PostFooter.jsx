@@ -28,7 +28,6 @@ import { getImageBlob } from "~/api/imageApi";
 import { addComment, getInteract } from "~/api/postApi";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
-import { useParams } from "react-router-dom";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -68,7 +67,7 @@ const Interact = React.memo(
               : FavoriteBorderRoundedIcon
           }
           color={typeInteract === "like" ? "blue" : ""}
-          onClick={handleInteract("like")} // Gọi handleInteract với loại interact tương ứng
+          onClick={handleInteract("like")}
         />
         <IconCustomInteract
           Icon={
@@ -77,7 +76,7 @@ const Interact = React.memo(
               : SentimentVerySatisfiedRoundedIcon
           }
           color={typeInteract === "laugh" ? "orange" : ""}
-          onClick={handleInteract("laugh")} // Gọi handleInteract với loại interact tương ứng
+          onClick={handleInteract("laugh")}
         />
         <IconCustomInteract
           Icon={
@@ -86,7 +85,7 @@ const Interact = React.memo(
               : SentimentDissatisfiedRoundedIcon
           }
           color={typeInteract === "angry" ? "red" : ""}
-          onClick={handleInteract("angry")} // Gọi handleInteract với loại interact tương ứng
+          onClick={handleInteract("angry")}
         />
       </>
     );
@@ -214,7 +213,7 @@ const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
     formatTimeDifference(cmt?.createdAt) != "0 minutes ago"
       ? formatTimeDifference(cmt?.createdAt)
       : "Just now";
-      
+
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -296,7 +295,7 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
 
   useEffect(() => {
     setListComment(comments);
-  }, [comments]);
+  }, [accessToken, comments]);
 
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
@@ -308,7 +307,7 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [postId]);
+  }, [accessToken, postId]);
 
   return (
     <>
@@ -472,16 +471,18 @@ const PostFooter = ({ post }) => {
   }, [accessToken, post?._id]);
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+    if (accessToken && post?._id) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-    socket.on("newComment_" + post?._id, () => {
-      setCount((prev) => prev + 1);
-    });
+      socket.on("newComment_" + post?._id, () => {
+        setCount((prev) => prev + 1);
+      });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [post?._id]);
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accessToken, post?._id]);
 
   const getTypeInteractCurrentAccount = async ({ type = null }) => {
     if (accessToken) {

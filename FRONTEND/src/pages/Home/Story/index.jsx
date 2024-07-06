@@ -1,8 +1,6 @@
 /* eslint-disable react/display-name */
 import Grid from "@mui/material/Grid";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import ReplayIcon from "@mui/icons-material/Replay";
-import LoadingButton from "@mui/lab/LoadingButton";
 
 import Paper from "~/components/Paper";
 import {
@@ -14,6 +12,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Skeleton,
   Typography,
 } from "@mui/material";
@@ -25,69 +24,89 @@ import { addStory, getStories } from "~/api/storyApi";
 import { useSnackbar } from "notistack";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import ImageUploadDialog from "~/components/ImageUploadDialog";
+import Slider from "react-slick";
 
-const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
-  const [img, setImg] = useState("");
-  const [imgAvatar, setImgAvatar] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import { useNavigate } from "react-router-dom";
 
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        setIsLoading(true);
-        const result = await getImageBlob(accessToken, imgStory);
+const StoryItem = React.memo(
+  ({
+    imgStory,
+    fullname,
+    avatar,
+    accountId,
+    onClick,
+    scale = "1.1",
+    backgroundSize = "cover",
+    check = false,
+    ...rest
+  }) => {
+    const account = useSelector((state) => state.auth?.login?.currentAccount);
+    const accessToken = account?.accessToken;
 
-        if (result.status == 200) {
-          setImg(result.url);
+    const navigate = useNavigate();
+
+    const [img, setImg] = useState("");
+    const [imgAvatar, setImgAvatar] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+      const fetchImage = async () => {
+        try {
+          setIsLoading(true);
+          const result = await getImageBlob(accessToken, imgStory);
+
+          if (result.status == 200) {
+            setImg(result.url);
+          }
+
+          setIsLoading(false);
+        } catch (error) {
+          console.log({ error });
         }
+      };
 
-        setIsLoading(false);
-      } catch (error) {
-        console.log({ error });
+      if (imgStory && accessToken) {
+        fetchImage();
       }
-    };
+    }, [imgStory, accessToken]);
 
-    if (imgStory && accessToken) {
-      fetchImage();
-    }
-  }, [imgStory, accessToken]);
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        if (result.status == 200) {
-          setImgAvatar(result.url);
+    useEffect(() => {
+      const fetchImage = async () => {
+        try {
+          const result = await getImageBlob(accessToken, avatar);
+          if (result.status == 200) {
+            setImgAvatar(result.url);
+          }
+        } catch (error) {
+          console.log({ error });
         }
-      } catch (error) {
-        console.log({ error });
+      };
+
+      if (avatar && accessToken) {
+        fetchImage();
       }
-    };
+    }, [avatar, accessToken]);
 
-    if (avatar && accessToken) {
-      fetchImage();
-    }
-  }, [avatar, accessToken]);
-
-  return (
-    <Grid item width={"20%"} px={1}>
+    return (
       <Box
-        height={"200px"}
+        height={"100%"}
+        {...rest}
+        onClick={onClick}
         borderRadius={3}
         position="relative"
         overflow="hidden"
         p={1}
         sx={{
           userSelect: "none",
-          cursor: "pointer",
+          cursor: check ? "" : "pointer",
           "& .story-zoom": {
             transition: "ease-out .3s scale",
           },
           "&:hover": {
             "& .story-zoom": {
-              scale: "1.1",
+              scale: scale,
             },
           },
         }}
@@ -104,15 +123,17 @@ const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
             backgroundColor: isLoading ? "rgba(0, 0, 0, 0.1)" : "",
             backgroundImage: img ? "url(" + img + ")" : null,
             backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
+            backgroundSize: backgroundSize,
             backgroundPosition: "center",
+
+            boxShadow: "inset 0px 3px 30px 8px rgba(0, 0, 0, 0.1)",
 
             "&::before": isLoading
               ? ""
               : {
                   content: "''",
                   position: "absolute",
-                  height: "70px",
+                  height: check ? "90px" : "70px",
                   left: 0,
                   right: 0,
                   bottom: 0,
@@ -134,7 +155,12 @@ const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
         >
           {!isLoading && (
             <>
-              <Typography variant="body1" fontSize={14} color="white" mb={1}>
+              <Typography
+                variant="body1"
+                fontSize={check ? 20 : 14}
+                color="white"
+                mb={check ? 2 : 1}
+              >
                 {fullname}
               </Typography>
 
@@ -144,14 +170,21 @@ const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
                   borderColor: "primary.light",
                   borderRadius: 2,
                   position: "absolute",
-                  top: 4,
-                  left: 4,
+                  top: check ? 10 : 4,
+                  left: check ? 10 : 4,
                 }}
               >
                 <Avatar
-                  sx={{ width: "30px", height: "30px" }}
+                  sx={{
+                    width: check ? "50px" : "30px",
+                    height: check ? "50px" : "30px",
+                    cursor: "pointer",
+                  }}
                   src={imgAvatar ? imgAvatar : ""}
                   variant="rounded"
+                  onClick={() => {
+                    navigate("/profile/" + accountId);
+                  }}
                 >
                   {!imgAvatar && getFirstLetterUpperCase(fullname)}
                 </Avatar>
@@ -161,9 +194,41 @@ const StoryItem = React.memo(({ imgStory, fullname, avatar }) => {
           {isLoading && <CircularProgress color="primary" />}
         </Box>
       </Box>
-    </Grid>
+    );
+  }
+);
+
+function SampleNextArrow(props) {
+  const { onClick } = props;
+  return (
+    <Box sx={{ position: "absolute", top: "50%", right: "0", zIndex: 1 }}>
+      <IconButton onClick={onClick} color="primary" sx={{ border: 1 }}>
+        <KeyboardArrowRightIcon />
+      </IconButton>
+    </Box>
   );
-});
+}
+
+function SamplePrevArrow(props) {
+  const { onClick } = props;
+  return (
+    <Box sx={{ position: "absolute", top: "50%", left: "0", zIndex: 1 }}>
+      <IconButton onClick={onClick} color="primary" sx={{ border: 1 }}>
+        <KeyboardArrowLeftIcon />
+      </IconButton>
+    </Box>
+  );
+}
+
+const settings = {
+  infinite: false,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  arrows: true,
+  nextArrow: <SampleNextArrow />,
+  prevArrow: <SamplePrevArrow />,
+};
 
 const Story = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -172,9 +237,12 @@ const Story = () => {
   const fullname = account?.fullname;
   const { enqueueSnackbar } = useSnackbar();
 
-  const [img, setImg] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
+  const limit = 5;
 
+  const [img, setImg] = useState(null);
+  const [openDialogAddStory, setOpenDialogAddStory] = useState(false);
+  const [openDialogStory, setOpenDialogStory] = useState(false);
+  const [stories, setStories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -215,10 +283,6 @@ const Story = () => {
     }
   };
 
-  const limit = 4;
-
-  const [stories, setStories] = useState([]);
-
   const fetchApi = useCallback(async () => {
     if (accessToken) {
       try {
@@ -243,12 +307,6 @@ const Story = () => {
     }
   }, [accessToken, fetchApi]);
 
-  const handleReload = () => {
-    if (accessToken) {
-      fetchApi();
-    }
-  };
-
   return (
     <Paper>
       <Box>
@@ -272,7 +330,7 @@ const Story = () => {
                   },
                 },
               }}
-              onClick={() => setOpenDialog(true)}
+              onClick={() => setOpenDialogAddStory(true)}
             >
               {/* Background Image */}
               <Box
@@ -378,13 +436,16 @@ const Story = () => {
             </>
           ) : (
             stories &&
-            stories?.map((story) => (
-              <StoryItem
-                key={story?._id}
-                fullname={story?.account?.fullname}
-                avatar={story?.account?.avatar}
-                imgStory={story?.image}
-              />
+            stories?.slice(0, 4).map((story) => (
+              <Grid item width={"20%"} px={1} key={story?._id}>
+                <StoryItem
+                  fullname={story?.account?.fullname}
+                  avatar={story?.account?.avatar}
+                  accountId={story?.account?._id}
+                  imgStory={story?.image}
+                  onClick={() => setOpenDialogStory(true)}
+                />
+              </Grid>
             ))
           )}
 
@@ -403,24 +464,53 @@ const Story = () => {
       </Box>
 
       <ImageUploadDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        open={openDialogAddStory}
+        onClose={() => setOpenDialogAddStory(false)}
         onUpload={handleUpload}
         title="Upload story"
       />
 
-      <Box textAlign={"center"} mt={2}>
-        <LoadingButton
-          loading={isLoading}
-          variant="outlined"
-          size="small"
-          endIcon={<ReplayIcon />}
-          onClick={handleReload}
-          color="primary"
-        >
-          Reload
-        </LoadingButton>
-      </Box>
+      <Dialog
+        fullWidth
+        maxWidth={"sm"}
+        open={openDialogStory}
+        onClose={() => setOpenDialogStory(false)}
+      >
+        <DialogTitle>Story</DialogTitle>
+
+        <DialogContent>
+          <Box>
+            <Slider {...settings}>
+              {stories &&
+                stories?.map((story) => (
+                  <Box
+                    key={story?._id}
+                    display={"flex !important"}
+                    justifyContent={"center"}
+                  >
+                    <StoryItem
+                      fullname={story?.account?.fullname}
+                      avatar={story?.account?.avatar}
+                      accountId={story?.account?._id}
+                      imgStory={story?.image}
+                      height="500px"
+                      width="400px"
+                      backgroundSize="contain"
+                      scale="1.04"
+                      check
+                    />
+                  </Box>
+                ))}
+            </Slider>
+          </Box>
+        </DialogContent>
+
+        <DialogActions>
+          <Button variant="outlined" onClick={() => setOpenDialogStory(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

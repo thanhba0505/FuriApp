@@ -5,7 +5,6 @@ import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import { Avatar, Typography } from "@mui/material";
-import Divider from "@mui/material/Divider";
 import NotifyIcon from "@mui/icons-material/NotificationsNone";
 import { useNavigate } from "react-router-dom";
 import Notification from "~/components/Notification";

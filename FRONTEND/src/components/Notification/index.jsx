@@ -1,15 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react/display-name */
-import * as React from "react";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
 import { Avatar, CircularProgress, Typography } from "@mui/material";
-import PersonAdd from "@mui/icons-material/PersonAdd";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
-import NotifyIcon from "@mui/icons-material/NotificationsNone";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useCallback } from "react";
@@ -17,7 +11,6 @@ import { getNotify } from "~/api/notification";
 import { useState } from "react";
 import EllipsisTypography from "~/components/EllipsisTypography";
 import { io } from "socket.io-client";
-import { enqueueSnackbar } from "notistack";
 import { getImageBlob } from "~/api/imageApi";
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
