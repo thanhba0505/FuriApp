@@ -25,7 +25,7 @@ dist-ssr
 
 # 
 .env
-src/public/app/
-src/public/uploads/accountImage/
-src/public/uploads/postImage/
-src/public/uploads/storyImage/
+src/public/app/*
+src/public/uploads/accountImage/*
+src/public/uploads/postImage/*
+src/public/uploads/storyImage/*
