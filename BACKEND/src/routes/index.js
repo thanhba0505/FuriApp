@@ -6,6 +6,7 @@ const Conversation = require("./Conversation");
 const Notification = require("./Notification");
 
 function route(app, io) {
+  app.use("/", (req, res) => res.json("Connection successful"));
   app.use("/api/account", Account(io));
   app.use("/api/post", Post(io));
   app.use("/api/story", Story);

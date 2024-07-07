@@ -115,7 +115,7 @@ const AccountController = {
 
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
-          secure: false, // Deploy -> true
+          secure: WebTransportDatagramDuplexStream, // Deploy -> true
           path: "/",
           sameSite: "strict",
         });
