@@ -37,7 +37,7 @@ const middlewareController = {
     } else {
       return res.json({
         status: 401,
-        message: "You're not authenticated (no token)",
+        message: "You're not authenticated (middleware)",
       });
     }
   },

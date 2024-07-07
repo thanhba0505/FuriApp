@@ -117,7 +117,8 @@ const AccountController = {
           httpOnly: true,
           secure: true, // Deploy -> true
           path: "/",
-          sameSite: "strict",
+          // sameSite: "strict",
+          sameSite: "none",
         });
 
         if (account && account.avatar) {
@@ -212,10 +213,15 @@ const AccountController = {
 
       await blackListToken.save();
 
-      res.clearCookie("refreshToken");
+      res.clearCookie("refreshToken", {
+        path: "/",
+        sameSite: "None", // Ensure it's the same as when you set it
+        secure: true, // Ensure you're using HTTPS
+      });
 
       res.json({ status: 200, message: "Logged out successfully" });
     } catch (error) {
+      console.log({ error });
       res.json({ status: 500, message: "Internal Server Error" });
     }
   },
