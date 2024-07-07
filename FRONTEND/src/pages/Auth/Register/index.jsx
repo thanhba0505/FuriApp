@@ -55,7 +55,12 @@ const Register = () => {
   };
 
   return (
-    <Box>
+    <Box
+      display={"flex"}
+      flexDirection={"column"}
+      height={"100%"}
+      // justifyContent={"center"}
+    >
       <TextInput
         label="Full Name"
         type="text"
@@ -89,14 +94,16 @@ const Register = () => {
         onChange={(e) => setConfirmPassword(e.target.value)}
       />
 
-      <Button
-        variant="contained"
-        sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}
-        onClick={!disabled ? handleRegister : null}
-        disabled={disabled}
-      >
-        Register
-      </Button>
+      <Box flexGrow={1} alignContent={"end"}>
+        <Button
+          variant="contained"
+          sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}
+          onClick={!disabled ? handleRegister : null}
+          disabled={disabled}
+        >
+          Register
+        </Button>
+      </Box>
     </Box>
   );
 };

@@ -46,7 +46,7 @@ const Login = () => {
   };
 
   return (
-    <Box>
+    <Box display={"flex"} flexDirection={"column"} height={"100%"}>
       <TextInput
         label="Username"
         type="text"
@@ -74,14 +74,16 @@ const Login = () => {
         />
       </FormGroup>
 
-      <Button
-        variant="contained"
-        sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}
-        onClick={!disabled ? handleLogin : null}
-        disabled={disabled}
-      >
-        Login
-      </Button>
+      <Box flexGrow={1} alignContent={"end"}>
+        <Button
+          variant="contained"
+          sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}
+          onClick={!disabled ? handleLogin : null}
+          disabled={disabled}
+        >
+          Login
+        </Button>
+      </Box>
     </Box>
   );
 };

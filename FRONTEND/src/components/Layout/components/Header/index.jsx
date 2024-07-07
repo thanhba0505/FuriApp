@@ -8,8 +8,10 @@ import Box from "@mui/material/Box";
 import appInfo from "~/utils/appInfo";
 import ModeSelect from "~/components/ModeSelect";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
@@ -35,7 +37,8 @@ const Header = () => {
             alt="logo"
             width="40"
             height="40"
-            style={{ borderRadius: "6px" }}
+            style={{ borderRadius: "6px", cursor: "pointer" }}
+            onClick={() => navigate("/")}
           />
 
           <Typography
@@ -43,7 +46,7 @@ const Header = () => {
             component="div"
             pl={2}
             fontWeight={700}
-            sx={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, userSelect: "none" }}
           >
             {appInfo.nameApp}
           </Typography>

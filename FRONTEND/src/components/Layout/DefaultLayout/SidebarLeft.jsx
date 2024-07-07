@@ -173,7 +173,7 @@ const PaperSecond = React.memo(() => {
 
 // PaperThird
 const PaperThird = React.memo(() => {
-  return <Paper></Paper>;
+  return <Paper>Coming soon</Paper>;
 });
 
 const SidebarLeft = ({ xs = {} }) => {

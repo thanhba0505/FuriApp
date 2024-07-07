@@ -28,7 +28,6 @@ const NotificationItem = ({ onClick, item }) => {
     const fetchApiImg = async () => {
       try {
         const res = await getImageBlob(accessToken, item?.data?.sender?.avatar);
-        console.log({ res });
         if (res.status == 200) {
           setImg(res.url);
         } else {
@@ -39,7 +38,7 @@ const NotificationItem = ({ onClick, item }) => {
       }
     };
 
-    if (accessToken & item?.data?.sender?.avatar) {
+    if (accessToken && item?.data?.sender?.avatar) {
       fetchApiImg();
     }
   }, [accessToken, item?.data?.sender?.avatar]);
@@ -84,7 +83,7 @@ const Notification = ({ setAnchorEl }) => {
   const accessToken = account?.accessToken;
   const accountId = account?._id;
 
-  const limit = 10;
+  const limit = 100;
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);

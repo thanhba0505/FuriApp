@@ -290,19 +290,17 @@ const PaperFirst = React.memo(() => {
 });
 
 // Second
-const ItemSecond = React.memo(() => {});
+// const ItemSecond = React.memo(() => {});
 
 const PaperSecond = React.memo(() => {
-  return <Paper></Paper>;
+  return <Paper>Coming soon</Paper>;
 });
 
 // Third
-const ItemThird = React.memo(() => {
-  return <></>;
-});
+// const ItemThird = React.memo(() => {});
 
 const PaperThird = React.memo(() => {
-  return <Paper></Paper>;
+  return <Paper>Coming soon</Paper>;
 });
 
 const SidebarRight = ({ xs = {} }) => {

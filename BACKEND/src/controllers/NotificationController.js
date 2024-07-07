@@ -16,7 +16,11 @@ const NotificationController = {
         });
 
       const updatedNotifications = notifications.map((notification) => {
-        if (notification.data.sender && notification.data.sender.avatar) {
+        if (
+          notification.data.sender &&
+          notification.data.sender.avatar &&
+          !notification.data.sender.avatar.startsWith(pathAccount)
+        ) {
           notification.data.sender.avatar =
             pathAccount + notification.data.sender.avatar;
         }

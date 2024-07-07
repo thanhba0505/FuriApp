@@ -157,6 +157,16 @@ const ListMessages = React.memo(({ messages, participants }) => {
           messages.map((message) => (
             <BoxMessage key={message._id} message={message} />
           ))}
+
+        {messages?.length == 0 && (
+          <Typography
+            height={"100%"}
+            alignContent={"center"}
+            textAlign={"center"}
+          >
+            No messages yet, start chatting now!
+          </Typography>
+        )}
       </Box>
     </Box>
   );
