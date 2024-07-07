@@ -4,6 +4,7 @@ import {
   AvatarGroup,
   Box,
   Button,
+  CircularProgress,
   TextField,
   Typography,
 } from "@mui/material";
@@ -175,10 +176,13 @@ const ListMessages = React.memo(({ messages, participants }) => {
 const MessageChatBox = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+
+  const navigate = useNavigate();
   const { conversationId } = useParams();
+
   const [conversation, setConversation] = useState();
   const [textMessage, setTextMessage] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const fetchImage = useCallback(
     async (avatar) => {
@@ -197,7 +201,9 @@ const MessageChatBox = () => {
 
   useEffect(() => {
     const loadRequest = async () => {
+      setLoading(true);
       const res = await getConversation(accessToken, conversationId);
+
       if (res.status === 200) {
         const participantsWithAvatars = await Promise.all(
           res.conversation.participants.map(async (participant) => {
@@ -213,10 +219,13 @@ const MessageChatBox = () => {
           ...res.conversation,
           participants: participantsWithAvatars,
         });
+
+        setLoading(false);
       } else {
         console.log({ res });
         navigate("/message");
       }
+      setLoading(false);
     };
 
     if (accessToken && conversationId) {
@@ -266,46 +275,55 @@ const MessageChatBox = () => {
   return (
     <Paper h={"calc(100% - 24px)"} mh={800}>
       <Box display={"flex"} flexDirection={"column"} height={"100%"}>
-        <Box display={"flex"} alignItems={"center"} height={30}>
-          <Typography fontSize={18} fontWeight={700} lineHeight={1} mr={1}>
-            {conversation && conversation.participants.length === 2
-              ? conversation.participants[1].fullname
-              : ""}
-          </Typography>
+        {!loading ? (
+          <>
+            <Box display={"flex"} alignItems={"center"} height={30}>
+              <Typography fontSize={18} fontWeight={700} lineHeight={1} mr={1}>
+                {conversation && conversation.participants.length === 2
+                  ? conversation.participants[1].fullname
+                  : ""}
+              </Typography>
 
-          {conversation && (
-            <TotalAvatars participants={conversation.participants} />
-          )}
-        </Box>
+              {conversation && (
+                <TotalAvatars participants={conversation.participants} />
+              )}
+            </Box>
 
-        <ListMessages
-          messages={conversation?.messages}
-          participants={conversation?.participants}
-        />
+            <ListMessages
+              messages={conversation?.messages}
+              participants={conversation?.participants}
+            />
 
-        <Box mt={2} display={"flex"} alignItems={"end"}>
-          <TextField
-            label={
-              conversation && conversation.participants.length === 2
-                ? "Enter message to " + conversation.participants[1].fullname
-                : ""
-            }
-            multiline
-            maxRows={4}
-            size="small"
-            sx={{ width: "80%", mr: 2 }}
-            onChange={(e) => setTextMessage(e.target.value)}
-            value={textMessage}
-          />
-          <Button
-            onClick={handleSendMessage}
-            variant="contained"
-            sx={{ px: 4, maxHeight: 40, height: 40 }}
-            endIcon={<SendIcon />}
-          >
-            Send
-          </Button>
-        </Box>
+            <Box mt={2} display={"flex"} alignItems={"end"}>
+              <TextField
+                label={
+                  conversation && conversation.participants.length === 2
+                    ? "Enter message to " +
+                      conversation.participants[1].fullname
+                    : ""
+                }
+                multiline
+                maxRows={4}
+                size="small"
+                sx={{ width: "80%", mr: 2 }}
+                onChange={(e) => setTextMessage(e.target.value)}
+                value={textMessage}
+              />
+              <Button
+                onClick={handleSendMessage}
+                variant="contained"
+                sx={{ px: 4, maxHeight: 40, height: 40 }}
+                endIcon={<SendIcon />}
+              >
+                Send
+              </Button>
+            </Box>
+          </>
+        ) : (
+          <Box textAlign={"center"} alignContent={"center"} height={"100%"}>
+            <Box mb={5}><CircularProgress /></Box>
+          </Box>
+        )}
       </Box>
     </Paper>
   );

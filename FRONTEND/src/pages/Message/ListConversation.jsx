@@ -9,7 +9,7 @@ import {
   ListItemButton,
   Typography,
 } from "@mui/material";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -23,9 +23,10 @@ import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 const Conversation = React.memo(({ item, fetchApi }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
-  const accountId = account?._id;
   const navigate = useNavigate();
   const [img, setImg] = useState();
+
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -52,10 +53,13 @@ const Conversation = React.memo(({ item, fetchApi }) => {
       });
 
       return () => {
-        socket.disconnect();
+        if (socketRef.current) {
+          socketRef.current.close();
+          socketRef.current = null;
+        }
       };
     }
-  }, [accountId, accessToken, fetchApi, item?.conversation]);
+  }, [accessToken, fetchApi, item?.conversation]);
 
   return (
     <>
@@ -148,32 +152,47 @@ const ListConversation = () => {
 
   return (
     <>
-      <Paper>
-        <Typography fontSize={18} fontWeight={700} lineHeight={1}>
+      <Paper h={"calc(100% - 24px)"} mh={800}>
+        <Typography fontSize={18} fontWeight={700} lineHeight={1} mb={2}>
           Message
         </Typography>
 
-        <Box mt={listItems && listItems.length && 2}>
-          {listItems && listItems.length > 0 ? (
-            listItems.map((item) => (
-              <Conversation
-                key={item?.conversation}
-                item={item}
-                fetchApi={fetchApi}
-              />
-            ))
-          ) : (
-            <Typography
-              textAlign={"center"}
-              mt={3}
-              mb={4}
-              minHeight={300}
-              alignContent={"center"}
-            >
-              {loading && <CircularProgress />}
-              {!loading && listItems?.length == 0 && "No message"}
-            </Typography>
-          )}
+        <Box
+          sx={{
+            overflowY: "auto",
+            "::-webkit-scrollbar": {
+              width: "4px",
+              height: "8px",
+              backgroundColor: "action.hover",
+            },
+            "::-webkit-scrollbar-thumb": {
+              backgroundColor: "action.hover",
+            },
+            height: "calc(100% - 34px)",
+          }}
+        >
+          <Box mt={listItems && listItems.length && 2}>
+            {listItems && listItems.length > 0 ? (
+              listItems.map((item) => (
+                <Conversation
+                  key={item?.conversation}
+                  item={item}
+                  fetchApi={fetchApi}
+                />
+              ))
+            ) : (
+              <Typography
+                textAlign={"center"}
+                mt={3}
+                mb={4}
+                minHeight={400}
+                alignContent={"center"}
+              >
+                {loading && <CircularProgress />}
+                {!loading && listItems?.length == 0 && "No message"}
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Paper>
     </>

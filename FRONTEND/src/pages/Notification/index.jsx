@@ -23,12 +23,6 @@ const Notifications = () => {
             backgroundColor: "action.hover",
           },
           height: "calc(100% - 34px)",
-          // borderRadius: 2,
-          // display: "flex",
-          // flexDirection: "column-reverse",
-          // justifyContent: "end",
-          // // py: "1px",
-          // pr: 2,
         }}
       >
         <Notification />

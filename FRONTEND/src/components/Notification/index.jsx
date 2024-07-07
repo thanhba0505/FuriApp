@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import MenuItem from "@mui/material/MenuItem";
 import { Avatar, CircularProgress, Typography } from "@mui/material";
 import Divider from "@mui/material/Divider";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useCallback } from "react";
 import { getNotify } from "~/api/notification";
@@ -82,6 +82,7 @@ const Notification = ({ setAnchorEl }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
+  const socketRef = useRef(null);
 
   const limit = 100;
 
@@ -121,7 +122,10 @@ const Notification = ({ setAnchorEl }) => {
       });
 
       return () => {
-        socket.disconnect();
+        if (socketRef.current) {
+          socketRef.current.close();
+          socketRef.current = null;
+        }
       };
     }
   }, [accessToken, accountId, fetchApi]);
@@ -141,7 +145,7 @@ const Notification = ({ setAnchorEl }) => {
           textAlign={"center"}
           mt={3}
           mb={4}
-          minHeight={300}
+          minHeight={400}
           alignContent={"center"}
         >
           {loading && <CircularProgress />}

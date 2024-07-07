@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "../components/SidebarRight";
 import Paper from "~/components/Paper";
 import { useSelector } from "react-redux";
@@ -34,9 +34,10 @@ import EllipsisTypography from "~/components/EllipsisTypography";
 const ItemFirst = React.memo(({ item, fetchApi }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
-  const accountId = account?._id;
   const navigate = useNavigate();
   const [img, setImg] = useState();
+
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -55,17 +56,19 @@ const ItemFirst = React.memo(({ item, fetchApi }) => {
   }, [item?.account?.avatar, accessToken]);
 
   useEffect(() => {
-    if (accessToken) {
+    if (accessToken && item?.conversation) {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-      socket.on("newMess" + item?.conversation, fetchApi);
+      socket.on("newMess" + item.conversation, fetchApi);
 
       return () => {
-        socket.off("newFriend" + accountId, fetchApi);
-        socket.disconnect();
+        if (socketRef.current) {
+          socketRef.current.close();
+          socketRef.current = null;
+        }
       };
     }
-  }, [accessToken, accountId, fetchApi, item?.conversation]);
+  }, [accessToken, fetchApi, item?.conversation]);
 
   return (
     <>
