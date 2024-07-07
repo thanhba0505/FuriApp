@@ -12,8 +12,8 @@ import { useSnackbar } from "notistack";
 
 const Login = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const [username, setUsername] = useState("bocchichan");
-  const [password, setPassword] = useState("passtest123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [checked, setChecked] = useState(true);
   const [disabled, setDisabled] = useState(true);
 
