@@ -10,6 +10,8 @@ const Notification = require("../models/Notification");
 
 const multer = require("multer");
 const { uploadAccountImage, deleteFile } = require("../config/uploads/multer");
+const upload = require("../config/multer");
+const { uploadAvatar } = require("../utils/coudinary");
 
 const AccountController = {
   registerAccount: async (req, res) => {
@@ -270,45 +272,65 @@ const AccountController = {
   },
 
   uploadAvatar: async (req, res) => {
-    uploadAccountImage(req, res, async (err) => {
-      if (err instanceof multer.MulterError) {
-        return res.json({ status: 400, message: err.message });
-      } else if (err) {
-        return res.json({ status: 400, message: err.message });
-      }
-
-      const accountID = req.account.id;
-      const image = req.file;
-
-      if (!image) {
-        return res.json({ status: 400, message: "No photo uploaded" });
-      }
-
+    upload.single("image")(req, res, async (err) => {
       try {
-        const account = await Account.findById(accountID).select("avatar");
-
-        const pathAccount = "accountImage/";
-        const oldAvatar = pathAccount + account.avatar;
-
-        if (oldAvatar) {
-          deleteFile(oldAvatar);
+        if (err instanceof multer.MulterError) {
+          return res.json({ status: 400, message: err.message });
+        } else if (err) {
+          return res.json({ status: 400, message: err.message });
         }
 
-        account.avatar = image.filename;
-        await account.save();
+        const image = req.file;
 
-        res.json({
-          status: 201,
-          message: "Success upload avatar",
-          avatar: pathAccount + account.avatar,
-        });
+        const avatarUrl = await uploadAvatar(image.path);
+
+        console.log(avatarUrl);
+
+        return res.json(image);
       } catch (error) {
-        return res.json({
-          status: 500,
-          message: "Internal Server Error",
-        });
+        console.log({ error });
       }
     });
+
+    // uploadAccountImage(req, res, async (err) => {
+    //   if (err instanceof multer.MulterError) {
+    //     return res.json({ status: 400, message: err.message });
+    //   } else if (err) {
+    //     return res.json({ status: 400, message: err.message });
+    //   }
+
+    //   const accountID = req.account.id;
+    //   const image = req.file;
+
+    //   if (!image) {
+    //     return res.json({ status: 400, message: "No photo uploaded" });
+    //   }
+
+    //   try {
+    //     const account = await Account.findById(accountID).select("avatar");
+
+    //     const pathAccount = "accountImage/";
+    //     const oldAvatar = pathAccount + account.avatar;
+
+    //     if (oldAvatar) {
+    //       deleteFile(oldAvatar);
+    //     }
+
+    //     account.avatar = image.filename;
+    //     await account.save();
+
+    //     res.json({
+    //       status: 201,
+    //       message: "Success upload avatar",
+    //       avatar: pathAccount + account.avatar,
+    //     });
+    //   } catch (error) {
+    //     return res.json({
+    //       status: 500,
+    //       message: "Internal Server Error",
+    //     });
+    //   }
+    // });
   },
 
   getInfo: async (req, res) => {
@@ -452,7 +474,9 @@ const AccountController = {
 
       await notification.save();
 
-      io.emit("newNotification" + receiverId, { message: notification.message });
+      io.emit("newNotification" + receiverId, {
+        message: notification.message,
+      });
 
       const receiverInfo = {
         _id: receiverId,

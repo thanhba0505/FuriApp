@@ -11,16 +11,12 @@ import Divider from "@mui/material/Divider";
 
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
-// import { getImage } from "~/api/imageApi";
 import Avatar from "@mui/material/Avatar";
 import { getImageBlob } from "~/api/imageApi";
 import { enqueueSnackbar } from "notistack";
-import { useNavigate } from "react-router-dom";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 function AccountMenu() {
-  const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
