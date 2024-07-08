@@ -9,11 +9,9 @@ import PersonAdd from "@mui/icons-material/PersonAdd";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
 
-import ModeSelect from "~/components/ModeSelect";
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
 // import { getImage } from "~/api/imageApi";
-import { useRef } from "react";
 import Avatar from "@mui/material/Avatar";
 import { getImageBlob } from "~/api/imageApi";
 import { enqueueSnackbar } from "notistack";
@@ -33,6 +31,7 @@ function AccountMenu() {
   const dispatch = useDispatch();
 
   const [img, setImg] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,11 +41,21 @@ function AccountMenu() {
   };
 
   const handleLogOut = async () => {
-    const res = await logOut(dispatch, accessToken);
-    if (res) {
-      enqueueSnackbar(res.message, {
-        variant: res.status == 200 ? "success" : "error",
-      });
+    try {
+      setLoading(true);
+      const res = await logOut(dispatch, accessToken);
+      if (res.status == 200) {
+        enqueueSnackbar(res.message, {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar(res.message, {
+          variant: "error",
+        });
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log({ error });
     }
   };
 
@@ -146,7 +155,7 @@ function AccountMenu() {
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
-          Logout
+          Logout{loading && "..."}
         </MenuItem>
       </Menu>
     </React.Fragment>

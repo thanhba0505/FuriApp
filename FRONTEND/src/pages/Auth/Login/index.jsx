@@ -1,4 +1,3 @@
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import TextInput from "~/components/TextInput";
 import Checkbox from "@mui/material/Checkbox";
@@ -9,6 +8,8 @@ import React, { useEffect, useState } from "react";
 import { loginAccount } from "~/api/accountApi";
 import { useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
+import { LoadingButton } from "@mui/lab";
+import { CircularProgress } from "@mui/material";
 
 const Login = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -16,6 +17,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [checked, setChecked] = useState(true);
   const [disabled, setDisabled] = useState(true);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (password === "" || username === "") {
@@ -28,12 +31,14 @@ const Login = () => {
   const handleLogin = async () => {
     const newAccount = { username: username, password: password };
     try {
+      setLoading(true);
       const res = await loginAccount(newAccount, dispatch);
       if (res.message) {
         enqueueSnackbar(res.message, {
           variant: res.status == 200 ? "success" : "error",
         });
       }
+      setLoading(false);
     } catch (error) {
       console.log({ error });
     }
@@ -75,14 +80,16 @@ const Login = () => {
       </FormGroup>
 
       <Box flexGrow={1} alignContent={"end"}>
-        <Button
+        <LoadingButton
           variant="contained"
           sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}
           onClick={!disabled ? handleLogin : null}
           disabled={disabled}
+          loading={loading}
+          loadingIndicator={<CircularProgress color="primary" size={24} />}
         >
           Login
-        </Button>
+        </LoadingButton>
       </Box>
     </Box>
   );

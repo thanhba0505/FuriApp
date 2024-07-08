@@ -1,4 +1,3 @@
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 
 import TextInput from "~/components/TextInput";
@@ -6,6 +5,8 @@ import TextInput from "~/components/TextInput";
 import React, { useEffect, useState } from "react";
 import { registerAccount } from "~/api/accountApi";
 import { enqueueSnackbar } from "notistack";
+import { LoadingButton } from "@mui/lab";
+import { CircularProgress } from "@mui/material";
 
 const Register = () => {
   const [fullname, setFullname] = useState("");
@@ -15,6 +16,8 @@ const Register = () => {
 
   const [samePassword, setSamePassword] = useState(true);
   const [disabled, setDisabled] = useState(true);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const samePassword = password === confirmPassword;
@@ -37,6 +40,7 @@ const Register = () => {
     };
 
     try {
+      setLoading(true);
       const res = await registerAccount(newAccount);
 
       if (res.status == 200) {
@@ -49,6 +53,7 @@ const Register = () => {
       enqueueSnackbar(res.message, {
         variant: res.status == 200 ? "success" : "error",
       });
+      setLoading(false);
     } catch (error) {
       console.log({ error });
     }
@@ -95,14 +100,16 @@ const Register = () => {
       />
 
       <Box flexGrow={1} alignContent={"end"}>
-        <Button
+        <LoadingButton
           variant="contained"
           sx={{ height: "56px", width: "100%", mt: 2, mb: 1 }}
           onClick={!disabled ? handleRegister : null}
           disabled={disabled}
+          loading={loading}
+          loadingIndicator={<CircularProgress color="primary" size={24} />}
         >
           Register
-        </Button>
+        </LoadingButton>
       </Box>
     </Box>
   );
