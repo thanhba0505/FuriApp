@@ -452,7 +452,7 @@ const AccountController = {
 
       await notification.save();
 
-      io.emit("newNotify" + receiverId, { message: notification.message });
+      io.emit("newNotification" + receiverId, { message: notification.message });
 
       const receiverInfo = {
         _id: receiverId,
@@ -537,7 +537,7 @@ const AccountController = {
 
       await notification.save();
 
-      io.emit("newNotify" + senderId, { message: notification.message });
+      io.emit("newNotification" + senderId, { message: notification.message });
 
       return res.json({ status: 200, message: "Friend request accepted" });
     } catch (error) {
