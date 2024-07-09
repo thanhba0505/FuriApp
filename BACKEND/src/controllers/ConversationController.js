@@ -74,7 +74,6 @@ const ConversationController = {
   getMessages: async (req, res, io) => {
     const limit = parseInt(req.query._limit) || 10;
     const skip = parseInt(req.query._skip) || 0;
-    const pathAccount = "accountImage/";
 
     try {
       const accountId = req.account.id;
@@ -122,29 +121,7 @@ const ConversationController = {
         await conversation.save();
       }
 
-      if (conversation.messages) {
-        conversation.messages.forEach((message) => {
-          if (
-            message.sender &&
-            message.sender.avatar &&
-            !message.sender.avatar.startsWith(pathAccount)
-          ) {
-            message.sender.avatar = pathAccount + message.sender.avatar;
-          }
-        });
-      }
-
       if (conversation.participants) {
-        conversation.participants.forEach((account) => {
-          if (
-            account &&
-            account.avatar &&
-            !account.avatar.startsWith(pathAccount)
-          ) {
-            account.avatar = pathAccount + account.avatar;
-          }
-        });
-
         conversation.participants.sort((a, b) => {
           if (a._id.toString() === accountId) return -1;
           if (b._id.toString() === accountId) return 1;

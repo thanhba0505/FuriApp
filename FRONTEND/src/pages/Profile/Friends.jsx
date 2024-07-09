@@ -1,33 +1,10 @@
 import { Avatar, Grid, Typography } from "@mui/material";
-import { useEffect, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 const Friend = ({ friend }) => {
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
-  const [img, setImg] = useState();
   const navigate = useNavigate();
-
-  const fetchImage = useCallback(async () => {
-    try {
-      const result = await getImageBlob(accessToken, friend.avatar);
-      if (result.status === 200) {
-        setImg(result.url);
-      }
-    } catch (error) {
-      console.log({ error });
-    }
-  }, [accessToken, friend.avatar]);
-
-  useEffect(() => {
-    if (friend.avatar && accessToken) {
-      fetchImage();
-    }
-  }, [fetchImage, friend.avatar, accessToken]);
 
   const handleLinkAccount = () => {
     navigate("/profile/" + friend._id);
@@ -37,10 +14,10 @@ const Friend = ({ friend }) => {
     <Grid item xs={4}>
       <Avatar
         onClick={handleLinkAccount}
-        src={img ? img : " "}
+        src={friend.avatar ? friend.avatar : " "}
         sx={{ height: 60, width: 60, margin: "auto", cursor: "pointer" }}
       >
-        {img ? "" : getFirstLetterUpperCase(friend.fullname)}
+        {friend.avatar ? "" : getFirstLetterUpperCase(friend.fullname)}
       </Avatar>
       <Typography
         textAlign="center"

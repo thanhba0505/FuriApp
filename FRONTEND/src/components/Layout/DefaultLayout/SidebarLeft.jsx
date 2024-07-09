@@ -20,37 +20,15 @@ import Sidebar from "../components/SidebarLeft";
 import Paper from "~/components/Paper";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useState } from "react";
-import { useEffect } from "react";
-import { getImageBlob } from "~/api/imageApi";
 import { useMemo } from "react";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
 // PaperFirst
 const PaperFirst = React.memo(() => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
   const avatar = account?.avatar;
 
   const navigate = useNavigate();
-
-  const [img, setImg] = useState();
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        if (result.status == 200) {
-          setImg(result.url);
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-    if (avatar && accessToken) {
-      fetchImage();
-    }
-  }, [avatar, accessToken]);
 
   const handleLinkProfile = () => {
     navigate("/profile/" + account._id);
@@ -72,9 +50,9 @@ const PaperFirst = React.memo(() => {
               borderRadius: 2,
               fontSize: 24,
             }}
-            src={img ? img : ""}
+            src={avatar ? avatar : ""}
           >
-            {!img && getFirstLetterUpperCase(account?.fullname)}
+            {!avatar && getFirstLetterUpperCase(account?.fullname)}
           </Avatar>
         </Grid>
 

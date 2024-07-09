@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FormPost from "./FormPost";
-import { getImageBlob } from "~/api/imageApi";
-import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import Slider from "react-slick";
 
@@ -35,11 +33,10 @@ const ImageWithSize = React.memo(({ image, onLoad }) => {
 });
 
 const PostItem = ({ post, lastItemRef }) => {
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
   const [layouts, setLayouts] = useState(
     Array(post?.images?.length).fill(null)
   );
+  const images = post?.images;
 
   const { postId } = useParams();
 
@@ -263,39 +260,12 @@ const PostItem = ({ post, lastItemRef }) => {
     }
   };
 
-  const [imageBlobs, setImageBlobs] = useState([]);
-
-  useEffect(() => {
-    const fetchImageBlobs = async () => {
-      if (post.images) {
-        const promises = post.images.map(async (image) => {
-          try {
-            const res = await getImageBlob(accessToken, image);
-            if (res.status) {
-              return res.url;
-            } else {
-              console.log({ res });
-            }
-          } catch (error) {
-            console.log({ error });
-            return null;
-          }
-        });
-
-        const resolvedBlobs = await Promise.all(promises);
-        setImageBlobs(resolvedBlobs.filter((blob) => blob !== null));
-      }
-    };
-
-    fetchImageBlobs();
-  }, [post, accessToken]);
-
   const settings = {
     customPaging: function (i) {
       return (
         <a>
           <img
-            src={imageBlobs[i]}
+            src={images[i]}
             style={{
               width: 50,
               height: 50,
@@ -324,7 +294,7 @@ const PostItem = ({ post, lastItemRef }) => {
           {post?.content}
         </Typography>
 
-        {!postId && imageBlobs && imageBlobs.length > 0 && (
+        {!postId && images && images.length > 0 && (
           <Box
             sx={{
               display: "grid",
@@ -333,8 +303,8 @@ const PostItem = ({ post, lastItemRef }) => {
               mt: 2,
             }}
           >
-            {imageBlobs
-              .slice(0, imageBlobs.length >= 5 ? 3 : imageBlobs.length)
+            {images
+              .slice(0, images.length >= 5 ? 3 : images.length)
               .map((image, index) => (
                 <Box
                   key={index}
@@ -358,7 +328,7 @@ const PostItem = ({ post, lastItemRef }) => {
                 </Box>
               ))}
 
-            {imageBlobs.length >= 5 && (
+            {images.length >= 5 && (
               <Box
                 sx={{
                   gridArea: "d",
@@ -367,7 +337,7 @@ const PostItem = ({ post, lastItemRef }) => {
                 }}
               >
                 <img
-                  src={imageBlobs[4]}
+                  src={images[4]}
                   alt="Post"
                   style={{
                     position: "absolute",
@@ -397,14 +367,14 @@ const PostItem = ({ post, lastItemRef }) => {
                     backgroundColor: "rgba(0, 0, 0, 0.5)",
                   }}
                 >
-                  +{imageBlobs.length - 3}
+                  +{images.length - 3}
                 </div>
               </Box>
             )}
           </Box>
         )}
 
-        {postId && imageBlobs && (
+        {postId && images && (
           <Box
             mt={2}
             sx={{
@@ -432,8 +402,8 @@ const PostItem = ({ post, lastItemRef }) => {
             }}
           >
             <Slider {...settings}>
-              {imageBlobs &&
-                imageBlobs.map((image) => (
+              {images &&
+                images.map((image) => (
                   <Box key={image}>
                     <img
                       src={image}

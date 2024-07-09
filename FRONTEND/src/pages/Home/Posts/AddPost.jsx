@@ -37,25 +37,9 @@ const AddPost = () => {
   ];
   const { enqueueSnackbar } = useSnackbar();
 
-  const [img, setImg] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [content, setContent] = useState("");
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        setImg(result.url);
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-
-    if (avatar && accessToken) {
-      fetchImage();
-    }
-  }, [avatar, accessToken]);
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -167,12 +151,12 @@ const AddPost = () => {
           sx={{ minHeight: "48px !important" }}
         >
           <Avatar
-            src={img ? img : ""}
+            src={avatar ? avatar : ""}
             alt={account?.fullname}
             sx={{ width: 40, height: 40 }}
             variant="rounded"
           >
-            {!img && getFirstLetterUpperCase(account?.fullname)}
+            {!avatar && getFirstLetterUpperCase(account?.fullname)}
           </Avatar>
 
           <Box>

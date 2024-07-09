@@ -9,9 +9,12 @@ const Conversation = require("../models/Conversation");
 const Notification = require("../models/Notification");
 
 const multer = require("multer");
-const { uploadAccountImage, deleteFile } = require("../config/uploads/multer");
-const upload = require("../config/multer");
-const { uploadAvatar } = require("../utils/coudinary");
+const { upload } = require("../config/multer");
+const {
+  uploadAvatar,
+  deleteImage,
+  uploadBackground,
+} = require("../utils/cloudinary");
 
 const AccountController = {
   registerAccount: async (req, res) => {
@@ -88,8 +91,6 @@ const AccountController = {
   },
 
   loginAccount: async (req, res) => {
-    const pathAccount = "accountImage/";
-
     try {
       const { username, password } = req.body;
 
@@ -122,10 +123,6 @@ const AccountController = {
           // sameSite: "strict",
           sameSite: "none",
         });
-
-        if (account && account.avatar) {
-          account.avatar = pathAccount + account.avatar;
-        }
 
         const { password, ...others } = account._doc;
         return res.json({
@@ -229,113 +226,102 @@ const AccountController = {
   },
 
   uploadBackground: async (req, res) => {
-    uploadAccountImage(req, res, async (err) => {
-      if (err instanceof multer.MulterError) {
-        return res.json({ status: 400, message: err.message });
-      } else if (err) {
-        return res.json({ status: 400, message: err.message });
-      }
-
-      const accountID = req.account.id;
-      const image = req.file;
-
-      if (!image) {
-        return res.json({ status: 400, message: "No photo uploaded" });
-      }
-
-      try {
-        const account = await Account.findById(accountID).select("background");
-
-        const pathAccount = "accountImage/";
-        const oldBackground = pathAccount + account.background;
-
-        if (oldBackground) {
-          deleteFile(oldBackground);
-        }
-
-        account.background = image.filename;
-        await account.save();
-
-        res.json({
-          status: 201,
-          message: "Success upload background",
-          background: pathAccount + account.background,
-        });
-      } catch (error) {
-        return res.json({
-          status: 500,
-          message: "Internal Server Error",
-          error,
-        });
-      }
-    });
-  },
-
-  uploadAvatar: async (req, res) => {
-    upload.single("image")(req, res, async (err) => {
+    upload.single("image", 1)(req, res, async (err) => {
       try {
         if (err instanceof multer.MulterError) {
           return res.json({ status: 400, message: err.message });
         } else if (err) {
           return res.json({ status: 400, message: err.message });
         }
-
+        const accountId = req.account.id;
         const image = req.file;
+
+        if (!image) {
+          return res.json({ status: 400, message: "No photo uploaded" });
+        }
+
+        const account = await Account.findById(accountId).select("background");
+
+        if (account.background) {
+          const result = await deleteImage(account.background);
+          if (!result) {
+            console.log({ message: "Delete photo from cloud failed" });
+          }
+        }
+
+        const backgroundUrl = await uploadBackground(image.path);
+
+        if (backgroundUrl) {
+          account.background = backgroundUrl;
+          await account.save();
+
+          return res.json({
+            status: 201,
+            message: "Success upload background",
+            background: backgroundUrl,
+          });
+        } else {
+          return res.json({
+            status: 500,
+            message: "Failed to upload from cloud",
+          });
+        }
+      } catch (error) {
+        console.log({ error });
+        return res.json({ status: 500, message: "Internal Server Error" });
+      }
+    });
+  },
+
+  uploadAvatar: async (req, res) => {
+    upload.single("image", 1)(req, res, async (err) => {
+      try {
+        if (err instanceof multer.MulterError) {
+          return res.json({ status: 400, message: err.message });
+        } else if (err) {
+          return res.json({ status: 400, message: err.message });
+        }
+        const accountId = req.account.id;
+        const image = req.file;
+
+        if (!image) {
+          return res.json({ status: 400, message: "No photo uploaded" });
+        }
+
+        const account = await Account.findById(accountId).select("avatar");
+
+        if (account.avatar) {
+          const result = await deleteImage(account.avatar);
+          if (!result) {
+            console.log({ message: "Delete photo from cloud failed" });
+          }
+        }
 
         const avatarUrl = await uploadAvatar(image.path);
 
-        console.log(avatarUrl);
+        if (avatarUrl) {
+          account.avatar = avatarUrl;
+          await account.save();
 
-        return res.json(image);
+          return res.json({
+            status: 201,
+            message: "Success upload avatar",
+            avatar: avatarUrl,
+          });
+        } else {
+          return res.json({
+            status: 500,
+            message: "Failed to upload from cloud",
+          });
+        }
       } catch (error) {
         console.log({ error });
+        return res.json({ status: 500, message: "Internal Server Error" });
       }
     });
-
-    // uploadAccountImage(req, res, async (err) => {
-    //   if (err instanceof multer.MulterError) {
-    //     return res.json({ status: 400, message: err.message });
-    //   } else if (err) {
-    //     return res.json({ status: 400, message: err.message });
-    //   }
-
-    //   const accountID = req.account.id;
-    //   const image = req.file;
-
-    //   if (!image) {
-    //     return res.json({ status: 400, message: "No photo uploaded" });
-    //   }
-
-    //   try {
-    //     const account = await Account.findById(accountID).select("avatar");
-
-    //     const pathAccount = "accountImage/";
-    //     const oldAvatar = pathAccount + account.avatar;
-
-    //     if (oldAvatar) {
-    //       deleteFile(oldAvatar);
-    //     }
-
-    //     account.avatar = image.filename;
-    //     await account.save();
-
-    //     res.json({
-    //       status: 201,
-    //       message: "Success upload avatar",
-    //       avatar: pathAccount + account.avatar,
-    //     });
-    //   } catch (error) {
-    //     return res.json({
-    //       status: 500,
-    //       message: "Internal Server Error",
-    //     });
-    //   }
-    // });
   },
 
   getInfo: async (req, res) => {
-    const pathAccount = "accountImage/";
-
     try {
       const { accountId } = req.params;
       const currentUserId = req.account.id;
@@ -348,13 +334,6 @@ const AccountController = {
 
       if (!account) {
         return res.json({ status: 404, message: "Account not found" });
-      }
-
-      if (account.avatar) {
-        account.avatar = pathAccount + account.avatar;
-      }
-      if (account.background) {
-        account.background = pathAccount + account.background;
       }
 
       const friendCount = account.friends.length;
@@ -371,9 +350,7 @@ const AccountController = {
       const friendsList = account.friends
         .map((friend) => ({
           fullname: friend.account.fullname,
-          avatar: friend.account.avatar
-            ? pathAccount + friend.account.avatar
-            : null,
+          avatar: friend.account.avatar,
           _id: friend.account._id,
         }))
         .slice(0, 9);
@@ -407,7 +384,7 @@ const AccountController = {
       return res.json({
         status: 200,
         message: "Get account info successfully",
-        account: newAccount,
+        info: newAccount,
       });
     } catch (error) {
       return res.json({ status: 500, message: "Internal Server Error", error });
@@ -415,8 +392,6 @@ const AccountController = {
   },
 
   sendFriendRequest: async (req, res, io) => {
-    const pathAccount = "accountImage/";
-
     try {
       const senderId = req.account.id;
       const { receiverId } = req.body;
@@ -481,7 +456,7 @@ const AccountController = {
       const receiverInfo = {
         _id: receiverId,
         fullname: receiver?.fullname,
-        avatar: receiver?.avatar ? pathAccount + receiver.avatar : null,
+        avatar: receiver?.avatar,
         username: receiver?.username,
       };
 
@@ -611,7 +586,6 @@ const AccountController = {
   },
 
   getFriends: async (req, res) => {
-    const pathAccount = "accountImage/";
     const searchTerm = req.query.search || "";
 
     try {
@@ -624,7 +598,6 @@ const AccountController = {
 
       let friends = account.friends;
 
-      // Filter friends based on search term
       if (searchTerm) {
         if (searchTerm.startsWith("@")) {
           friends = friends.filter((friend) =>
@@ -689,18 +662,10 @@ const AccountController = {
         return dateB - dateA;
       });
 
-      const paginatedFriends = friendsWithDetails;
-
-      paginatedFriends.forEach((friend) => {
-        if (friend.account.avatar) {
-          friend.account.avatar = pathAccount + friend.account.avatar;
-        }
-      });
-
       return res.json({
         status: 200,
         message: "Get friends successful",
-        friends: paginatedFriends,
+        friends: friendsWithDetails,
       });
     } catch (error) {
       return res.json({ status: 500, message: "Internal Server Error", error });
@@ -710,7 +675,6 @@ const AccountController = {
   getNonFriends: async (req, res) => {
     const limit = parseInt(req.query._limit) || 1;
     const searchTerm = req.query.search || "";
-    const pathAccount = "accountImage/";
 
     try {
       const accountId = req.account.id;
@@ -747,14 +711,6 @@ const AccountController = {
         { $project: { fullname: 1, avatar: 1, username: 1, background: 1 } },
       ]);
 
-      if (nonFriends.length > 0) {
-        nonFriends.forEach((nonFriend) => {
-          if (nonFriend.avatar) {
-            nonFriend.avatar = pathAccount + nonFriend.avatar;
-          }
-        });
-      }
-
       return res.json({
         status: 200,
         message: "Get non friends successful",
@@ -768,7 +724,6 @@ const AccountController = {
   getSentFriendRequests: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
     const skip = parseInt(req.query._skip) || 0;
-    const pathAccount = "accountImage/";
 
     try {
       const accountId = req.account.id;
@@ -781,14 +736,7 @@ const AccountController = {
       let sentFriendRequests = account.sentFriendRequests;
 
       if (sentFriendRequests.length > 0) {
-        sentFriendRequests = sentFriendRequests
-          .map((request) => {
-            if (request.avatar) {
-              request.avatar = pathAccount + request.avatar;
-            }
-            return request;
-          })
-          .slice(skip, skip + limit);
+        sentFriendRequests = sentFriendRequests.slice(skip, skip + limit);
       }
 
       return res.json({
@@ -802,8 +750,6 @@ const AccountController = {
   },
 
   getReceivedFriendRequests: async (req, res) => {
-    const pathAccount = "accountImage/";
-
     try {
       const accountId = req.account.id;
 
@@ -813,15 +759,6 @@ const AccountController = {
       });
 
       let receivedFriendRequests = account.receivedFriendRequests;
-
-      if (receivedFriendRequests.length > 0) {
-        receivedFriendRequests = receivedFriendRequests.map((request) => {
-          if (request.avatar) {
-            request.avatar = pathAccount + request.avatar;
-          }
-          return request;
-        });
-      }
 
       return res.json({
         status: 200,

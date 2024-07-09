@@ -24,7 +24,6 @@ import SentimentDissatisfiedTwoToneIcon from "@mui/icons-material/SentimentDissa
 
 import SentimentVerySatisfiedRoundedIcon from "@mui/icons-material/SentimentVerySatisfiedRounded";
 import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVerySatisfiedTwoTone";
-import { getImageBlob } from "~/api/imageApi";
 import { addComment, getInteract } from "~/api/postApi";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
@@ -207,41 +206,19 @@ const NumInteract = React.memo(({ interact }) => {
   );
 });
 
-const Comment = React.memo(({ index, cmt, accessToken, mt = true }) => {
-  const [img, setImg] = useState(null);
-  const formatDate =
-    formatTimeDifference(cmt?.createdAt) != "0 minutes ago"
-      ? formatTimeDifference(cmt?.createdAt)
-      : "Just now";
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const res = await getImageBlob(accessToken, cmt?.account?.avatar);
-        if (res.status == 200) {
-          setImg(res.url);
-        } else {
-          console.log({ res });
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-
-    if (cmt?.account?.avatar && accessToken) {
-      fetchImage();
-    }
-  }, [cmt?.account?.avatar, accessToken]);
+const Comment = React.memo(({ index, cmt, mt = true }) => {
+  const formatDate = formatTimeDifference(cmt?.createdAt);
 
   return (
     <Grid key={index} container wrap="nowrap" mt={mt ? 1.4 : ""}>
       <Grid item>
         <Avatar
-          src={img ? img : ""}
+          src={cmt?.account?.avatar ? cmt.account.avatar : ""}
           alt={cmt?.account?.fullname}
           sx={{ width: 32, height: 32, mr: 1.2 }}
         >
-          {!img && getFirstLetterUpperCase(cmt?.account?.fullname)}
+          {!cmt?.account?.avatar &&
+            getFirstLetterUpperCase(cmt?.account?.fullname)}
         </Avatar>
       </Grid>
       <Grid item>
@@ -294,9 +271,11 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
   }, [expanded, commentLoaded]);
 
   useEffect(() => {
-    setListComment(comments);
+    if (accessToken) {
+      setListComment(comments);
+    }
   }, [accessToken, comments]);
-
+  
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
@@ -347,7 +326,7 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
             >
               {listComment?.map((cmt, index) => (
                 <Comment
-                  key={index}
+                  key={cmt._id}
                   accessToken={accessToken}
                   cmt={cmt}
                   mt={index !== 0}

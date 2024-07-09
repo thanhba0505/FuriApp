@@ -24,25 +24,8 @@ const Conversation = React.memo(({ item, fetchApi }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const navigate = useNavigate();
-  const [img, setImg] = useState();
 
   const socketRef = useRef(null);
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, item?.account?.avatar);
-        if (result.status == 200) {
-          setImg(result.url);
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-    if (item?.account?.avatar && accessToken) {
-      fetchImage();
-    }
-  }, [item?.account?.avatar, accessToken]);
 
   useEffect(() => {
     if (accessToken && item?.conversation) {
@@ -73,10 +56,12 @@ const Conversation = React.memo(({ item, fetchApi }) => {
         >
           <ListItemAvatar>
             <Avatar
-              src={img ? img : ""}
+              src={item?.account?.avatar ? item?.account?.avatar : ""}
               sx={{ width: "40px", height: "40px", mr: 2 }}
             >
-              {img ? "" : getFirstLetterUpperCase(item?.account?.fullname)}
+              {item?.account?.avatar
+                ? ""
+                : getFirstLetterUpperCase(item?.account?.fullname)}
             </Avatar>
           </ListItemAvatar>
 

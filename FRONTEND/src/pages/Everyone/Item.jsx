@@ -3,7 +3,6 @@ import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import MessageIcon from "@mui/icons-material/Message";
@@ -202,27 +201,7 @@ const Item = ({
   conversationId,
   lastItemRef,
 }) => {
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
   const navigate = useNavigate();
-
-  const [img, setImg] = useState();
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        if (result.status == 200) {
-          setImg(result.url);
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-    if (avatar && accessToken) {
-      fetchImage();
-    }
-  }, [avatar, accessToken]);
 
   return (
     <Grid item xs={4} ref={lastItemRef ? lastItemRef : null}>
@@ -235,7 +214,7 @@ const Item = ({
         >
           <Avatar
             onClick={() => navigate("/profile/" + accId)}
-            src={img ? img : ""}
+            src={avatar ? avatar : ""}
             sx={{
               height: 120,
               width: 120,
@@ -253,7 +232,7 @@ const Item = ({
               },
             }}
           >
-            {!img ? getFirstLetterUpperCase(fullname) : ""}
+            {!avatar ? getFirstLetterUpperCase(fullname) : ""}
           </Avatar>
 
           <Typography fontSize={18} fontWeight={500} mt={1}>

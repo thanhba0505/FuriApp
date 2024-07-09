@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { getPostsByAccountId, getPosts } from "~/api/postApi";
 import PostItem from "~/components/PostItem";
 import { Box } from "@mui/material";

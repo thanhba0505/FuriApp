@@ -5,7 +5,6 @@ import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getInfo, uploadAvatar, uploadBackground } from "~/api/accountApi";
-import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import PeopleAltTwoToneIcon from "@mui/icons-material/PeopleAltTwoTone";
@@ -20,31 +19,6 @@ import WallpaperIcon from "@mui/icons-material/Wallpaper";
 import { enqueueSnackbar } from "notistack";
 import ImageUploadDialog from "~/components/ImageUploadDialog";
 import PostListMemo from "~/components/PostList";
-
-const fetchInfo = async (accessToken, accountId, setInfo, navigate) => {
-  try {
-    const result = await getInfo(accessToken, accountId);
-    if (result.status === 200) {
-      setInfo(result.account);
-    } else {
-      navigate("/");
-    }
-    return result;
-  } catch (error) {
-    console.log({ error });
-  }
-};
-
-const fetchImage = async (accessToken, imagePath, setImageState) => {
-  try {
-    const result = await getImageBlob(accessToken, imagePath);
-    if (result.status == 200) {
-      setImageState(result.url);
-    }
-  } catch (error) {
-    console.log({ error });
-  }
-};
 
 const BtnCurrentUser = memo(({ setAvatarImg, setBackgroundImg }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -62,12 +36,12 @@ const BtnCurrentUser = memo(({ setAvatarImg, setBackgroundImg }) => {
       if (imageType === "avatar") {
         res = await uploadAvatar(accessToken, formData);
         if (res.status === 201) {
-          fetchImage(accessToken, res.avatar, setAvatarImg);
+          setAvatarImg(res.avatar);
         }
       } else if (imageType === "background") {
         res = await uploadBackground(accessToken, formData);
         if (res.status === 201) {
-          fetchImage(accessToken, res.background, setBackgroundImg);
+          setBackgroundImg(res.background);
         }
       }
 
@@ -227,24 +201,26 @@ const Profile = () => {
   const [backgroundImg, setBackgroundImg] = useState(null);
 
   useEffect(() => {
+    const fetchApi = async () => {
+      try {
+        const res = await getInfo(accessToken, accountId);
+        if (res.status === 200) {
+          setInfo(res.info);
+          setAvatarImg(res.info?.avatar);
+          setBackgroundImg(res.info?.background);
+        } else {
+          navigate("/");
+        }
+        return res;
+      } catch (error) {
+        console.log({ error });
+      }
+    };
+
     if (accessToken) {
-      fetchInfo(accessToken, accountId, setInfo, navigate);
-      setAvatarImg(null);
-      setBackgroundImg(null);
+      fetchApi();
     }
   }, [accessToken, accountId, navigate]);
-
-  useEffect(() => {
-    if (info?.avatar && accessToken) {
-      fetchImage(accessToken, info.avatar, setAvatarImg);
-    }
-  }, [accessToken, info?.avatar]);
-
-  useEffect(() => {
-    if (info?.background && accessToken) {
-      fetchImage(accessToken, info.background, setBackgroundImg);
-    }
-  }, [accessToken, info?.background]);
 
   return (
     <>

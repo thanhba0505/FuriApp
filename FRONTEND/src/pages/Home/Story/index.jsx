@@ -42,52 +42,7 @@ const StoryItem = React.memo(
     check = false,
     ...rest
   }) => {
-    const account = useSelector((state) => state.auth?.login?.currentAccount);
-    const accessToken = account?.accessToken;
-
     const navigate = useNavigate();
-
-    const [img, setImg] = useState("");
-    const [imgAvatar, setImgAvatar] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-      const fetchImage = async () => {
-        try {
-          setIsLoading(true);
-          const result = await getImageBlob(accessToken, imgStory);
-
-          if (result.status == 200) {
-            setImg(result.url);
-          }
-
-          setIsLoading(false);
-        } catch (error) {
-          console.log({ error });
-        }
-      };
-
-      if (imgStory && accessToken) {
-        fetchImage();
-      }
-    }, [imgStory, accessToken]);
-
-    useEffect(() => {
-      const fetchImage = async () => {
-        try {
-          const result = await getImageBlob(accessToken, avatar);
-          if (result.status == 200) {
-            setImgAvatar(result.url);
-          }
-        } catch (error) {
-          console.log({ error });
-        }
-      };
-
-      if (avatar && accessToken) {
-        fetchImage();
-      }
-    }, [avatar, accessToken]);
 
     return (
       <Box
@@ -120,25 +75,25 @@ const StoryItem = React.memo(
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: isLoading ? "rgba(0, 0, 0, 0.1)" : "",
-            backgroundImage: img ? "url(" + img + ")" : null,
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+            backgroundImage: imgStory ? "url(" + imgStory + ")" : null,
             backgroundRepeat: "no-repeat",
             backgroundSize: backgroundSize,
             backgroundPosition: "center",
 
             boxShadow: "inset 0px 3px 30px 8px rgba(0, 0, 0, 0.1)",
 
-            "&::before": isLoading
-              ? ""
-              : {
-                  content: "''",
-                  position: "absolute",
-                  height: check ? "90px" : "70px",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: `linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%)`,
-                },
+            // "&::before": isLoading
+            //   ? ""
+            //   : {
+            //       content: "''",
+            //       position: "absolute",
+            //       height: check ? "90px" : "70px",
+            //       left: 0,
+            //       right: 0,
+            //       bottom: 0,
+            //       background: `linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%)`,
+            //     },
           }}
         />
 
@@ -149,49 +104,44 @@ const StoryItem = React.memo(
             height: "100%",
             width: "100%",
             position: "relative",
-            alignContent: isLoading ? "center" : "end",
+            alignContent: "center",
             textAlign: "center",
           }}
         >
-          {!isLoading && (
-            <>
-              <Typography
-                variant="body1"
-                fontSize={check ? 20 : 14}
-                color="white"
-                mb={check ? 2 : 1}
-              >
-                {fullname}
-              </Typography>
+          <Typography
+            variant="body1"
+            fontSize={check ? 20 : 14}
+            color="white"
+            mb={check ? 2 : 1}
+          >
+            {fullname}
+          </Typography>
 
-              <Box
-                sx={{
-                  border: "4px solid",
-                  borderColor: "primary.light",
-                  borderRadius: 2,
-                  position: "absolute",
-                  top: check ? 10 : 4,
-                  left: check ? 10 : 4,
-                }}
-              >
-                <Avatar
-                  sx={{
-                    width: check ? "50px" : "30px",
-                    height: check ? "50px" : "30px",
-                    cursor: "pointer",
-                  }}
-                  src={imgAvatar ? imgAvatar : ""}
-                  variant="rounded"
-                  onClick={() => {
-                    navigate("/profile/" + accountId);
-                  }}
-                >
-                  {!imgAvatar && getFirstLetterUpperCase(fullname)}
-                </Avatar>
-              </Box>
-            </>
-          )}
-          {isLoading && <CircularProgress color="primary" />}
+          <Box
+            sx={{
+              border: "4px solid",
+              borderColor: "primary.light",
+              borderRadius: 2,
+              position: "absolute",
+              top: check ? 10 : 4,
+              left: check ? 10 : 4,
+            }}
+          >
+            <Avatar
+              sx={{
+                width: check ? "50px" : "30px",
+                height: check ? "50px" : "30px",
+                cursor: "pointer",
+              }}
+              src={avatar ? avatar : ""}
+              variant="rounded"
+              onClick={() => {
+                navigate("/profile/" + accountId);
+              }}
+            >
+              {!avatar && getFirstLetterUpperCase(fullname)}
+            </Avatar>
+          </Box>
         </Box>
       </Box>
     );
@@ -239,28 +189,10 @@ const Story = () => {
 
   const limit = 5;
 
-  const [img, setImg] = useState(null);
   const [openDialogAddStory, setOpenDialogAddStory] = useState(false);
   const [openDialogStory, setOpenDialogStory] = useState(false);
   const [stories, setStories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        if (result.status == 200) {
-          setImg(result.url);
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-
-    if (avatar && accessToken) {
-      fetchImage();
-    }
-  }, [avatar, accessToken]);
 
   const handleUpload = async (selectedFile) => {
     try {
@@ -341,8 +273,8 @@ const Story = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: img ? "secondary.dark" : "",
-                  backgroundImage: `url("${img}")`,
+                  backgroundColor: avatar ? "secondary.dark" : "",
+                  backgroundImage: `url("${avatar}")`,
                   backgroundRepeat: "no-repeat",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -372,7 +304,7 @@ const Story = () => {
                   alignContent: "center",
                 }}
               >
-                {!img && (
+                {!avatar && (
                   <Typography color={"common.white"} fontSize={30} pb={3}>
                     {getFirstLetterUpperCase(fullname)}
                   </Typography>

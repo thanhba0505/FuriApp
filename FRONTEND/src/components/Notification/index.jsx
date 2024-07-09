@@ -11,37 +11,13 @@ import { getNotify } from "~/api/notification";
 import { useState } from "react";
 import EllipsisTypography from "~/components/EllipsisTypography";
 import { io } from "socket.io-client";
-import { getImageBlob } from "~/api/imageApi";
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import formatTimeDifference from "~/config/formatTimeDifference";
 
 const NotificationItem = ({ onClick, item }) => {
-  const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
   const navigate = useNavigate();
-
-  const [img, setImg] = useState();
-
-  useEffect(() => {
-    const fetchApiImg = async () => {
-      try {
-        const res = await getImageBlob(accessToken, item?.data?.sender?.avatar);
-        if (res.status == 200) {
-          setImg(res.url);
-        } else {
-          console.log({ res });
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-
-    if (accessToken && item?.data?.sender?.avatar) {
-      fetchApiImg();
-    }
-  }, [accessToken, item?.data?.sender?.avatar]);
 
   const handleClickItem = () => {
     onClick();
@@ -55,8 +31,11 @@ const NotificationItem = ({ onClick, item }) => {
   return (
     <>
       <MenuItem onClick={handleClickItem} sx={{ py: 1.2 }}>
-        <Avatar src={img ? img : null}>
-          {!img && getFirstLetterUpperCase(item?.data?.sender?.fullname)}
+        <Avatar
+          src={item?.data?.sender?.avatar ? item?.data?.sender?.avatar : null}
+        >
+          {!item?.data?.sender?.avatar &&
+            getFirstLetterUpperCase(item?.data?.sender?.fullname)}
         </Avatar>
 
         <Box pl={1} width={"100%"}>

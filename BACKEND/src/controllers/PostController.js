@@ -80,15 +80,6 @@ const PostController = {
 
   getPosts: async (req, res) => {
     const limit = parseInt(req.query._limit) || 10;
-    const pathAccount = "accountImage/";
-    const pathPost = "postImage/";
-
-    const addPathIfNeeded = (path, image) => {
-      if (image && !image.startsWith(path)) {
-        return path + image;
-      }
-      return image;
-    };
 
     try {
       const posts = await Post.find()
@@ -103,27 +94,16 @@ const PostController = {
 
       const updatedPosts = posts.map((post) => {
         if (post.account) {
-          post.account.avatar = addPathIfNeeded(
-            pathAccount,
-            post.account.avatar
-          );
-          post.account.background = addPathIfNeeded(
-            pathAccount,
-            post.account.background
-          );
+          post.account.avatar = post.account.avatar || "";
+          post.account.background = post.account.background || "";
         }
         if (post.images && Array.isArray(post.images)) {
-          post.images = post.images.map((image) =>
-            addPathIfNeeded(pathPost, image)
-          );
+          post.images = post.images.map((image) => image || "");
         }
         if (post.comment && Array.isArray(post.comment)) {
           post.comment = post.comment.map((comment) => {
             if (comment.account) {
-              comment.account.avatar = addPathIfNeeded(
-                pathAccount,
-                comment.account.avatar
-              );
+              comment.account.avatar = comment.account.avatar || "";
             }
             return comment;
           });
@@ -146,15 +126,6 @@ const PostController = {
 
   getPostById: async (req, res) => {
     const postId = req.params.postId;
-    const pathAccount = "accountImage/";
-    const pathPost = "postImage/";
-
-    const addPathIfNeeded = (path, image) => {
-      if (image && !image.startsWith(path)) {
-        return path + image;
-      }
-      return image;
-    };
 
     try {
       const post = await Post.findById(postId)
@@ -172,24 +143,16 @@ const PostController = {
       }
 
       if (post.account) {
-        post.account.avatar = addPathIfNeeded(pathAccount, post.account.avatar);
-        post.account.background = addPathIfNeeded(
-          pathAccount,
-          post.account.background
-        );
+        post.account.avatar = post.account.avatar || "";
+        post.account.background = post.account.background || "";
       }
       if (post.images && Array.isArray(post.images)) {
-        post.images = post.images.map((image) =>
-          addPathIfNeeded(pathPost, image)
-        );
+        post.images = post.images.map((image) => image || "");
       }
       if (post.comment && Array.isArray(post.comment)) {
         post.comment = post.comment.map((comment) => {
           if (comment.account) {
-            comment.account.avatar = addPathIfNeeded(
-              pathAccount,
-              comment.account.avatar
-            );
+            comment.account.avatar = comment.account.avatar || "";
           }
           return comment;
         });
@@ -208,15 +171,6 @@ const PostController = {
   getPostByAccountId: async (req, res) => {
     const { accountId } = req.params || "";
     const limit = parseInt(req.query._limit) || 10;
-    const pathAccount = "accountImage/";
-    const pathPost = "postImage/";
-
-    const addPathIfNeeded = (path, image) => {
-      if (image && !image.startsWith(path)) {
-        return path + image;
-      }
-      return image;
-    };
 
     try {
       if (accountId == "") {
@@ -236,27 +190,16 @@ const PostController = {
 
       const updatedPosts = posts.map((post) => {
         if (post.account) {
-          post.account.avatar = addPathIfNeeded(
-            pathAccount,
-            post.account.avatar
-          );
-          post.account.background = addPathIfNeeded(
-            pathAccount,
-            post.account.background
-          );
+          post.account.avatar = post.account.avatar || "";
+          post.account.background = post.account.background || "";
         }
         if (post.images && Array.isArray(post.images)) {
-          post.images = post.images.map((image) =>
-            addPathIfNeeded(pathPost, image)
-          );
+          post.images = post.images.map((image) => image || "");
         }
         if (post.comment && Array.isArray(post.comment)) {
           post.comment = post.comment.map((comment) => {
             if (comment.account) {
-              comment.account.avatar = addPathIfNeeded(
-                pathAccount,
-                comment.account.avatar
-              );
+              comment.account.avatar = comment.account.avatar || "";
             }
             return comment;
           });
@@ -387,7 +330,9 @@ const PostController = {
 
         await notification.save();
 
-        io.emit("newNotification" + post.account, { message: notification.message });
+        io.emit("newNotification" + post.account, {
+          message: notification.message,
+        });
       }
 
       return res.status(200).json({ message: "Add comment successfully" });

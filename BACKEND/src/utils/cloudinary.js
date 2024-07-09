@@ -1,6 +1,23 @@
 // utils/cloudinary.js
 const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
+const { unlink } = require("../config/multer");
+
+async function deleteImage(image) {
+  try {
+    const publicId = "uploads/" + image.split("/").pop().split(".")[0];
+
+    const result = await cloudinary.uploader.destroy(publicId);
+    if (result) {
+      return result;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
 
 async function uploadAvatar(filePath) {
   try {
@@ -15,23 +32,23 @@ async function uploadAvatar(filePath) {
       max_files: 1,
     });
 
-    fs.unlink(filePath, (error) => {
-      if (error) {
-        console.error({ error });
-      }
-    });
+    unlink(filePath);
 
-    return result.secure_url;
+    if (result) {
+      return result.secure_url;
+    } else {
+      throw new Error("Upload failed");
+    }
   } catch (error) {
-    console.error("Error uploading avatar to Cloudinary:", error);
+    unlink(filePath);
     throw error;
   }
 }
 
-async function uploadBackground(file) {
+async function uploadBackground(filePath) {
   try {
-    const result = await cloudinary.uploader.upload(file, {
-      folder: "backgrounds",
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder: "uploads",
       width: 1200,
       height: 600,
       crop: "fill",
@@ -41,9 +58,15 @@ async function uploadBackground(file) {
       max_files: 1,
     });
 
-    return result.secure_url;
+    unlink(filePath);
+
+    if (result) {
+      return result.secure_url;
+    } else {
+      throw new Error("Upload failed");
+    }
   } catch (error) {
-    console.error("Error uploading background to Cloudinary:", error);
+    unlink(filePath);
     throw error;
   }
 }
@@ -76,6 +99,7 @@ async function uploadMultipleImages(files) {
 }
 
 module.exports = {
+  deleteImage,
   uploadAvatar,
   uploadBackground,
   uploadMultipleImages,

@@ -33,11 +33,11 @@ const TotalAvatars = React.memo(({ participants }) => {
               sx={{ width: 24, height: 24, fontSize: 14 }}
               key={participant._id}
               alt={participant.fullname}
-              src={
-                participant.avatarBlob ||
-                getFirstLetterUpperCase(participant.fullname)
-              }
-            />
+              src={participant.avatar ? participant.avatar : null}
+            >
+              {!participant.avatar &&
+                getFirstLetterUpperCase(participant.fullname)}
+            </Avatar>
           ))}
       </AvatarGroup>
     </Box>
@@ -51,10 +51,6 @@ const BoxMessage = React.memo(({ message }) => {
 
   const isCurrentAccount = accountId === message?.sender._id;
 
-  const handleLinkProfile = () => {
-    navigate("/profile/" + message?.sender._id);
-  };
-
   return (
     <Box
       mt={2}
@@ -62,11 +58,11 @@ const BoxMessage = React.memo(({ message }) => {
       flexDirection={isCurrentAccount ? "row-reverse" : ""}
     >
       <Avatar
-        onClick={handleLinkProfile}
-        src={message?.sender.avatarBlob ? message.sender.avatarBlob : ""}
+        onClick={() => navigate("/profile/" + message?.sender._id)}
+        src={message?.sender.avatar ? message.sender.avatar : ""}
         sx={{ cursor: "pointer" }}
       >
-        {!message.sender.avatarBlob
+        {!message.sender.avatar
           ? getFirstLetterUpperCase(message.sender.fullname)
           : ""}
       </Avatar>
@@ -205,24 +201,8 @@ const MessageChatBox = () => {
       const res = await getConversation(accessToken, conversationId);
 
       if (res.status === 200) {
-        const participantsWithAvatars = await Promise.all(
-          res.conversation.participants.map(async (participant) => {
-            if (participant.avatar) {
-              const avatarBlob = await fetchImage(participant.avatar);
-              return { ...participant, avatarBlob };
-            }
-            return participant;
-          })
-        );
-
-        setConversation({
-          ...res.conversation,
-          participants: participantsWithAvatars,
-        });
-
-        setLoading(false);
+        setConversation(res.conversation);
       } else {
-        console.log({ res });
         navigate("/message");
       }
       setLoading(false);
@@ -321,7 +301,9 @@ const MessageChatBox = () => {
           </>
         ) : (
           <Box textAlign={"center"} alignContent={"center"} height={"100%"}>
-            <Box mb={5}><CircularProgress /></Box>
+            <Box mb={5}>
+              <CircularProgress />
+            </Box>
           </Box>
         )}
       </Box>

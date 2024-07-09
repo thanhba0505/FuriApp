@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
@@ -12,7 +12,6 @@ import Divider from "@mui/material/Divider";
 import { logOut } from "~/api/accountApi";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "@mui/material/Avatar";
-import { getImageBlob } from "~/api/imageApi";
 import { enqueueSnackbar } from "notistack";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
@@ -26,7 +25,6 @@ function AccountMenu() {
   const avatar = account?.avatar;
   const dispatch = useDispatch();
 
-  const [img, setImg] = useState();
   const [loading, setLoading] = useState(false);
 
   const handleClick = (event) => {
@@ -55,22 +53,6 @@ function AccountMenu() {
     }
   };
 
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        if (result.status == 200) {
-          setImg(result.url);
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    };
-    if (avatar && accessToken) {
-      fetchImage();
-    }
-  }, [avatar, accessToken]);
-
   return (
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
@@ -82,8 +64,8 @@ function AccountMenu() {
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
         >
-          <Avatar src={img ? img : ""}>
-            {!img && getFirstLetterUpperCase(fullname)}
+          <Avatar src={avatar ? avatar : ""}>
+            {!avatar && getFirstLetterUpperCase(fullname)}
           </Avatar>
         </IconButton>
       </Box>
