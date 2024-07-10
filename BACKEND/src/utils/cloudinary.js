@@ -71,18 +71,16 @@ async function uploadBackground(filePath) {
   }
 }
 
-async function uploadMultipleImages(files) {
-  const uploadPromises = files.map(async (file) => {
+async function uploadMultipleImages(filePaths) {
+  const uploadPromises = filePaths.map(async (filePath) => {
     try {
-      const result = await cloudinary.uploader.upload(file, {
-        folder: "multi_images",
-        width: 800,
-        height: 600,
-        crop: "fill",
+      const result = await cloudinary.uploader.upload(filePath, {
+        folder: "uploads",
         format: "jpg",
         quality: "auto:good",
         max_file_size: "5mb",
       });
+      unlink(filePath);
       return result.secure_url;
     } catch (error) {
       throw error;

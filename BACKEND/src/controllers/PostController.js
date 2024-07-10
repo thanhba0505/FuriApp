@@ -1,20 +1,14 @@
 const multer = require("multer");
-const { uploadPostImage } = require("../config/uploads/multer");
 
 const Post = require("../models/Post");
 const Account = require("../models/Account");
 const Notification = require("../models/Notification");
-
-const addPathIfNeeded = (path, image) => {
-  if (image && !image.startsWith(path)) {
-    return path + image;
-  }
-  return image;
-};
+const { upload } = require("../config/multer");
+const { uploadMultipleImages } = require("../utils/cloudinary");
 
 const PostController = {
   addPost: (req, res, io) => {
-    uploadPostImage(req, res, async (err) => {
+    upload.array("images", 10)(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({ message: err.message });
       } else if (err) {
@@ -23,57 +17,64 @@ const PostController = {
 
       const content = req.body.content;
       const accountId = req.account.id;
-      const images = req.files?.map((file) => file.filename);
-
-      if (!content && (!images || images.length === 0)) {
-        return res.json({
-          status: 400,
-          message: "Content or images must be provided",
-        });
-      }
-
-      if (images.length > 10) {
-        return res.json({
-          status: 400,
-          message: "The number of photos must be less than 10",
-        });
-      }
+      const images = req.files;
 
       try {
-        const newPost = new Post({
-          account: accountId,
-          content: content,
-          images: images || [],
-        });
-
-        await newPost.save();
-
-        const account = await Account.findById(accountId);
-
-        const friends = account.friends.map((friend) => friend.account);
-
-        const notifications = friends.map((friendId) => ({
-          user: friendId,
-          type: "post",
-          message: `${account.fullname} has created a new post`,
-          data: {
-            sender: accountId,
-            post: newPost._id,
-          },
-        }));
-
-        await Notification.insertMany(notifications);
-
-        friends.forEach((friendId) => {
-          io.emit("newNotification" + friendId, {
-            message: `${account.fullname} has created a new post`,
+        if (!content && (!images || images.length === 0)) {
+          return res.json({
+            status: 400,
+            message: "Content or images must be provided",
           });
-        });
+        }
 
-        res.json({ status: 201, message: "Success creating post" });
+        if (images.length > 10) {
+          return res.json({
+            status: 400,
+            message: "The number of photos must be less than 10",
+          });
+        }
+
+        const filePaths = images?.map((file) => file.path);
+        const imageUrls = await uploadMultipleImages(filePaths);
+
+        if (imageUrls) {
+          const newPost = new Post({
+            account: accountId,
+            content: content,
+            images: imageUrls || [],
+          });
+
+          await newPost.save();
+
+          const account = await Account.findById(accountId);
+
+          const friends = account.friends.map((friend) => friend.account);
+
+          const notifications = friends.map((friendId) => ({
+            user: friendId,
+            type: "post",
+            message: `${account.fullname} has created a new post`,
+            data: {
+              sender: accountId,
+              post: newPost._id,
+            },
+          }));
+
+          await Notification.insertMany(notifications);
+
+          friends.forEach((friendId) => {
+            io.emit("newNotification" + friendId, {
+              message: `${account.fullname} has created a new post`,
+            });
+          });
+
+          return res.json({ status: 201, message: "Success creating post" });
+        } else {
+          return res.json({ status: 500, message: "Error creating post" });
+        }
       } catch (error) {
         console.log({ error });
-        res.json({ status: 500, message: "Error creating post" });
+        res.json({ status: 500, message: "Internal Server Error" });
       }
     });
   },
@@ -207,7 +208,11 @@ const PostController = {
         return post;
       });
 
-      return res.json({ status: 200, posts: updatedPosts });
+      return res.json({
+        status: 200,
+        message: "Get posts successful",
+        posts: updatedPosts,
+      });
     } catch (error) {
       return res.json({ status: 500, message: "Internal Server Error" });
     }
@@ -269,8 +274,6 @@ const PostController = {
   },
 
   addComment: async (req, res, io) => {
-    const pathAccount = "accountImage/";
-
     try {
       const postId = req.params.postId;
       const accountID = req.account.id;
@@ -306,11 +309,6 @@ const PostController = {
 
       const addedComment =
         populatedComment.comment[populatedComment.comment.length - 1];
-
-      addedComment.account.avatar = addPathIfNeeded(
-        pathAccount,
-        addedComment.account.avatar
-      );
 
       io.emit("newComment_" + postId, { addedComment });
 

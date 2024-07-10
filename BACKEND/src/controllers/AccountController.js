@@ -292,6 +292,7 @@ const AccountController = {
 
         if (account.avatar) {
           const result = await deleteImage(account.avatar);
+          console.log({ result });
           if (!result) {
             console.log({ message: "Delete photo from cloud failed" });
           }

@@ -7,7 +7,6 @@ import {
   Avatar,
   Box,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,7 +18,6 @@ import {
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { getImageBlob } from "~/api/imageApi";
 import { addStory, getStories } from "~/api/storyApi";
 import { useSnackbar } from "notistack";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
@@ -387,9 +385,8 @@ const Story = () => {
               width={(4 - stories.length) * 20 + "%"}
               textAlign={"center"}
               alignContent={"center"}
-              sx={{ userSelect: "none" }}
             >
-              No more
+              No story
             </Grid>
           )}
         </Grid>

@@ -4,13 +4,6 @@ const { uploadStoryImage } = require("../config/uploads/multer");
 const Story = require("../models/Story");
 const Account = require("../models/Account");
 
-const addPathIfNeeded = (path, image) => {
-  if (image && !image.startsWith(path)) {
-    return path + image;
-  }
-  return image;
-};
-
 const StoryController = {
   addStory: (req, res) => {
     uploadStoryImage(req, res, async (err) => {
@@ -44,8 +37,6 @@ const StoryController = {
 
   getStories: async (req, res) => {
     const limit = parseInt(req.query._limit) || 4;
-    const pathStory = "storyImage/";
-    const pathAccount = "accountImage/";
 
     try {
       const accountId = req.account.id;
@@ -68,21 +59,7 @@ const StoryController = {
         select: "fullname avatar",
       });
 
-      const updatedStories = stories.map((story) => {
-        if (story.image) {
-          story.image = addPathIfNeeded(pathStory, story.image);
-        }
-
-        if (story.account && story.account.avatar) {
-          story.account.avatar = addPathIfNeeded(
-            pathAccount,
-            story.account.avatar
-          );
-        }
-        return story;
-      });
-
-      const shuffledStories = updatedStories.sort(() => 0.5 - Math.random());
+      const shuffledStories = stories.sort(() => 0.5 - Math.random());
       const limitedStories = shuffledStories.slice(0, limit);
 
       return res.json({ status: 200, stories: limitedStories });

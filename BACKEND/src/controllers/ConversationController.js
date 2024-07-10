@@ -4,8 +4,6 @@ const Message = require("../models/Message");
 
 const ConversationController = {
   addMessage: async (req, res, io) => {
-    const pathAccount = "accountImage/";
-
     try {
       const senderId = req.account.id;
       const { conversationId, content } = req.body;
@@ -50,11 +48,6 @@ const ConversationController = {
       const populatedMessage = await Message.findById(newMessage._id)
         .select("_id sender content updatedAt")
         .populate("sender", "fullname avatar");
-
-      if (populatedMessage.sender.avatar) {
-        populatedMessage.sender.avatar =
-          pathAccount + populatedMessage.sender.avatar;
-      }
 
       io.emit("newMess" + conversationId, {
         senderId,
