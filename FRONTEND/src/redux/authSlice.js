@@ -33,10 +33,20 @@ const authSlice = createSlice({
       console.log("logoutSuccess");
       state.login.currentAccount = null;
     },
+
+    setAvatar: (state, action) => {
+      console.log("setAvatar");
+      state.login.currentAccount.avatar = action.payload;
+    },
   },
 });
 
-export const { loginSuccess, loginFail, refreshSuccess, logoutSuccess } =
-  authSlice.actions;
+export const {
+  loginSuccess,
+  loginFail,
+  refreshSuccess,
+  logoutSuccess,
+  setAvatar,
+} = authSlice.actions;
 
 export default authSlice.reducer;

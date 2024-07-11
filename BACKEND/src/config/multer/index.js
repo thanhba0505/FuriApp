@@ -20,7 +20,7 @@ const storage = () =>
     },
   });
 
-const limits = { fileSize: 10 * 1024 * 1024 };
+const limits = { fileSize: 5 * 1024 * 1024 };
 
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|jfif|pjpeg|pjp/;

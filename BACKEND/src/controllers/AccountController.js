@@ -12,8 +12,9 @@ const multer = require("multer");
 const { upload } = require("../config/multer");
 const {
   uploadAvatar,
-  deleteImage,
   uploadBackground,
+  deleteAvatar,
+  deleteBackground,
 } = require("../utils/cloudinary");
 
 const AccountController = {
@@ -233,6 +234,7 @@ const AccountController = {
         } else if (err) {
           return res.json({ status: 400, message: err.message });
         }
+
         const accountId = req.account.id;
         const image = req.file;
 
@@ -243,7 +245,7 @@ const AccountController = {
         const account = await Account.findById(accountId).select("background");
 
         if (account.background) {
-          const result = await deleteImage(account.background);
+          const result = await deleteBackground(account.background);
           if (!result) {
             console.log({ message: "Delete photo from cloud failed" });
           }
@@ -291,7 +293,7 @@ const AccountController = {
         const account = await Account.findById(accountId).select("avatar");
 
         if (account.avatar) {
-          const result = await deleteImage(account.avatar);
+          const result = await deleteAvatar(account.avatar);
           console.log({ result });
           if (!result) {
             console.log({ message: "Delete photo from cloud failed" });

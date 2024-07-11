@@ -2,7 +2,7 @@
 /* eslint-disable react/display-name */
 import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
 import { memo, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getInfo, uploadAvatar, uploadBackground } from "~/api/accountApi";
 import Paper from "~/components/Paper";
@@ -19,10 +19,12 @@ import WallpaperIcon from "@mui/icons-material/Wallpaper";
 import { enqueueSnackbar } from "notistack";
 import ImageUploadDialog from "~/components/ImageUploadDialog";
 import PostListMemo from "~/components/PostList";
+import { setAvatar } from "~/redux/authSlice";
 
 const BtnCurrentUser = memo(({ setAvatarImg, setBackgroundImg }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const dispatch = useDispatch();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [imageType, setImageType] = useState(null);
@@ -37,6 +39,7 @@ const BtnCurrentUser = memo(({ setAvatarImg, setBackgroundImg }) => {
         res = await uploadAvatar(accessToken, formData);
         if (res.status === 201) {
           setAvatarImg(res.avatar);
+          dispatch(setAvatar(res.avatar));
         }
       } else if (imageType === "background") {
         res = await uploadBackground(accessToken, formData);

@@ -1,12 +1,13 @@
 const multer = require("multer");
-const { uploadStoryImage } = require("../config/uploads/multer");
 
 const Story = require("../models/Story");
 const Account = require("../models/Account");
+const { upload } = require("../config/multer");
+const { uploadStory } = require("../utils/cloudinary");
 
 const StoryController = {
   addStory: (req, res) => {
-    uploadStoryImage(req, res, async (err) => {
+    upload.single("image", 1)(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.json({ status: 400, message: err.message });
       } else if (err) {
@@ -21,16 +22,26 @@ const StoryController = {
           return res.json({ status: 400, message: "No photo uploaded" });
         }
 
-        const newStory = new Story({
-          account: accountID,
-          image: image.filename,
-          expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-        });
+        const storyUrl = await uploadStory(image.path);
 
-        await newStory.save();
-        res.json({ status: 201, message: "Success creating story" });
+        if (storyUrl) {
+          const newStory = new Story({
+            account: accountID,
+            image: storyUrl,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+          });
+
+          await newStory.save();
+          return res.json({ status: 201, message: "Success creating story" });
+        } else {
+          return res.json({
+            status: 500,
+            message: "Failed to upload from cloud",
+          });
+        }
       } catch (error) {
-        res.json({ status: 500, message: "Error creating story", error });
+        console.log({ error });
+        return res.json({ status: 500, message: "Error creating story" });
       }
     });
   },

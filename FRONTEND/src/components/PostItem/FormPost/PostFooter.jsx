@@ -275,17 +275,19 @@ const PostComment = React.memo(({ expanded, comments, postId }) => {
       setListComment(comments);
     }
   }, [accessToken, comments]);
-  
+
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
+    if (accessToken && postId) {
+      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-    socket.on("newComment_" + postId, ({ addedComment }) => {
-      setListComment((prevComments) => [...prevComments, addedComment]);
-    });
+      socket.on("newComment_" + postId, ({ addedComment }) => {
+        setListComment((prevComments) => [...prevComments, addedComment]);
+      });
 
-    return () => {
-      socket.disconnect();
-    };
+      return () => {
+        socket.disconnect();
+      };
+    }
   }, [accessToken, postId]);
 
   return (
