@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Sidebar from "../components/SidebarRight";
 import Paper from "~/components/Paper";
 import { useSelector } from "react-redux";
@@ -23,35 +23,19 @@ import {
   Typography,
 } from "@mui/material";
 import { getFriends } from "~/api/accountApi";
-import { useNavigate } from "react-router-dom";
-import { getImageBlob } from "~/api/imageApi";
+import { useNavigate, useParams } from "react-router-dom";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import { io } from "socket.io-client";
 import EllipsisTypography from "~/components/EllipsisTypography";
 
 // First
-const ItemFirst = React.memo(({ item, fetchApi }) => {
+const ItemFirst = React.memo(({ item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
+  const currentAccountId = account?._id;
+
   const navigate = useNavigate();
-
-  const socketRef = useRef(null);
-
-  useEffect(() => {
-    if (accessToken && item?.conversation) {
-      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
-
-      socket.on("newMess" + item.conversation, fetchApi);
-
-      return () => {
-        if (socketRef.current) {
-          socketRef.current.close();
-          socketRef.current = null;
-        }
-      };
-    }
-  }, [accessToken, fetchApi, item?.conversation]);
+  const { conversationId, accountId } = useParams();
 
   return (
     <>
@@ -82,7 +66,10 @@ const ItemFirst = React.memo(({ item, fetchApi }) => {
         }
       >
         <ListItemButton
-          // selected={item?.account._id ===}
+          selected={
+            item?.conversation == conversationId ||
+            item?.account._id == accountId
+          }
           onClick={() => navigate("/profile/" + item?.account._id)}
           sx={{
             pl: "8px !important",
@@ -109,7 +96,11 @@ const ItemFirst = React.memo(({ item, fetchApi }) => {
               width={"unset"}
             >
               {item && item.lastMessage
-                ? item.lastMessage.senderName + ": " + item.lastMessage.content
+                ? (item.lastMessage.senderId == currentAccountId
+                    ? "You"
+                    : item.lastMessage.senderName) +
+                  ": " +
+                  item.lastMessage.content
                 : "No message"}
             </EllipsisTypography>
           </Box>
@@ -152,9 +143,9 @@ const PaperFirst = React.memo(() => {
 
       socket.on("newFriend" + accountId, fetchApi);
       socket.on("seenMess" + accountId, fetchApi);
+      socket.on("newMess" + accountId, fetchApi);
 
       return () => {
-        socket.off("newFriend" + accountId, fetchApi);
         socket.disconnect();
       };
     }

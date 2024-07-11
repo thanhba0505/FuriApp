@@ -9,40 +9,20 @@ import {
   ListItemButton,
   Typography,
 } from "@mui/material";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { getFriends } from "~/api/accountApi";
-import { getImageBlob } from "~/api/imageApi";
 import EllipsisTypography from "~/components/EllipsisTypography";
 import Paper from "~/components/Paper";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 
-const Conversation = React.memo(({ item, fetchApi }) => {
+const Conversation = React.memo(({ item }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
-  const accessToken = account?.accessToken;
+  const currentAccountId = account?._id;
   const navigate = useNavigate();
-
-  const socketRef = useRef(null);
-
-  useEffect(() => {
-    if (accessToken && item?.conversation) {
-      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
-
-      socket.on("newMess" + item?.conversation, () => {
-        fetchApi();
-      });
-
-      return () => {
-        if (socketRef.current) {
-          socketRef.current.close();
-          socketRef.current = null;
-        }
-      };
-    }
-  }, [accessToken, fetchApi, item?.conversation]);
 
   return (
     <>
@@ -73,7 +53,11 @@ const Conversation = React.memo(({ item, fetchApi }) => {
               width={"unset"}
             >
               {item && item.lastMessage
-                ? item.lastMessage.senderName + ": " + item.lastMessage.content
+                ? (item.lastMessage.senderId == currentAccountId
+                    ? "You"
+                    : item.lastMessage.senderName) +
+                  ": " +
+                  item.lastMessage.content
                 : "No message"}
             </EllipsisTypography>
           </Box>
@@ -128,6 +112,7 @@ const ListConversation = () => {
 
       socket.on("newFriend" + accountId, fetchApi);
       socket.on("seenMess" + accountId, fetchApi);
+      socket.on("newMess" + accountId, fetchApi);
 
       return () => {
         socket.disconnect();
@@ -156,7 +141,7 @@ const ListConversation = () => {
             height: "calc(100% - 34px)",
           }}
         >
-          <Box mt={listItems && listItems.length && 2}>
+          <Box>
             {listItems && listItems.length > 0 ? (
               listItems.map((item) => (
                 <Conversation

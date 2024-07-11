@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { CircularProgress, Box, Typography } from "@mui/material";
 
 const InfiniteScrollList = ({
@@ -6,6 +6,7 @@ const InfiniteScrollList = ({
   loadMore,
   hasMore,
   renderItem,
+  pl,
   noMore = "No more items",
 }) => {
   const observer = useRef();
@@ -28,21 +29,11 @@ const InfiniteScrollList = ({
 
   return (
     <>
-      {items.map((item, index) => {
-        if (items.length === index + 1) {
-          return (
-            <React.Fragment key={item._id + index}>
-              {renderItem(item, lastItemRef)}
-            </React.Fragment>
-          );
-        } else {
-          return (
-            <React.Fragment key={item._id + index}>
-              {renderItem(item)}
-            </React.Fragment>
-          );
-        }
-      })}
+      {items.map((item, index) => (
+        <React.Fragment key={item._id + index}>
+          {renderItem(item, items.length === index + 1 ? lastItemRef : null)}
+        </React.Fragment>
+      ))}
 
       {loading && (
         <Box textAlign={"center"} mt={2}>
@@ -50,7 +41,7 @@ const InfiniteScrollList = ({
         </Box>
       )}
       {!hasMore && (
-        <Typography textAlign={"center"} py={2} mt={1} width={"100%"}>
+        <Typography textAlign={"center"} pl={pl} py={2} mt={1} width={"100%"}>
           {noMore}
         </Typography>
       )}

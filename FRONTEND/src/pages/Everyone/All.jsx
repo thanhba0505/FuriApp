@@ -1,4 +1,4 @@
-import { Box, Grid, TextField } from "@mui/material";
+import { Box, CircularProgress, Grid, TextField } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getNonFriends } from "~/api/accountApi";
@@ -16,6 +16,7 @@ const All = () => {
   const [listItems, setListItems] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -31,7 +32,15 @@ const All = () => {
   const fetchApi = useCallback(
     async (page, searchTerm) => {
       if (accessToken) {
+        if (page === 1) {
+          setLoading(true);
+        }
         const res = await getNonFriends(accessToken, limit, searchTerm);
+
+        if (page === 1) {
+          setLoading(false);
+        }
+
         if (res.status == 200) {
           if (page === 1) {
             setListItems(res.nonFriends);
@@ -44,6 +53,8 @@ const All = () => {
 
         if (res.nonFriends.length < limit) {
           setHasMore(false);
+        } else {
+          setHasMore(true);
         }
       }
     },
@@ -56,11 +67,11 @@ const All = () => {
     }
   }, [accessToken, fetchApi, debouncedValue]);
 
-  const loadMore = () => {
+  const loadMore = useCallback(async () => {
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
-    fetchApi(nextPage, debouncedValue);
-  };
+    await fetchApi(nextPage, debouncedValue);
+  }, [currentPage, debouncedValue, fetchApi]);
 
   return (
     <Box mt={3} height={"calc(100% - 208px)"}>
@@ -85,22 +96,29 @@ const All = () => {
         }}
       >
         <Grid container spacing={3}>
-          <InfiniteScrollList
-            items={listItems}
-            loadMore={loadMore}
-            hasMore={hasMore}
-            renderItem={(item, lastItemRef) => (
-              <Item
-                accId={item?._id}
-                lastItemRef={lastItemRef}
-                avatar={item?.avatar}
-                username={item?.username}
-                fullname={item?.fullname}
-                type="all"
-              />
-            )}
-            noMore="No more one"
-          />
+          {loading ? (
+            <Grid item xs={12} textAlign={"center"} mt={2}>
+              <CircularProgress />
+            </Grid>
+          ) : (
+            <InfiniteScrollList
+              items={listItems}
+              loadMore={loadMore}
+              hasMore={hasMore}
+              renderItem={(item, lastItemRef) => (
+                <Item
+                  accId={item?._id}
+                  lastItemRef={lastItemRef}
+                  avatar={item?.avatar}
+                  username={item?.username}
+                  fullname={item?.fullname}
+                  type="all"
+                />
+              )}
+              noMore="No more one"
+              pl={3}
+            />
+          )}
         </Grid>
       </Box>
     </Box>

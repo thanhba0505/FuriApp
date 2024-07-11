@@ -13,10 +13,7 @@ function Video() {
   const accessToken = account?.accessToken;
   const limit = 6;
 
-  return (
-    <>
-    </>
-  );
+  return <Paper>Coming soon</Paper>;
 }
 
 export default memo(Video);

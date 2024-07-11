@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import { Avatar, Box, Button, Grid, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Paper from "~/components/Paper";
@@ -16,7 +16,8 @@ import {
   rejectFriendRequest,
   sendFriendRequest,
 } from "~/api/accountApi";
-import { io } from "socket.io-client";
+import { enqueueSnackbar } from "notistack";
+import EllipsisTypography from "~/components/EllipsisTypography";
 
 const Btn = React.memo(
   ({
@@ -47,61 +48,19 @@ const RenderButton = React.memo(({ type, accId, conversationId }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const navigate = useNavigate();
-  const accountId = account?._id;
 
   const [typeBtn, setTypeBtn] = useState(type);
   const [conversationIdBtn, setConversationIdBtn] = useState(conversationId);
 
-  useEffect(() => {
-    if (accessToken) {
-      const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
-
-      const senderId = accountId;
-      const receiverId = accId;
-
-      socket.on(
-        "emitEveryoneRequest" + senderId + receiverId,
-        ({ type, conversationId }) => {
-          switch (type) {
-            case "sent":
-              setTypeBtn("sent");
-              break;
-            case "accept":
-              setTypeBtn("friends");
-              setConversationIdBtn(conversationId);
-              break;
-            case "reject":
-              setTypeBtn("all");
-              break;
-
-            default:
-              break;
-          }
-        }
-      );
-
-      socket.on("emitEveryoneRequest" + receiverId + senderId, ({ type }) => {
-        switch (type) {
-          case "sent":
-            setTypeBtn("received");
-            break;
-
-          default:
-            break;
-        }
-      });
-
-      return () => {
-        socket.disconnect();
-      };
-    }
-  }, [accountId, accessToken, accId]);
-
   const handleClickAll = () => {
     const loadRequest = async () => {
       const res = await sendFriendRequest(accessToken, accId);
-      if (!res.status == 200) {
-        console.log(res);
+      if (res.status == 200) {
+        setTypeBtn("sent");
+      } else {
+        enqueueSnackbar(res.message, {
+          variant: "error",
+        });
       }
     };
 
@@ -113,8 +72,14 @@ const RenderButton = React.memo(({ type, accId, conversationId }) => {
   const handleClickAccept = () => {
     const loadRequest = async () => {
       const res = await acceptFriendRequest(accessToken, accId);
-      if (!res.status == 200) {
-        console.log(res);
+      console.log(res);
+      if (res.status == 200) {
+        setTypeBtn("friends");
+        setConversationIdBtn(res.conversation);
+      } else {
+        enqueueSnackbar(res.message, {
+          variant: "error",
+        });
       }
     };
 
@@ -126,8 +91,13 @@ const RenderButton = React.memo(({ type, accId, conversationId }) => {
   const handleClickReject = () => {
     const loadRequest = async () => {
       const res = await rejectFriendRequest(accessToken, accId);
-      if (!res.status == 200) {
-        console.log(res);
+      console.log(res);
+      if (res.status == 200) {
+        setTypeBtn("all");
+      } else {
+        enqueueSnackbar(res.message, {
+          variant: "error",
+        });
       }
     };
 
@@ -202,7 +172,6 @@ const Item = ({
   lastItemRef,
 }) => {
   const navigate = useNavigate();
-
   return (
     <Grid item xs={4} ref={lastItemRef ? lastItemRef : null}>
       <Paper mt={0} p="0">
@@ -235,9 +204,9 @@ const Item = ({
             {!avatar ? getFirstLetterUpperCase(fullname) : ""}
           </Avatar>
 
-          <Typography fontSize={18} fontWeight={500} mt={1}>
+          <EllipsisTypography fontSize={18} fontWeight={500} mt={1}>
             {accId && fullname}
-          </Typography>
+          </EllipsisTypography>
 
           <Typography fontSize={16} mt={0}>
             @{accId && username}

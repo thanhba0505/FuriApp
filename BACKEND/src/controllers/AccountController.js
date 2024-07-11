@@ -541,7 +541,11 @@ const AccountController = {
 
       io.emit("newNotification" + senderId, { message: notification.message });
 
-      return res.json({ status: 200, message: "Friend request accepted" });
+      return res.json({
+        status: 200,
+        message: "Friend request accepted",
+        conversation: newConversation._id,
+      });
     } catch (error) {
       console.log({ error });
       return res.json({ status: 500, message: "Internal Server Error" });
@@ -625,7 +629,7 @@ const AccountController = {
             path: "messages",
             populate: {
               path: "sender",
-              select: "fullname",
+              select: "fullname _id",
             },
             options: { sort: { createdAt: -1 }, limit: 1 },
           });
@@ -646,6 +650,7 @@ const AccountController = {
               ? {
                   content: lastMessage.content,
                   senderName: lastMessage.sender.fullname,
+                  senderId: lastMessage.sender._id,
                   createdAt: lastMessage.createdAt,
                 }
               : null,

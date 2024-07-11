@@ -8,7 +8,12 @@ const ConversationController = {
       const senderId = req.account.id;
       const { conversationId, content } = req.body;
 
-      const conversation = await Conversation.findById(conversationId);
+      const conversation = await Conversation.findById(conversationId).populate(
+        {
+          path: "participants",
+          select: "fullname",
+        }
+      );
 
       if (!conversation) {
         return res.json({
@@ -17,7 +22,11 @@ const ConversationController = {
         });
       }
 
-      if (!conversation.participants.includes(senderId)) {
+      if (
+        !conversation.participants.some((participant) =>
+          participant._id.equals(senderId)
+        )
+      ) {
         return res.json({
           status: 403,
           message: "You are not part of this conversation",
@@ -45,13 +54,14 @@ const ConversationController = {
 
       await conversation.save();
 
-      const populatedMessage = await Message.findById(newMessage._id)
-        .select("_id sender content updatedAt")
-        .populate("sender", "fullname avatar");
+      const participants = conversation.participants || [];
 
-      io.emit("newMess" + conversationId, {
-        senderId,
-        newMessage: populatedMessage,
+      participants.forEach((participant) => {
+        io.emit("newMess" + participant._id, {
+          sender: senderId,
+          conversation: conversationId,
+          fullname: participant.fullname,
+        });
       });
 
       return res.json({

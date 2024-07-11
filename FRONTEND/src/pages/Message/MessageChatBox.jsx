@@ -12,7 +12,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getConversation, sendMessage } from "~/api/conversationApi";
-import { getImageBlob } from "~/api/imageApi";
 import Paper from "~/components/Paper";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
 import SendIcon from "@mui/icons-material/Send";
@@ -172,6 +171,7 @@ const ListMessages = React.memo(({ messages, participants }) => {
 const MessageChatBox = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
+  const accountId = account?._id;
 
   const navigate = useNavigate();
   const { conversationId } = useParams();
@@ -180,53 +180,37 @@ const MessageChatBox = () => {
   const [textMessage, setTextMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const fetchImage = useCallback(
-    async (avatar) => {
-      try {
-        const result = await getImageBlob(accessToken, avatar);
-        if (result.status === 200) {
-          return result.url;
-        }
-      } catch (error) {
-        console.log({ error });
-        return null;
-      }
-    },
-    [accessToken]
-  );
+  const fetchApi = useCallback(async () => {
+    const res = await getConversation(accessToken, conversationId);
+
+    if (res.status === 200) {
+      setConversation(res.conversation);
+    } else {
+      navigate("/message");
+    }
+  }, [accessToken, conversationId, navigate]);
 
   useEffect(() => {
-    const loadRequest = async () => {
-      setLoading(true);
-      const res = await getConversation(accessToken, conversationId);
-
-      if (res.status === 200) {
-        setConversation(res.conversation);
-      } else {
-        navigate("/message");
-      }
-      setLoading(false);
-    };
-
     if (accessToken && conversationId) {
-      loadRequest();
+      setLoading(true);
+      fetchApi();
+      setLoading(false);
     }
-  }, [accessToken, conversationId, fetchImage, navigate]);
+  }, [accessToken, conversationId, fetchApi]);
 
   useEffect(() => {
     const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
-    socket.on("newMess" + conversationId, ({ newMessage }) => {
-      setConversation((prev) => ({
-        ...prev,
-        messages: [newMessage, ...prev.messages],
-      }));
+    socket.on("newMess" + accountId, ({ conversation }) => {
+      if (conversationId == conversation) {
+        fetchApi();
+      }
     });
 
     return () => {
       socket.disconnect();
     };
-  }, [conversationId]);
+  }, [accountId, conversationId, fetchApi]);
 
   const handleSendMessage = () => {
     const fetchApi = async () => {
