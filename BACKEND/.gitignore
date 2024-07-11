@@ -26,11 +26,5 @@ dist-ssr
 # 
 .env
 
-src/public/uploads/accountImage/*
-!src/public/uploads/accountImage/.gitkeep
-
-src/public/uploads/postImage/*
-!src/public/uploads/postImage/.gitkeep
-
-src/public/uploads/storyImage/*
-!src/public/uploads/storyImage/.gitkeep
+src/public/uploads/*
+!src/public/uploads/.gitkeep
