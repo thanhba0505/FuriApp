@@ -22,9 +22,13 @@ const AccountRoutes = (io) => {
   );
   router.get("/friends", middleware.verifyToken, Account.getFriends);
   router.get("/nonfriends", middleware.verifyToken, Account.getNonFriends);
-  router.get("/sent", middleware.verifyToken, Account.getSentFriendRequests);
   router.get(
-    "/received",
+    "/friend/requests/sent",
+    middleware.verifyToken,
+    Account.getSentFriendRequests
+  );
+  router.get(
+    "/friend/requests/received",
     middleware.verifyToken,
     Account.getReceivedFriendRequests
   );

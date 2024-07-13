@@ -6,8 +6,8 @@ const InfiniteScrollList = ({
   loadMore,
   hasMore,
   renderItem,
-  pl,
-  noMore = "No more items",
+  LoadingComponent,
+  NoMoreComponent,
 }) => {
   const observer = useRef();
   const [loading, setLoading] = useState(false);
@@ -35,16 +35,23 @@ const InfiniteScrollList = ({
         </React.Fragment>
       ))}
 
-      {loading && (
-        <Box textAlign={"center"} mt={2}>
-          <CircularProgress />
-        </Box>
-      )}
-      {!hasMore && (
-        <Typography textAlign={"center"} pl={pl} py={2} mt={1} width={"100%"}>
-          {noMore}
-        </Typography>
-      )}
+      {loading &&
+        (LoadingComponent ? (
+          <LoadingComponent />
+        ) : (
+          <Box textAlign={"center"}>
+            <CircularProgress />
+          </Box>
+        ))}
+
+      {!hasMore &&
+        (NoMoreComponent ? (
+          <NoMoreComponent />
+        ) : (
+          <Typography textAlign={"center"} width={"100%"}>
+            No more items
+          </Typography>
+        ))}
     </>
   );
 };

@@ -17,7 +17,6 @@ function Layout({ children, bg = true }) {
       const socket = io(import.meta.env.VITE_FURI_API_BASE_URL);
 
       socket.on("newMess" + accountId, ({ fullname, sender, conversation }) => {
-        console.log(sender != accountId && conversation != conversationId);
         if (sender != accountId && conversation != conversationId) {
           enqueueSnackbar(fullname + " sent you a messages.", "info");
         }

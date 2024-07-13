@@ -152,7 +152,7 @@ export const getNonFriends = async (accessToken, limit, search) => {
 
 export const getReceivedFriendRequests = async (accessToken, limit) => {
   try {
-    const res = await axios.get("/api/account/received", {
+    const res = await axios.get("/api/account/friend/requests/received", {
       params: {
         _limit: limit,
       },
@@ -169,7 +169,7 @@ export const getReceivedFriendRequests = async (accessToken, limit) => {
 
 export const getSentFriendRequests = async (accessToken) => {
   try {
-    const res = await axios.get("/api/account/sent", {
+    const res = await axios.get("/api/account/friend/requests/sent", {
       headers: {
         token: `Bearer ${accessToken}`,
       },

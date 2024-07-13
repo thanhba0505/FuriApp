@@ -121,8 +121,8 @@ const AccountController = {
           httpOnly: true,
           secure: true, // Deploy -> true
           path: "/",
-          // sameSite: "strict",
-          sameSite: "none",
+          sameSite: "strict",
+          // sameSite: "none",
         });
 
         const { password, ...others } = account._doc;
@@ -175,7 +175,7 @@ const AccountController = {
 
           res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
-            secure: false, // Deploy -> true
+            secure: true, // Deploy -> true
             path: "/",
             sameSite: "strict",
           });
@@ -215,7 +215,8 @@ const AccountController = {
 
       res.clearCookie("refreshToken", {
         path: "/",
-        sameSite: "None", // Ensure it's the same as when you set it
+        // sameSite: "None", // Ensure it's the same as when you set it
+        sameSite: "strict",
         secure: true, // Ensure you're using HTTPS
       });
 

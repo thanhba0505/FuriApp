@@ -12,23 +12,23 @@ const PostRoutes = (io) => {
   );
 
   router.get(
-    "/postsbyid/:accountId",
+    "/account/:accountId",
     middlewareController.verifyToken,
     PostController.getPostByAccountId
   );
 
   router.get(
-    "/postbyid/:postId",
+    "/:postId",
     middlewareController.verifyToken,
     PostController.getPostById
   );
 
-  router.post("/add", middlewareController.verifyToken, (req, res) =>
+  router.post("/", middlewareController.verifyToken, (req, res) =>
     PostController.addPost(req, res, io)
   );
 
   // delete comment
-  router.get(
+  router.delete(
     "/deletecomment/:postId/:commentId",
     middlewareController.verifyToken,
     (req, res) => PostController.deleteComment(req, res, io)
@@ -36,13 +36,13 @@ const PostRoutes = (io) => {
 
   // interact
   router.post(
-    "/interact/:postId",
+    "/:postId/interaction",
     middlewareController.verifyToken,
     (req, res) => PostController.addInteraction(req, res)
   );
 
   router.post(
-    "/addcomment/:postId",
+    "/:postId/comment",
     middlewareController.verifyToken,
     (req, res) => PostController.addComment(req, res, io)
   );

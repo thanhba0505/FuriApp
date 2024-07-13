@@ -2,7 +2,7 @@ import axios from "~/utils/axios";
 
 export const addStory = async (accessToken, formData) => {
   try {
-    const res = await axios.post(`/api/story/add`, formData, {
+    const res = await axios.post(`/api/story`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         token: `Bearer ${accessToken}`,
@@ -18,7 +18,7 @@ export const addStory = async (accessToken, formData) => {
 export const getStories = async (accessToken, limit) => {
   try {
     const res = await axios.get(
-      `/api/story/stories?_limit=${limit}`,
+      `/api/story?_limit=${limit}`,
       {
         headers: {
           token: `Bearer ${accessToken}`,

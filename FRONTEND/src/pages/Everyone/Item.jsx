@@ -204,11 +204,16 @@ const Item = ({
             {!avatar ? getFirstLetterUpperCase(fullname) : ""}
           </Avatar>
 
-          <EllipsisTypography fontSize={18} fontWeight={500} mt={1}>
+          <EllipsisTypography
+            fontSize={18}
+            fontWeight={500}
+            mt={1}
+            textAlign={"center"}
+          >
             {accId && fullname}
           </EllipsisTypography>
 
-          <Typography fontSize={16} mt={0}>
+          <Typography fontSize={16} mt={0} textAlign={"center"}>
             @{accId && username}
           </Typography>
 

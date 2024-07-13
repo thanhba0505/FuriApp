@@ -16,7 +16,7 @@ export const getPosts = async (accessToken, limit) => {
 
 export const getPostsByAccountId = async (accessToken, limit, accountId) => {
   try {
-    const res = await axios.get("/api/post/postsbyid/" + accountId, {
+    const res = await axios.get("/api/post/account/" + accountId, {
       params: {
         _limit: limit,
       },
@@ -33,7 +33,7 @@ export const getPostsByAccountId = async (accessToken, limit, accountId) => {
 
 export const getPostById = async (accessToken, postId) => {
   try {
-    const res = await axios.get("/api/post/postbyid/" + postId, {
+    const res = await axios.get("/api/post/" + postId, {
       headers: {
         token: `Bearer ${accessToken}`,
       },
@@ -48,7 +48,7 @@ export const getPostById = async (accessToken, postId) => {
 export const getInteract = async (accessToken, postID, type) => {
   try {
     const res = await axios.post(
-      `/api/post/interact/${postID}`,
+      `/api/post/${postID}/interaction`,
       {
         type: type ? type : null,
       },
@@ -68,7 +68,7 @@ export const getInteract = async (accessToken, postID, type) => {
 export const addComment = async (accessToken, postID, content) => {
   try {
     const res = await axios.post(
-      `/api/post/addcomment/${postID}`,
+      `/api/post/${postID}/comment`,
       {
         content: content,
       },
@@ -87,7 +87,7 @@ export const addComment = async (accessToken, postID, content) => {
 
 export const addPost = async (accessToken, formData) => {
   try {
-    const res = await axios.post(`/api/post/add`, formData, {
+    const res = await axios.post(`/api/post`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         token: `Bearer ${accessToken}`,

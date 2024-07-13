@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { getPostsByAccountId, getPosts } from "~/api/postApi";
 import PostItem from "~/components/PostItem";
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import InfiniteScrollList from "~/components/InfiniteScrollList";
 
 function PostList({ accessToken, limit, accountId = "" }) {
   const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchApi = useCallback(async () => {
     if (accessToken) {
@@ -32,7 +33,12 @@ function PostList({ accessToken, limit, accountId = "" }) {
 
   useEffect(() => {
     if (accessToken) {
-      fetchApi();
+      const a = async () => {
+        setLoading(true);
+        await fetchApi();
+        setLoading(false);
+      };
+      a();
     }
   }, [accessToken, fetchApi]);
 
@@ -50,8 +56,22 @@ function PostList({ accessToken, limit, accountId = "" }) {
         renderItem={(post, lastItemRef) => (
           <PostItem lastItemRef={lastItemRef} post={post} />
         )}
-        noMore="No post"
+        NoMoreComponent={() => (
+          <Typography textAlign={"center"} width={"100%"} py={2} pl={3}>
+            No one left
+          </Typography>
+        )}
+        LoadingComponent={() => (
+          <Box textAlign={"center"} width={"100%"} pl={3} py={2}>
+            <CircularProgress />
+          </Box>
+        )}
       />
+      {posts.length == 0 && loading && (
+        <Box textAlign={"center"} width={"100%"} py={2}>
+          <CircularProgress />
+        </Box>
+      )}
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import Accordion from "@mui/material/Accordion";
@@ -15,7 +15,6 @@ import ClearIcon from "@mui/icons-material/Clear";
 import Paper from "~/components/Paper";
 import { useSelector } from "react-redux";
 import Avatar from "@mui/material/Avatar";
-import { getImageBlob } from "~/api/imageApi";
 import { addPost } from "~/api/postApi";
 import { IconButton } from "@mui/material";
 import { useSnackbar } from "notistack";

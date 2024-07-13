@@ -1,4 +1,10 @@
-import { Box, CircularProgress, Grid, TextField } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getNonFriends } from "~/api/accountApi";
@@ -115,8 +121,16 @@ const All = () => {
                   type="all"
                 />
               )}
-              noMore="No more one"
-              pl={3}
+              NoMoreComponent={() => (
+                <Typography textAlign={"center"} width={"100%"} py={2} pl={3}>
+                  No one left
+                </Typography>
+              )}
+              LoadingComponent={() => (
+                <Box textAlign={"center"} width={"100%"} pl={3} py={2}>
+                  <CircularProgress />
+                </Box>
+              )}
             />
           )}
         </Grid>

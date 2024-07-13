@@ -2,14 +2,14 @@ const express = require("express");
 const Notification = require("../controllers/NotificationController");
 const middleware = require("../controllers/middlewareController");
 
-const AccountRoutes = (io) => {
+const NotificationRouters = (io) => {
   const router = express.Router();
 
-  router.get("/notifications", middleware.verifyToken, (req, res) =>
+  router.get("/", middleware.verifyToken, (req, res) =>
     Notification.getNotifications(req, res, io)
   );
 
   return router;
 };
 
-module.exports = AccountRoutes;
+module.exports = NotificationRouters;

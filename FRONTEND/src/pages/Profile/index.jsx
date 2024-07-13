@@ -267,7 +267,7 @@ const Profile = () => {
               <Typography variant="body1" mb={1}>
                 @{info?.username}
               </Typography>
-              <Typography variant="body2">
+              <Typography variant="body2" mb={1}>
                 {info?.friendCount} friends
               </Typography>
             </Grid>
