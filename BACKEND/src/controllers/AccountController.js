@@ -121,8 +121,8 @@ const AccountController = {
           httpOnly: true,
           secure: true, // Deploy -> true
           path: "/",
-          sameSite: "strict",
-          // sameSite: "none",
+          // sameSite: "strict",
+          sameSite: "none",
         });
 
         const { password, ...others } = account._doc;
@@ -177,7 +177,8 @@ const AccountController = {
             httpOnly: true,
             secure: true, // Deploy -> true
             path: "/",
-            sameSite: "strict",
+            // sameSite: "strict",
+            sameSite: "none",
           });
 
           return res.json({
@@ -214,10 +215,11 @@ const AccountController = {
       await blackListToken.save();
 
       res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
         path: "/",
-        // sameSite: "None", // Ensure it's the same as when you set it
-        sameSite: "strict",
-        secure: true, // Ensure you're using HTTPS
+        sameSite: "None",
+        // sameSite: "strict",
       });
 
       res.json({ status: 200, message: "Logged out successfully" });
