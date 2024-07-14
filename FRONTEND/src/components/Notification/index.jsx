@@ -57,7 +57,7 @@ const NotificationItem = ({ onClick, item }) => {
   );
 };
 
-const Notification = ({ setAnchorEl }) => {
+const Notification = ({ onClick }) => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
   const accessToken = account?.accessToken;
   const accountId = account?._id;
@@ -113,11 +113,7 @@ const Notification = ({ setAnchorEl }) => {
     <>
       {items && items.length > 0 ? (
         items.map((item) => (
-          <NotificationItem
-            key={item._id}
-            onClick={() => setAnchorEl && setAnchorEl(null)}
-            item={item}
-          />
+          <NotificationItem key={item._id} onClick={onClick} item={item} />
         ))
       ) : (
         <Typography

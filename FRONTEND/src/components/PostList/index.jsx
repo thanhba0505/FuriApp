@@ -58,7 +58,7 @@ function PostList({ accessToken, limit, accountId = "" }) {
         )}
         NoMoreComponent={() => (
           <Typography textAlign={"center"} width={"100%"} py={2} pl={3}>
-            No one left
+            No more posts
           </Typography>
         )}
         LoadingComponent={() => (

@@ -113,7 +113,7 @@ function NotifyMenu() {
             maxHeight: 400,
           }}
         >
-          <Notification />
+          <Notification onClick={() => setAnchorEl(null)} />
         </Box>
         <MenuItem
           onClick={() => {

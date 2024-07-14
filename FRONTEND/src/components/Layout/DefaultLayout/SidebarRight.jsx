@@ -89,7 +89,7 @@ const ItemFirst = React.memo(({ item }) => {
           </ListItemAvatar>
 
           <Box>
-            <Typography fontWeight={500}>{item?.account?.fullname}</Typography>
+            <EllipsisTypography fontWeight={500}>{item?.account?.fullname}</EllipsisTypography>
             <EllipsisTypography
               color={"text.secondary"}
               fontSize={14}

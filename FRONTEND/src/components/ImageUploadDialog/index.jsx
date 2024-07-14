@@ -10,6 +10,8 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
+import { LoadingButton } from "@mui/lab";
 
 const ImageUploadDialog = ({
   open,
@@ -38,7 +40,9 @@ const ImageUploadDialog = ({
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      alert("There is no selected file");
+      enqueueSnackbar("There is no selected file", {
+        variant: "error",
+      });
       return;
     }
 
@@ -46,14 +50,13 @@ const ImageUploadDialog = ({
 
     try {
       await onUpload(selectedFile);
-      setIsLoading(false);
       setSelectedFile(null);
       setPreviewImage(null);
       onClose();
     } catch (error) {
-      console.error(error);
-      setIsLoading(false);
+      console.error({ error });
     }
+    setIsLoading(false);
   };
 
   return (
@@ -107,14 +110,22 @@ const ImageUploadDialog = ({
           Clear image
         </Button>
 
-        <Button
+        {/* <Button
           onClick={handleUpload}
           type="submit"
           variant="contained"
           disabled={isLoading}
         >
           {isLoading ? <CircularProgress size={24} /> : titleBtnUpload}
-        </Button>
+        </Button> */}
+
+        <LoadingButton
+          onClick={handleUpload}
+          variant="contained"
+          loading={isLoading}
+        >
+          {titleBtnUpload}
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

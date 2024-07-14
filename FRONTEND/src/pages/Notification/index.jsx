@@ -6,7 +6,7 @@ import PaperCustom from "~/components/Paper";
 
 const Notifications = () => {
   return (
-    <PaperCustom h={"calc(100% - 24px)"} mh={800}>
+    <PaperCustom h={"calc(100% - 24px)"}>
       <Typography fontSize={18} fontWeight={700} lineHeight={1} mb={2}>
         Notification
       </Typography>

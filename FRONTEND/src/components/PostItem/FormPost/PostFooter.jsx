@@ -27,6 +27,7 @@ import SentimentVerySatisfiedTwoToneIcon from "@mui/icons-material/SentimentVery
 import { addComment, getInteract } from "~/api/postApi";
 import formatTimeDifference from "~/config/formatTimeDifference";
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import { LoadingButton } from "@mui/lab";
 
 const StyledIconInteract = styled("div")(({ color }) => ({
   display: "block",
@@ -352,6 +353,7 @@ const AddComment = React.memo(
     const accessToken = account?.accessToken;
 
     const [content, setContent] = useState("");
+    const [loading, setLoading] = useState(false);
     const textFieldRef = useRef(null);
 
     const handleFocusChange = () => {
@@ -374,12 +376,15 @@ const AddComment = React.memo(
     const handleSend = () => {
       const getTypeInteractCurrentAccount = async () => {
         if (accessToken && content.trim().length > 0) {
+          setLoading(true);
           try {
             await addComment(accessToken, postID, content);
             setContent("");
           } catch (error) {
+            s;
             console.log({ error });
           }
+          setLoading(false);
         }
       };
 
@@ -406,8 +411,8 @@ const AddComment = React.memo(
           onChange={handleOnchange}
         />
 
-        <Button
-          color="secondary"
+        <LoadingButton
+          color="primary"
           sx={{
             height: "100%",
             px: "16px !important",
@@ -418,9 +423,10 @@ const AddComment = React.memo(
           variant="contained"
           endIcon={<SendIcon />}
           onClick={handleSend}
+          loading={loading}
         >
           Send
-        </Button>
+        </LoadingButton>
       </>
     );
   }
@@ -537,7 +543,7 @@ const PostFooter = ({ post }) => {
               onClick={handleButtonAddComment}
               variant="outlined"
               endIcon={<AddCommentIcon />}
-              color="inherit"
+              color="primary"
             >
               Add comment
             </Button>

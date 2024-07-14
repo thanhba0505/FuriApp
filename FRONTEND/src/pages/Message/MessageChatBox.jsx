@@ -191,10 +191,14 @@ const MessageChatBox = () => {
   }, [accessToken, conversationId, navigate]);
 
   useEffect(() => {
-    if (accessToken && conversationId) {
+    const load = async () => {
       setLoading(true);
-      fetchApi();
+      await fetchApi();
       setLoading(false);
+    };
+
+    if (accessToken && conversationId) {
+      load();
     }
   }, [accessToken, conversationId, fetchApi]);
 
@@ -214,13 +218,17 @@ const MessageChatBox = () => {
 
   const handleSendMessage = () => {
     const fetchApi = async () => {
-      const content = textMessage;
-      const res = await sendMessage(accessToken, conversationId, content);
+      try {
+        const content = textMessage;
+        const res = await sendMessage(accessToken, conversationId, content);
 
-      if (res.status == 200) {
-        setTextMessage("");
-      } else {
-        console.log({ res });
+        if (res.status == 200) {
+          setTextMessage("");
+        } else {
+          console.log({ res });
+        }
+      } catch (error) {
+        console.log({ error });
       }
     };
 
@@ -237,7 +245,7 @@ const MessageChatBox = () => {
   };
 
   return (
-    <Paper h={"calc(100% - 24px)"} mh={800}>
+    <Paper h={"calc(100% - 24px)"}>
       <Box display={"flex"} flexDirection={"column"} height={"100%"}>
         {!loading ? (
           <>
@@ -284,8 +292,14 @@ const MessageChatBox = () => {
             </Box>
           </>
         ) : (
-          <Box textAlign={"center"} alignContent={"center"} height={"100%"}>
-            <Box mb={5}>
+          <Box
+            textAlign={"center"}
+            alignContent={"center"}
+            mt={4}
+            mb={4}
+            minHeight={400}
+          >
+            <Box >
               <CircularProgress />
             </Box>
           </Box>

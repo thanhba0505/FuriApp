@@ -293,7 +293,7 @@ const Profile = () => {
       <Box>
         {info?._id && (
           <PostListMemo
-            limit={10}
+            limit={100}
             accessToken={accessToken}
             accountId={info?._id}
           />

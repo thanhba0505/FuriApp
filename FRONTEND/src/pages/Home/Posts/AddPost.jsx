@@ -18,7 +18,9 @@ import Avatar from "@mui/material/Avatar";
 import { addPost } from "~/api/postApi";
 import { IconButton } from "@mui/material";
 import { useSnackbar } from "notistack";
+
 import getFirstLetterUpperCase from "~/config/getFirstLetterUpperCase";
+import { LoadingButton } from "@mui/lab";
 
 const AddPost = () => {
   const account = useSelector((state) => state.auth?.login?.currentAccount);
@@ -39,6 +41,7 @@ const AddPost = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -107,6 +110,7 @@ const AddPost = () => {
       formData.append("images", file);
     }
 
+    setLoading(true);
     try {
       const res = await addPost(accessToken, formData);
 
@@ -122,6 +126,7 @@ const AddPost = () => {
     } catch (error) {
       console.log({ error });
     }
+    setLoading(false);
   };
 
   return (
@@ -272,7 +277,7 @@ const AddPost = () => {
                 />
               </Button>
 
-              <Button
+              <LoadingButton
                 color="primary"
                 sx={{
                   height: "100%",
@@ -283,9 +288,10 @@ const AddPost = () => {
                 variant="contained"
                 startIcon={<PostAddIcon />}
                 onClick={handlePostSubmit}
+                loading={loading}
               >
-                Post article
-              </Button>
+                Post add
+              </LoadingButton>
             </Grid>
           </Grid>
         </AccordionDetails>
