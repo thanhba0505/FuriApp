@@ -91,6 +91,8 @@ function Layout({ children, bg = true }) {
             </Typography>
           </Box>
         )}
+
+        {children}
       </Container>
     </Box>
   );
