@@ -7,8 +7,12 @@ import { registerAccount } from "~/api/accountApi";
 import { enqueueSnackbar } from "notistack";
 import { LoadingButton } from "@mui/lab";
 import { CircularProgress } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { setPageLogin } from "~/redux/otherSlice";
 
 const Register = () => {
+  const dispatch = useDispatch();
+
   const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -53,7 +57,10 @@ const Register = () => {
       enqueueSnackbar(res.message, {
         variant: res.status == 200 ? "success" : "error",
       });
+
       setLoading(false);
+
+      dispatch(setPageLogin);
     } catch (error) {
       console.log({ error });
     }
