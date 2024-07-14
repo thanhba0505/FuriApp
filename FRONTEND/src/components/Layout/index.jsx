@@ -14,11 +14,11 @@ function Layout({ children, bg = true }) {
   const accountId = account?._id;
   const { conversationId } = useParams();
   const navigate = useNavigate();
-  const [isDisabled, setIsDisabled] = useState(window.innerWidth <=  1280);
+  const [isDisabled, setIsDisabled] = useState(window.innerWidth <= 1280);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <=  1280) {
+      if (window.innerWidth <= 1280) {
         setIsDisabled(true);
       } else {
         setIsDisabled(false);
@@ -91,8 +91,6 @@ function Layout({ children, bg = true }) {
             </Typography>
           </Box>
         )}
-
-        <Box>{children}</Box>
       </Container>
     </Box>
   );
